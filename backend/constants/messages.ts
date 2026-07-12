@@ -10,6 +10,7 @@ export const MESSAGES = {
     otpExpired: 'OTP has expired.',
     otpLocked: 'Too many failed attempts. Try again later.',
     unauthorized: 'Unauthorized. Please log in.',
+    invalidToken: 'Invalid or expired token.',
     forbidden: 'You do not have permission to perform this action.',
     userNotFound: 'User not found.',
     meSuccess: 'Current user fetched successfully.',
