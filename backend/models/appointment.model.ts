@@ -104,3 +104,31 @@ export const updateAppointmentRecord = async (
   if (error || !data) return null
   return mapRow(data as AppointmentRow)
 }
+
+export const findAppointmentsByDateRange = async (start: string, end: string): Promise<Appointment[]> => {
+  const { data, error } = await db
+    .from('appointments')
+    .select('*')
+    .gte('scheduled_at', start)
+    .lt('scheduled_at', end)
+    .order('scheduled_at', { ascending: true })
+
+  if (error || !data) return []
+  return (data as AppointmentRow[]).map(mapRow)
+}
+
+export const countAppointmentsByPhysioInRange = async (
+  physioId: string,
+  start: string,
+  end: string,
+): Promise<number> => {
+  const { count, error } = await db
+    .from('appointments')
+    .select('*', { count: 'exact', head: true })
+    .eq('physio_id', physioId)
+    .gte('scheduled_at', start)
+    .lt('scheduled_at', end)
+
+  if (error) return 0
+  return count ?? 0
+}

@@ -7,6 +7,7 @@ export const ROUTES = {
   patientJoin: (token: string) => `/session/join/${token}`,
 
   session: (sessionId: string) => `/session/${sessionId}`,
+  sessionNotes: (sessionId: string) => `/session/notes/${sessionId}`,
 
   appointments: '/appointments',
   appointmentDetail: (appointmentId: string) => `/appointments/${appointmentId}`,

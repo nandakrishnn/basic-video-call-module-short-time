@@ -72,6 +72,15 @@ const SessionPage = (): JSX.Element => {
     void router.push(ROUTES.dashboardPhysio)
   }
 
+  const handleEndAndWriteNotes = (): void => {
+    if (!sessionId) return
+    const token = getToken()
+    if (!token) return
+    endSessionRequest(token, sessionId).then(() => {
+      void router.push(ROUTES.sessionNotes(sessionId))
+    })
+  }
+
   if (isLoading || isAuthLoading) {
     return <div style={{ padding: 40, color: COLORS.text.secondary }}>{MESSAGES.session.connecting}</div>
   }
@@ -105,7 +114,7 @@ const SessionPage = (): JSX.Element => {
           scheduledAt={session.startedAt ?? ''}
           actualStartAt={session.startedAt}
           onQuickNote={() => {}}
-          onEndCallAndWriteNotes={handleCallEnded}
+          onEndCallAndWriteNotes={handleEndAndWriteNotes}
         />
       )}
       {showPostCallModal && (

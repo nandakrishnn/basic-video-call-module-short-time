@@ -46,6 +46,12 @@ export const findUserById = async (id: string): Promise<User | null> => {
   return mapRow(data as UserRow)
 }
 
+export const findUsersByRole = async (role: string): Promise<User[]> => {
+  const { data, error } = await db.from('users').select('*').eq('role', role)
+  if (error || !data) return []
+  return (data as UserRow[]).map(mapRow)
+}
+
 export const createPatientUser = async (identifier: string, fullName: string): Promise<User> => {
   const isEmail = identifier.includes('@')
   const { data, error } = await db
