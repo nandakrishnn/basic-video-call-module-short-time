@@ -80,7 +80,12 @@ const JoinSessionPage = (): JSX.Element => {
       }}
     >
       {step === 'choice' && (
-        <JoinChoiceStep onLogin={() => void router.push(ROUTES.login)} onGuest={() => setStep('identifier')} />
+        <JoinChoiceStep
+          onLogin={() =>
+            void router.push(`${ROUTES.login}?redirect=${encodeURIComponent(ROUTES.session(token ?? ''))}`)
+          }
+          onGuest={() => setStep('identifier')}
+        />
       )}
       {step === 'identifier' && (
         <JoinIdentifierStep onSubmit={(v) => void handleRequestOtp(v)} isSubmitting={isSubmitting} />
