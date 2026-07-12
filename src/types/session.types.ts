@@ -1,0 +1,20 @@
+export type SessionStatus = 'scheduled' | 'active' | 'completed' | 'cancelled'
+export type SessionParticipantRole = 'physio' | 'patient'
+
+export interface Session {
+  id: string
+  patientId: string
+  physioId: string
+  appointmentId: string | null
+  roomName: string
+  roomLink: string
+  status: SessionStatus
+  startedAt: string | null
+  endedAt: string | null
+}
+
+export interface JitsiConfig {
+  roomName: string
+  domain: string
+  displayName: string
+}
