@@ -40,4 +40,9 @@ export const API = {
     patient: `${BASE_URL}/api/dashboard/patient`,
     admin: `${BASE_URL}/api/dashboard/admin`,
   },
+
+  patients: {
+    list: `${BASE_URL}/api/patients`,
+    create: `${BASE_URL}/api/patients/create`,
+  },
 } as const

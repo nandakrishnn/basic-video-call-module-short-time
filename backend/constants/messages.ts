@@ -51,6 +51,11 @@ export const MESSAGES = {
     adminSuccess: 'Admin dashboard data fetched successfully.',
   },
 
+  patient: {
+    createSuccess: 'Patient added successfully.',
+    listSuccess: 'Patients fetched successfully.',
+  },
+
   validation: {
     invalidBody: 'Request body validation failed.',
     missingField: (field: string) => `${field} is required.`,

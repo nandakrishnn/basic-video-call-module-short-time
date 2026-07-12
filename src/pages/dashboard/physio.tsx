@@ -2,6 +2,8 @@ import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { AppointmentList } from '@/components/appointments/AppointmentList'
 import { TodayAppointmentRow } from '@/components/appointments/TodayAppointmentRow'
+import { AddPatientPanel } from '@/components/patients/AddPatientPanel'
+import { NewCallPanel } from '@/components/session/NewCallPanel'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { StatCard } from '@/components/shared/StatCard'
 import { COLORS } from '@/constants/colors'
@@ -23,6 +25,7 @@ const PhysioDashboardPage = (): JSX.Element => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [startingSessionFor, setStartingSessionFor] = useState<string | null>(null)
+  const token = getToken()
 
   useEffect(() => {
     const token = getToken()
@@ -68,6 +71,13 @@ const PhysioDashboardPage = (): JSX.Element => {
       <h1 style={{ color: COLORS.text.primary, fontSize: '1.3rem', fontWeight: 800 }}>
         Welcome, {user?.fullName ?? 'Doctor'}
       </h1>
+
+      {token && (
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <NewCallPanel token={token} />
+          <AddPatientPanel token={token} />
+        </div>
+      )}
 
       <div style={{ display: 'flex', gap: 16 }}>
         <StatCard label="Sessions today" value={data.stats.sessionsToday} />

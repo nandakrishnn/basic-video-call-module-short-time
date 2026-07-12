@@ -68,3 +68,23 @@ export const createPatientUser = async (identifier: string, fullName: string): P
   if (error || !data) throw new Error('Failed to create patient user')
   return mapRow(data as UserRow)
 }
+
+export const createPatient = async (input: {
+  fullName: string
+  email?: string
+  phone?: string
+}): Promise<User> => {
+  const { data, error } = await db
+    .from('users')
+    .insert({
+      email: input.email ?? null,
+      phone: input.phone ?? null,
+      full_name: input.fullName,
+      role: 'patient',
+    })
+    .select('*')
+    .single()
+
+  if (error || !data) throw new Error('Failed to create patient')
+  return mapRow(data as UserRow)
+}

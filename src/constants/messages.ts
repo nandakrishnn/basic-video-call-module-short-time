@@ -48,6 +48,16 @@ export const MESSAGES = {
     emptyReports: 'No reports available yet.',
   },
 
+  newCall: {
+    button: 'New Call',
+    selectPatient: 'Select patient',
+    addPatientButton: '+ Add patient',
+    addPatientTitle: 'Add a new patient',
+    startCallButton: 'Start Call',
+    createPatientFailed: 'Could not add patient. Please try again.',
+    missingContact: 'Enter an email or phone number.',
+  },
+
   errors: {
     generic: 'Something went wrong. Please try again.',
     network: 'Network error. Check your connection and try again.',

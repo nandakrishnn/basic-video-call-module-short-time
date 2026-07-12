@@ -33,3 +33,9 @@ export interface VerifyOtpInput {
   sessionId: string
   otp: string
 }
+
+export interface CreatePatientInput {
+  fullName: string
+  email?: string
+  phone?: string
+}

@@ -8,3 +8,4 @@ build/
 .DS_Store
 backend/node_modules/
 backend/dist/
+tsconfig.tsbuildinfo
