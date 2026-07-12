@@ -37,6 +37,8 @@ export const MESSAGES = {
     createFailed: 'Could not schedule appointment. Please try again.',
     cancelSuccess: 'Appointment cancelled.',
     emptyList: 'No appointments to show yet.',
+    scheduleButton: 'Schedule Appointment',
+    shareEmailButton: 'Share via Gmail',
   },
 
   dashboard: {

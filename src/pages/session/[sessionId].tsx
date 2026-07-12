@@ -1,12 +1,15 @@
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
+import { PostCallModal } from '@/components/appointments/PostCallModal'
 import { PhysioSessionPanel } from '@/components/video/PhysioSessionPanel'
 import { VideoStage } from '@/components/video/VideoStage'
 import { COLORS } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
 import { ROUTES } from '@/constants/routes'
 import { useAuth } from '@/hooks/useAuth'
+import { createAppointmentRequest } from '@/services/appointment.service'
 import { endSessionRequest, getSessionRequest, startSessionRequest } from '@/services/session.service'
+import type { Appointment, AppointmentType } from '@/types/appointment.types'
 import type { Session } from '@/types/session.types'
 import { getToken } from '@/utils/storage'
 
@@ -18,6 +21,7 @@ const SessionPage = (): JSX.Element => {
   const [session, setSession] = useState<Session | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showPostCallModal, setShowPostCallModal] = useState(false)
 
   useEffect(() => {
     if (!sessionId) return
@@ -45,9 +49,27 @@ const SessionPage = (): JSX.Element => {
     if (!sessionId) return
     const token = getToken()
     if (!token) return
-    endSessionRequest(token, sessionId).then(() => {
-      if (user?.role === 'physio') void router.push(ROUTES.dashboardPhysio)
+    endSessionRequest(token, sessionId).then((res) => {
+      if (user?.role !== 'physio') return
+      if (res.success) setShowPostCallModal(true)
+      else void router.push(ROUTES.dashboardPhysio)
     })
+  }
+
+  const handleSchedule = async (data: {
+    scheduledAt: string
+    sessionType: AppointmentType
+    internalNote?: string
+  }): Promise<Appointment | null> => {
+    const token = getToken()
+    if (!token || !session) return null
+    const res = await createAppointmentRequest(token, { patientId: session.patientId, ...data })
+    return res.success ? res.data : null
+  }
+
+  const handleClosePostCallModal = (): void => {
+    setShowPostCallModal(false)
+    void router.push(ROUTES.dashboardPhysio)
   }
 
   if (isLoading || isAuthLoading) {
@@ -84,6 +106,15 @@ const SessionPage = (): JSX.Element => {
           actualStartAt={session.startedAt}
           onQuickNote={() => {}}
           onEndCallAndWriteNotes={handleCallEnded}
+        />
+      )}
+      {showPostCallModal && (
+        <PostCallModal
+          patientEmail={null}
+          patientName="Patient"
+          physioName={user?.fullName ?? ''}
+          onSchedule={handleSchedule}
+          onClose={handleClosePostCallModal}
         />
       )}
     </div>
