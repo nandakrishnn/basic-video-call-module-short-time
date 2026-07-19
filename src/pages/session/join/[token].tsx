@@ -93,7 +93,11 @@ const JoinSessionPage = (): JSX.Element => {
           />
         )}
         {step === 'identifier' && (
-          <JoinIdentifierStep onSubmit={(v) => void handleRequestOtp(v)} isSubmitting={isSubmitting} />
+          <JoinIdentifierStep
+            onSubmit={(v) => void handleRequestOtp(v)}
+            isSubmitting={isSubmitting}
+            initialValue={session?.patientIdentifier ?? undefined}
+          />
         )}
         {step === 'otp' && (
           <JoinOtpStep

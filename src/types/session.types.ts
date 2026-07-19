@@ -11,6 +11,7 @@ export interface Session {
   status: SessionStatus
   startedAt: string | null
   endedAt: string | null
+  patientIdentifier?: string | null
 }
 
 export interface JitsiConfig {

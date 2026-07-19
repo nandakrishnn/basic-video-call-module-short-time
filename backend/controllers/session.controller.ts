@@ -3,6 +3,7 @@ import { AuditAction, SessionStatus } from '../constants/enums'
 import { MESSAGES } from '../constants/messages'
 import { AppError } from '../middleware/error.middleware'
 import { findSessionById, updateSessionStatus } from '../models/session.model'
+import { findUserById } from '../models/user.model'
 import { logAudit } from '../services/audit.service'
 import { createSessionForCall } from '../services/session.service'
 import { successResponse } from '../utils/response'
@@ -56,7 +57,10 @@ export const getJoinToken = async (req: Request, res: Response): Promise<void> =
     throw new AppError(MESSAGES.session.joinTokenInvalid, 404, 'INVALID_JOIN_TOKEN')
   }
 
-  res.status(200).json(successResponse(session, MESSAGES.session.joinTokenValid))
+  const patient = await findUserById(session.patientId)
+  const patientIdentifier = patient?.phone ?? patient?.email ?? null
+
+  res.status(200).json(successResponse({ ...session, patientIdentifier }, MESSAGES.session.joinTokenValid))
 }
 
 export const shareLog = async (req: Request, res: Response): Promise<void> => {

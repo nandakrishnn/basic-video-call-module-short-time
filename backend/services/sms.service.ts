@@ -1,5 +1,7 @@
 import { telesignClient } from '../lib/telesign'
 
+const toE164 = (phoneNumber: string): string => (phoneNumber.startsWith('+') ? phoneNumber : `+91${phoneNumber}`)
+
 export const sendOtpSms = (phoneNumber: string, otp: string): Promise<void> => {
   return new Promise((resolve, reject) => {
     telesignClient.verify.sms(
@@ -15,7 +17,7 @@ export const sendOtpSms = (phoneNumber: string, otp: string): Promise<void> => {
         }
         resolve()
       },
-      phoneNumber,
+      toE164(phoneNumber),
       { verify_code: otp },
     )
   })

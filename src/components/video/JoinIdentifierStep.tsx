@@ -5,10 +5,11 @@ import { Input } from '@/components/shared/Input'
 interface JoinIdentifierStepProps {
   onSubmit: (identifier: string) => void
   isSubmitting: boolean
+  initialValue?: string
 }
 
-export const JoinIdentifierStep = ({ onSubmit, isSubmitting }: JoinIdentifierStepProps): JSX.Element => {
-  const [identifier, setIdentifier] = useState('')
+export const JoinIdentifierStep = ({ onSubmit, isSubmitting, initialValue }: JoinIdentifierStepProps): JSX.Element => {
+  const [identifier, setIdentifier] = useState(initialValue ?? '')
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
