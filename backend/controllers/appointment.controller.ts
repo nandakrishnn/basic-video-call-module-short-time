@@ -10,7 +10,9 @@ import {
   findAppointmentsByPhysio,
   updateAppointmentRecord,
 } from '../models/appointment.model'
+import { findUserById } from '../models/user.model'
 import { logAudit } from '../services/audit.service'
+import { sendAppointmentScheduledEmail } from '../services/email.service'
 import type { CreateAppointmentInput, UpdateAppointmentInput } from '../types/appointment.types'
 import { successResponse } from '../utils/response'
 
@@ -34,6 +36,22 @@ export const createAppointment = async (req: Request, res: Response): Promise<vo
     resource: 'appointment',
     resourceId: appointment.id,
   })
+
+  const [patient, physio] = await Promise.all([findUserById(patientId), findUserById(physioId)])
+  if (patient?.email) {
+    try {
+      await sendAppointmentScheduledEmail(patient.email, {
+        patientName: patient.fullName,
+        physioName: physio?.fullName ?? 'your physio',
+        scheduledAt: appointment.scheduledAt,
+        sessionType: appointment.sessionType,
+        durationMinutes: appointment.durationMinutes,
+      })
+    } catch (err) {
+      // Appointment is already created — a failed notification email shouldn't fail the request.
+      console.error('Failed to send appointment-scheduled email:', err)
+    }
+  }
 
   res.status(201).json(successResponse(appointment, MESSAGES.appointment.createSuccess))
 }

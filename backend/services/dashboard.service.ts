@@ -1,4 +1,4 @@
-import { AppointmentStatus } from '../constants/enums'
+import { AppointmentStatus, SessionStatus } from '../constants/enums'
 import {
   countAppointmentsByPhysioInRange,
   findAppointmentsByDateRange,
@@ -6,7 +6,34 @@ import {
   findAppointmentsByPhysio,
 } from '../models/appointment.model'
 import { findSentNotesByPatient } from '../models/notes.model'
-import { findUsersByRole } from '../models/user.model'
+import { findSessionsByPatient, findSessionsByPhysio } from '../models/session.model'
+import { findUserById, findUsersByRole } from '../models/user.model'
+import type { User } from '../types/user.types'
+
+const SESSIONS_TREND_DAYS = 14
+const DAY_MS = 86_400_000
+
+// Bucketed entirely in UTC calendar days, matching how Postgres/Supabase timestamps
+// serialize — mixing in local-time midnight (setHours) would roll "today" back a day
+// in any positive-UTC-offset timezone once converted via toISOString().
+const buildSessionsTrend = (sessions: { startedAt: string | null }[]): { date: string; count: number }[] => {
+  const countsByDate = new Map<string, number>()
+  for (const session of sessions) {
+    if (!session.startedAt) continue
+    const date = session.startedAt.slice(0, 10)
+    countsByDate.set(date, (countsByDate.get(date) ?? 0) + 1)
+  }
+
+  const trend: { date: string; count: number }[] = []
+  const todayUtc = new Date(`${new Date().toISOString().slice(0, 10)}T00:00:00.000Z`)
+
+  for (let i = SESSIONS_TREND_DAYS - 1; i >= 0; i--) {
+    const date = new Date(todayUtc.getTime() - i * DAY_MS).toISOString().slice(0, 10)
+    trend.push({ date, count: countsByDate.get(date) ?? 0 })
+  }
+
+  return trend
+}
 
 const startOfDay = (date: Date): string => {
   const d = new Date(date)
@@ -41,17 +68,27 @@ export const getPhysioDashboard = async (physioId: string) => {
   )
   const recentPatientIds = Array.from(new Set(allAppointments.map((a) => a.patientId))).slice(0, 5)
 
-  const [sessionsToday, sessionsThisWeek, sessionsThisMonth] = await Promise.all([
+  const [sessionsToday, sessionsThisWeek, sessionsThisMonth, allSessions, recentPatientUsers] = await Promise.all([
     countAppointmentsByPhysioInRange(physioId, todayStart, todayEnd),
     countAppointmentsByPhysioInRange(physioId, startOfWeek(now).toISOString(), now.toISOString()),
     countAppointmentsByPhysioInRange(physioId, startOfMonth(now).toISOString(), now.toISOString()),
+    findSessionsByPhysio(physioId),
+    Promise.all(recentPatientIds.map((id) => findUserById(id))),
   ])
+
+  const completedSessions = allSessions.filter((s) => s.status === SessionStatus.COMPLETED)
+  const sessionsTrend = buildSessionsTrend(completedSessions)
+
+  const recentPatients = recentPatientUsers
+    .filter((p): p is User => p !== null)
+    .map((p) => ({ id: p.id, fullName: p.fullName, email: p.email, phone: p.phone }))
 
   return {
     todayAppointments,
     upcomingThisWeek,
-    recentPatientIds,
+    recentPatients,
     stats: { sessionsToday, sessionsThisWeek, sessionsThisMonth },
+    sessionsTrend,
   }
 }
 
@@ -61,12 +98,36 @@ export const getPatientDashboard = async (patientId: string) => {
 
   const nextAppointment =
     appointments.find((a) => a.scheduledAt > now && a.status === AppointmentStatus.SCHEDULED) ?? null
-  const pastSessions = appointments.filter(
-    (a) => a.scheduledAt <= now || a.status === AppointmentStatus.COMPLETED,
-  )
-  const reports = await findSentNotesByPatient(patientId)
 
-  return { nextAppointment, pastSessions, reports }
+  const [sessions, reports] = await Promise.all([findSessionsByPatient(patientId), findSentNotesByPatient(patientId)])
+  const completedSessions = sessions.filter((s) => s.status === SessionStatus.COMPLETED)
+
+  const physioIds = Array.from(new Set(completedSessions.map((s) => s.physioId)))
+  const physios = await Promise.all(physioIds.map((id) => findUserById(id)))
+  const physioNameById = new Map(physios.filter((p): p is User => p !== null).map((p) => [p.id, p.fullName]))
+
+  const pastCalls = completedSessions.map((session) => {
+    const report = reports.find((r) => r.sessionId === session.id) ?? null
+    return {
+      sessionId: session.id,
+      physioName: physioNameById.get(session.physioId) ?? 'Your physio',
+      startedAt: session.startedAt,
+      endedAt: session.endedAt,
+      report,
+    }
+  })
+
+  const totalMinutes = completedSessions.reduce((sum, session) => {
+    if (!session.startedAt || !session.endedAt) return sum
+    const minutes = (new Date(session.endedAt).getTime() - new Date(session.startedAt).getTime()) / 60_000
+    return sum + Math.max(0, Math.round(minutes))
+  }, 0)
+
+  return {
+    nextAppointment,
+    pastCalls,
+    stats: { totalCalls: completedSessions.length, totalMinutes },
+  }
 }
 
 export const getAdminDashboard = async () => {

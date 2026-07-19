@@ -38,4 +38,9 @@ export const JITSI_CONFIG_OVERWRITE = {
   hideConferenceTimer: true,
   disableInviteFunctions: true,
   enableNoisyMicDetection: false,
+  // Both keys are set because Jitsi Meet migrated this setting into a nested
+  // config across versions — meet.jit.si's exact deployed version isn't
+  // pinned, so we can't be sure which one it still reads.
+  prejoinPageEnabled: false,
+  prejoinConfig: { enabled: false },
 } as const

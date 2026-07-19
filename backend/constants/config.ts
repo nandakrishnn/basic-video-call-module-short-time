@@ -13,7 +13,7 @@ export const CONFIG = {
 
   session: {
     defaultDurationMinutes: 30,
-    joinWindowMinutesBeforeStart: 10,
+    joinWindowMinutesBeforeStart: 5,
   },
 
   jitsi: {

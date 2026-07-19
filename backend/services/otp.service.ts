@@ -9,14 +9,15 @@ import {
   lockOtp,
   markOtpVerified,
 } from '../models/otp.model'
-import { addMinutes, isPast } from '../utils/date'
+import { addMinutes, isPast, parseUtc } from '../utils/date'
 import { compareValue, generateOtp, hashValue } from '../utils/hash'
 import { logAudit } from './audit.service'
 import { sendOtpEmail } from './email.service'
+import { sendOtpSms } from './sms.service'
 
 export const requestOtp = async (
   identifier: string,
-  sessionId: string,
+  sessionId: string | null,
   userId: string | null,
 ): Promise<void> => {
   const otp = generateOtp()
@@ -24,13 +25,24 @@ export const requestOtp = async (
   const expiresAt = addMinutes(new Date(), CONFIG.otp.expiryMinutes).toISOString()
 
   await createOtpRecord({ identifier, otpHash, sessionId, expiresAt })
-  await sendOtpEmail(identifier, otp)
-  await logAudit({ userId, action: AuditAction.OTP_SENT, resource: 'session', resourceId: sessionId })
+
+  if (identifier.includes('@')) {
+    await sendOtpEmail(identifier, otp)
+  } else {
+    await sendOtpSms(identifier, otp)
+  }
+
+  await logAudit({
+    userId,
+    action: AuditAction.OTP_SENT,
+    resource: sessionId ? 'session' : 'auth',
+    resourceId: sessionId ?? undefined,
+  })
 }
 
 export const verifyOtp = async (
   identifier: string,
-  sessionId: string,
+  sessionId: string | null,
   otp: string,
   userId: string | null,
 ): Promise<void> => {
@@ -39,11 +51,11 @@ export const verifyOtp = async (
     throw new AppError(MESSAGES.auth.otpInvalid, 400, 'OTP_INVALID')
   }
 
-  if (record.locked_until && !isPast(new Date(record.locked_until))) {
+  if (record.locked_until && !isPast(parseUtc(record.locked_until))) {
     throw new AppError(MESSAGES.auth.otpLocked, 423, 'OTP_LOCKED')
   }
 
-  if (isPast(new Date(record.expires_at))) {
+  if (isPast(parseUtc(record.expires_at))) {
     throw new AppError(MESSAGES.auth.otpExpired, 400, 'OTP_EXPIRED')
   }
 
@@ -59,5 +71,10 @@ export const verifyOtp = async (
   }
 
   await markOtpVerified(record.id)
-  await logAudit({ userId, action: AuditAction.OTP_VERIFIED, resource: 'session', resourceId: sessionId })
+  await logAudit({
+    userId,
+    action: AuditAction.OTP_VERIFIED,
+    resource: sessionId ? 'session' : 'auth',
+    resourceId: sessionId ?? undefined,
+  })
 }

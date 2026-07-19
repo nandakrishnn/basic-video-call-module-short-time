@@ -1,5 +1,7 @@
 import type { CSSProperties } from 'react'
-import { COLORS } from '@/constants/colors'
+import { Button } from '@/components/shared/Button'
+import { Textarea } from '@/components/shared/Input'
+import { COLORS, RADII } from '@/constants/colors'
 
 interface EnhancedNotesPanelProps {
   rawNotes: string
@@ -11,14 +13,15 @@ interface EnhancedNotesPanelProps {
 
 const columnStyle: CSSProperties = { flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }
 const labelStyle: CSSProperties = {
-  fontSize: '0.75rem',
-  fontWeight: 700,
+  fontSize: '0.72rem',
+  fontWeight: 600,
   color: COLORS.text.muted,
   textTransform: 'uppercase',
+  letterSpacing: 0.4,
 }
 const boxStyle: CSSProperties = {
   padding: '14px 16px',
-  borderRadius: 12,
+  borderRadius: RADII.sm,
   border: `1px solid ${COLORS.border}`,
   fontSize: '0.88rem',
   lineHeight: 1.6,
@@ -50,31 +53,21 @@ export const EnhancedNotesPanel = ({
         </div>
         <div style={columnStyle}>
           <span style={labelStyle}>Enhanced notes</span>
-          <textarea
+          <Textarea
             value={enhancedNotes}
             onChange={(e) => onEnhancedChange(e.target.value)}
-            style={{ ...boxStyle, color: COLORS.text.primary, resize: 'vertical' }}
+            style={{ ...boxStyle, resize: 'vertical' }}
           />
         </div>
       </div>
-      <button
-        type="button"
-        disabled={isSaving}
+      <Button
+        variant="primary"
+        isLoading={isSaving}
         onClick={onApprove}
-        style={{
-          alignSelf: 'flex-end',
-          padding: '10px 24px',
-          borderRadius: 10,
-          border: 'none',
-          background: COLORS.status.success,
-          color: COLORS.text.inverse,
-          fontWeight: 700,
-          cursor: isSaving ? 'default' : 'pointer',
-          opacity: isSaving ? 0.6 : 1,
-        }}
+        style={{ alignSelf: 'flex-end', background: COLORS.status.success }}
       >
         {isSaving ? 'Saving…' : 'Approve & Save'}
-      </button>
+      </Button>
     </div>
   )
 }

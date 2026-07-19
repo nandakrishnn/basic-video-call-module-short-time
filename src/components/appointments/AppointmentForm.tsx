@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { Button } from '@/components/shared/Button'
+import { Input, Select, Textarea } from '@/components/shared/Input'
 import { COLORS } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
 import type { AppointmentType } from '@/types/appointment.types'
@@ -27,66 +29,42 @@ export const AppointmentForm = ({ onSubmit, isSubmitting }: AppointmentFormProps
     })
   }
 
-  const fieldStyle = { padding: '10px 12px', borderRadius: 8, border: `1px solid ${COLORS.border}` }
   const labelStyle = { fontSize: '0.78rem', fontWeight: 600, color: COLORS.text.primary }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div style={{ display: 'flex', gap: 12 }}>
-        <label style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <label style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
           <span style={labelStyle}>Date</span>
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={fieldStyle} />
+          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         </label>
-        <label style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <label style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
           <span style={labelStyle}>Time</span>
-          <input type="time" value={time} onChange={(e) => setTime(e.target.value)} style={fieldStyle} />
+          <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
         </label>
       </div>
 
-      <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         <span style={labelStyle}>Session type</span>
-        <select
-          value={sessionType}
-          onChange={(e) => setSessionType(e.target.value as AppointmentType)}
-          style={fieldStyle}
-        >
+        <Select value={sessionType} onChange={(e) => setSessionType(e.target.value as AppointmentType)}>
           {SESSION_TYPES.map((type) => (
             <option key={type} value={type}>
               {type.charAt(0).toUpperCase() + type.slice(1)}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
 
-      <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         <span style={labelStyle}>
           Internal note <span style={{ fontWeight: 400, color: COLORS.text.muted }}>(optional)</span>
         </span>
-        <textarea
-          value={internalNote}
-          onChange={(e) => setInternalNote(e.target.value)}
-          rows={3}
-          style={{ ...fieldStyle, resize: 'vertical' }}
-        />
+        <Textarea value={internalNote} onChange={(e) => setInternalNote(e.target.value)} rows={3} />
       </label>
 
-      <button
-        type="button"
-        disabled={!canSubmit || isSubmitting}
-        onClick={handleSubmit}
-        style={{
-          padding: '12px',
-          borderRadius: 10,
-          border: 'none',
-          background: COLORS.primary,
-          color: COLORS.text.inverse,
-          fontWeight: 700,
-          cursor: canSubmit && !isSubmitting ? 'pointer' : 'default',
-          opacity: canSubmit && !isSubmitting ? 1 : 0.6,
-        }}
-      >
+      <Button variant="primary" fullWidth disabled={!canSubmit} isLoading={isSubmitting} onClick={handleSubmit}>
         {isSubmitting ? 'Saving…' : MESSAGES.appointments.scheduleButton}
-      </button>
+      </Button>
     </div>
   )
 }

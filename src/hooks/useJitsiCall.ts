@@ -9,8 +9,11 @@ interface UseJitsiCallParams {
   onCallEnded?: () => void
 }
 
+export type CallState = 'connecting' | 'connected' | 'ended'
+
 interface UseJitsiCallResult {
   isReady: boolean
+  callState: CallState
   isMuted: boolean
   isCameraOff: boolean
   toggleAudio: () => void
@@ -26,6 +29,7 @@ export const useJitsiCall = ({
 }: UseJitsiCallParams): UseJitsiCallResult => {
   const apiRef = useRef<JitsiMeetExternalApiInstance | null>(null)
   const [isReady, setIsReady] = useState(false)
+  const [callState, setCallState] = useState<CallState>('connecting')
   const [isMuted, setIsMuted] = useState(false)
   const [isCameraOff, setIsCameraOff] = useState(false)
 
@@ -45,7 +49,20 @@ export const useJitsiCall = ({
         configOverwrite: JITSI_CONFIG_OVERWRITE,
       })
 
-      api.addListener('videoConferenceLeft', () => onCallEnded?.())
+      api.addListener('videoConferenceJoined', () => setCallState('connected'))
+      api.addListener('videoConferenceLeft', () => {
+        setCallState('ended')
+        onCallEnded?.()
+      })
+      api.addListener('audioMuteStatusChanged', (...args: unknown[]) => {
+        const payload = args[0] as { muted?: boolean } | undefined
+        if (payload && typeof payload.muted === 'boolean') setIsMuted(payload.muted)
+      })
+      api.addListener('videoMuteStatusChanged', (...args: unknown[]) => {
+        const payload = args[0] as { muted?: boolean } | undefined
+        if (payload && typeof payload.muted === 'boolean') setIsCameraOff(payload.muted)
+      })
+
       apiRef.current = api
       setIsReady(true)
     })
@@ -59,17 +76,15 @@ export const useJitsiCall = ({
 
   const toggleAudio = useCallback(() => {
     apiRef.current?.executeCommand('toggleAudio')
-    setIsMuted((prev) => !prev)
   }, [])
 
   const toggleCamera = useCallback(() => {
     apiRef.current?.executeCommand('toggleVideo')
-    setIsCameraOff((prev) => !prev)
   }, [])
 
   const endCall = useCallback(() => {
     apiRef.current?.executeCommand('hangup')
   }, [])
 
-  return { isReady, isMuted, isCameraOff, toggleAudio, toggleCamera, endCall }
+  return { isReady, callState, isMuted, isCameraOff, toggleAudio, toggleCamera, endCall }
 }

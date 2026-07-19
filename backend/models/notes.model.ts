@@ -50,23 +50,29 @@ export const findNotesById = async (id: string): Promise<SessionNotes | null> =>
 
 interface SentNoteRow {
   id: string
+  session_id: string
   pdf_url: string | null
   sent_at: string | null
 }
 
 export const findSentNotesByPatient = async (
   patientId: string,
-): Promise<{ id: string; pdfUrl: string; sentAt: string }[]> => {
+): Promise<{ id: string; sessionId: string; pdfUrl: string; sentAt: string }[]> => {
   const { data, error } = await db
     .from('session_notes')
-    .select('id, pdf_url, sent_at, sessions!inner(patient_id)')
+    .select('id, session_id, pdf_url, sent_at, sessions!inner(patient_id)')
     .eq('sessions.patient_id', patientId)
     .eq('is_sent_to_patient', true)
 
   if (error || !data) return []
   return (data as unknown as SentNoteRow[])
     .filter((row) => row.pdf_url)
-    .map((row) => ({ id: row.id, pdfUrl: row.pdf_url as string, sentAt: row.sent_at ?? '' }))
+    .map((row) => ({
+      id: row.id,
+      sessionId: row.session_id,
+      pdfUrl: row.pdf_url as string,
+      sentAt: row.sent_at ?? '',
+    }))
 }
 
 export const updateNotesRecord = async (

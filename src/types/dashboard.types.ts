@@ -1,20 +1,39 @@
 import type { Appointment } from './appointment.types'
 
+export interface RecentPatient {
+  id: string
+  fullName: string
+  email: string | null
+  phone: string | null
+}
+
 export interface PhysioDashboardData {
   todayAppointments: Appointment[]
   upcomingThisWeek: Appointment[]
-  recentPatientIds: string[]
+  recentPatients: RecentPatient[]
   stats: {
     sessionsToday: number
     sessionsThisWeek: number
     sessionsThisMonth: number
   }
+  sessionsTrend: { date: string; count: number }[]
+}
+
+export interface PastCall {
+  sessionId: string
+  physioName: string
+  startedAt: string | null
+  endedAt: string | null
+  report: { id: string; pdfUrl: string; sentAt: string } | null
 }
 
 export interface PatientDashboardData {
   nextAppointment: Appointment | null
-  pastSessions: Appointment[]
-  reports: { id: string; pdfUrl: string; sentAt: string }[]
+  pastCalls: PastCall[]
+  stats: {
+    totalCalls: number
+    totalMinutes: number
+  }
 }
 
 export interface AdminDashboardData {

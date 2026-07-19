@@ -1,3 +1,5 @@
+import { Card } from '@/components/shared/Card'
+import { Button } from '@/components/shared/Button'
 import { COLORS } from '@/constants/colors'
 
 interface PhysioSessionPanelProps {
@@ -20,19 +22,12 @@ export const PhysioSessionPanel = ({
   onEndCallAndWriteNotes,
 }: PhysioSessionPanelProps): JSX.Element => {
   return (
-    <aside
-      style={{
-        width: 280,
-        background: COLORS.surface,
-        borderRadius: 16,
-        padding: 20,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 16,
-      }}
+    <Card
+      elevation="md"
+      style={{ width: 280, display: 'flex', flexDirection: 'column', gap: 20 }}
     >
       <div>
-        <h3 style={{ color: COLORS.text.primary, fontSize: '1rem', fontWeight: 800, margin: 0 }}>
+        <h3 style={{ color: COLORS.text.primary, fontSize: '1.05rem', fontWeight: 800, margin: 0 }}>
           {patientName}
         </h3>
         {patientAge !== null && (
@@ -43,7 +38,7 @@ export const PhysioSessionPanel = ({
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <span style={{ color: COLORS.text.muted, fontSize: '0.75rem', textTransform: 'uppercase' }}>
+        <span style={{ color: COLORS.text.muted, fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.4 }}>
           Session
         </span>
         <span style={{ color: COLORS.text.primary, fontSize: '0.9rem', fontWeight: 600 }}>
@@ -52,7 +47,7 @@ export const PhysioSessionPanel = ({
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <span style={{ color: COLORS.text.muted, fontSize: '0.75rem', textTransform: 'uppercase' }}>
+        <span style={{ color: COLORS.text.muted, fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.4 }}>
           Scheduled
         </span>
         <span style={{ color: COLORS.text.secondary, fontSize: '0.85rem' }}>{scheduledAt}</span>
@@ -61,37 +56,13 @@ export const PhysioSessionPanel = ({
         )}
       </div>
 
-      <button
-        type="button"
-        onClick={onQuickNote}
-        style={{
-          padding: '10px 16px',
-          borderRadius: 10,
-          border: `1px solid ${COLORS.border}`,
-          background: COLORS.background,
-          color: COLORS.text.primary,
-          fontWeight: 600,
-          cursor: 'pointer',
-        }}
-      >
+      <Button variant="secondary" onClick={onQuickNote} fullWidth>
         Quick Note
-      </button>
+      </Button>
 
-      <button
-        type="button"
-        onClick={onEndCallAndWriteNotes}
-        style={{
-          padding: '10px 16px',
-          borderRadius: 10,
-          border: 'none',
-          background: COLORS.primary,
-          color: COLORS.text.inverse,
-          fontWeight: 700,
-          cursor: 'pointer',
-        }}
-      >
-        End Call & Write Notes
-      </button>
-    </aside>
+      <Button variant="primary" onClick={onEndCallAndWriteNotes} fullWidth>
+        End Call &amp; Write Notes
+      </Button>
+    </Card>
   )
 }

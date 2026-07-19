@@ -4,6 +4,8 @@ export const ROUTES = {
   home: '/',
 
   login: '/login',
+  patientLogin: '/patient-login',
+  contact: '/contact',
   patientJoin: (token: string) => `/session/join/${token}`,
 
   session: (sessionId: string) => `/session/${sessionId}`,

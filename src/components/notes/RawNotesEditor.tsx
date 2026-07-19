@@ -1,4 +1,6 @@
 import { useEffect, useRef } from 'react'
+import { Button } from '@/components/shared/Button'
+import { Textarea } from '@/components/shared/Input'
 import { COLORS } from '@/constants/colors'
 import { CONFIG } from '@/constants/config'
 import { MESSAGES } from '@/constants/messages'
@@ -34,41 +36,19 @@ export const RawNotesEditor = ({
   const isDisabled = value.trim().length === 0 || isSubmitting
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      <textarea
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <Textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={MESSAGES.notes.rawPlaceholder}
         rows={12}
-        style={{
-          padding: '14px 16px',
-          borderRadius: 12,
-          border: `1px solid ${COLORS.border}`,
-          fontSize: '0.92rem',
-          lineHeight: 1.6,
-          color: COLORS.text.primary,
-          resize: 'vertical',
-        }}
+        style={{ fontSize: '0.92rem', lineHeight: 1.6 }}
       />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ color: COLORS.text.muted, fontSize: '0.78rem' }}>{value.length} characters</span>
-        <button
-          type="button"
-          disabled={isDisabled}
-          onClick={onSubmit}
-          style={{
-            padding: '10px 20px',
-            borderRadius: 10,
-            border: 'none',
-            background: COLORS.primary,
-            color: COLORS.text.inverse,
-            fontWeight: 700,
-            cursor: isDisabled ? 'default' : 'pointer',
-            opacity: isDisabled ? 0.6 : 1,
-          }}
-        >
+        <Button variant="primary" disabled={isDisabled} isLoading={isSubmitting} onClick={onSubmit}>
           {isSubmitting ? 'Enhancing…' : 'Enhance with AI'}
-        </button>
+        </Button>
       </div>
     </div>
   )

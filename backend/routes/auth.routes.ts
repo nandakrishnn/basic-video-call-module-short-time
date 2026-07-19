@@ -12,12 +12,12 @@ const loginSchema = z.object({
 
 const requestOtpSchema = z.object({
   identifier: z.string().min(1),
-  sessionId: z.string().uuid(),
+  sessionId: z.string().uuid().optional(),
 })
 
 const verifyOtpSchema = z.object({
   identifier: z.string().min(1),
-  sessionId: z.string().uuid(),
+  sessionId: z.string().uuid().optional(),
   otp: z.string().length(4),
 })
 

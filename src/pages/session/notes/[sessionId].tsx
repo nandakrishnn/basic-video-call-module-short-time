@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { EnhancedNotesPanel } from '@/components/notes/EnhancedNotesPanel'
 import { RawNotesEditor } from '@/components/notes/RawNotesEditor'
 import { SendToggle } from '@/components/notes/SendToggle'
+import { Button } from '@/components/shared/Button'
 import { COLORS } from '@/constants/colors'
 import { ROUTES } from '@/constants/routes'
 import {
@@ -103,23 +104,21 @@ const NotesPage = (): JSX.Element => {
 
   if (step === 'done') {
     return (
-      <div style={{ padding: 40, textAlign: 'center' }}>
-        <p style={{ color: COLORS.status.success, fontWeight: 700, marginBottom: 16 }}>Notes saved.</p>
-        <button
-          type="button"
-          onClick={() => void router.push(ROUTES.dashboardPhysio)}
-          style={{
-            padding: '10px 24px',
-            borderRadius: 10,
-            border: 'none',
-            background: COLORS.primary,
-            color: COLORS.text.inverse,
-            fontWeight: 700,
-            cursor: 'pointer',
-          }}
-        >
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 20,
+          background: COLORS.background,
+        }}
+      >
+        <p style={{ color: COLORS.status.success, fontWeight: 700, fontSize: '1.05rem', margin: 0 }}>Notes saved.</p>
+        <Button variant="primary" onClick={() => void router.push(ROUTES.dashboardPhysio)}>
           Back to dashboard
-        </button>
+        </Button>
       </div>
     )
   }
@@ -132,10 +131,10 @@ const NotesPage = (): JSX.Element => {
         padding: '0 20px',
         display: 'flex',
         flexDirection: 'column',
-        gap: 20,
+        gap: 24,
       }}
     >
-      <h1 style={{ color: COLORS.text.primary, fontSize: '1.2rem', fontWeight: 800 }}>Session notes</h1>
+      <h1 style={{ color: COLORS.text.primary, fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>Session notes</h1>
 
       {step === 'raw' && (
         <RawNotesEditor

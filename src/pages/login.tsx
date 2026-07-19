@@ -1,6 +1,12 @@
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
+import { Button } from '@/components/shared/Button'
+import { Card } from '@/components/shared/Card'
+import { Input } from '@/components/shared/Input'
+import { Logo } from '@/components/shared/Logo'
 import { COLORS } from '@/constants/colors'
+import { MESSAGES } from '@/constants/messages'
 import { ROUTES } from '@/constants/routes'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -16,63 +22,50 @@ const LoginPage = (): JSX.Element => {
     if (success) void router.push(redirect ?? ROUTES.dashboardPhysio)
   }
 
-  const fieldStyle = {
-    width: '100%',
-    padding: '12px 16px',
-    borderRadius: 10,
-    border: `1px solid ${COLORS.border}`,
-    color: COLORS.text.primary,
-  }
-
   return (
     <div
       style={{
-        maxWidth: 380,
-        margin: '100px auto',
-        padding: 32,
-        borderRadius: 16,
-        background: COLORS.surface,
-        boxShadow: '0 6px 32px rgba(26,28,107,0.10)',
+        minHeight: '100vh',
         display: 'flex',
-        flexDirection: 'column',
-        gap: 14,
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: COLORS.background,
+        padding: 20,
       }}
     >
-      <h1 style={{ color: COLORS.text.primary, fontSize: '1.2rem', fontWeight: 800, marginBottom: 8 }}>
-        Sign in to Clinzor
-      </h1>
-      <input
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="Email"
-        style={fieldStyle}
-      />
-      <input
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        placeholder="Password"
-        style={fieldStyle}
-      />
-      <button
-        type="button"
-        disabled={isLoading || !email || !password}
-        onClick={() => void handleSubmit()}
-        style={{
-          padding: '12px',
-          borderRadius: 10,
-          border: 'none',
-          background: COLORS.primary,
-          color: COLORS.text.inverse,
-          fontWeight: 700,
-          cursor: isLoading ? 'default' : 'pointer',
-          opacity: isLoading ? 0.7 : 1,
-        }}
-      >
-        {isLoading ? 'Signing in…' : 'Sign In'}
-      </button>
-      {error && <p style={{ color: COLORS.status.error, fontSize: '0.85rem' }}>{error}</p>}
+      <Card elevation="md" style={{ width: '100%', maxWidth: 380, display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+          <Logo surface="light" size="lg" />
+          <h1 style={{ color: COLORS.text.primary, fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>Sign in</h1>
+        </div>
+        <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
+        <Input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password"
+        />
+        <Button
+          variant="primary"
+          fullWidth
+          disabled={!email || !password}
+          isLoading={isLoading}
+          onClick={() => void handleSubmit()}
+        >
+          {isLoading ? 'Signing in…' : 'Sign In'}
+        </Button>
+        {error && <p style={{ color: COLORS.status.error, fontSize: '0.85rem', margin: 0 }}>{error}</p>}
+
+        <p style={{ textAlign: 'center', color: COLORS.text.muted, fontSize: '0.8rem', margin: 0 }}>
+          {MESSAGES.login.patientLinkBody}{' '}
+          <Link
+            href={ROUTES.patientLogin}
+            style={{ color: COLORS.primaryLight, fontWeight: 600, textDecoration: 'none' }}
+          >
+            {MESSAGES.login.patientLinkLabel}
+          </Link>
+        </p>
+      </Card>
     </div>
   )
 }

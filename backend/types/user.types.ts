@@ -25,17 +25,17 @@ export interface LoginInput {
 
 export interface RequestOtpInput {
   identifier: string
-  sessionId: string
+  sessionId?: string
 }
 
 export interface VerifyOtpInput {
   identifier: string
-  sessionId: string
+  sessionId?: string
   otp: string
 }
 
 export interface CreatePatientInput {
   fullName: string
-  email?: string
-  phone?: string
+  email: string
+  phone: string
 }

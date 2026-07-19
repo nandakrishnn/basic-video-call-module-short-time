@@ -1,7 +1,10 @@
 import { useState } from 'react'
+import { Button } from '@/components/shared/Button'
+import { Modal } from '@/components/shared/Modal'
 import { COLORS } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
 import type { Appointment, AppointmentType } from '@/types/appointment.types'
+import { parseUtc } from '@/utils/date'
 import { AppointmentForm } from './AppointmentForm'
 
 interface ScheduleData {
@@ -19,10 +22,10 @@ interface PostCallModalProps {
 }
 
 const buildMailtoHref = (appointment: Appointment, patientEmail: string, patientName: string, physioName: string): string => {
-  const dateLabel = new Date(appointment.scheduledAt).toLocaleDateString()
-  const whenLabel = new Date(appointment.scheduledAt).toLocaleString()
+  const dateLabel = parseUtc(appointment.scheduledAt).toLocaleDateString()
+  const whenLabel = parseUtc(appointment.scheduledAt).toLocaleString()
   const subject = `Your Clinzor Physiotherapy Session — ${dateLabel}`
-  const body = `Hi ${patientName},\n\nYour next session with Dr. ${physioName} has been scheduled for ${whenLabel}.\n\nSee you soon!\nClinzor Team`
+  const body = `Hi ${patientName},\n\nYour next session with ${physioName} has been scheduled for ${whenLabel}.\n\nSee you soon!\nClinzor Team`
   return `mailto:${patientEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
 }
 
@@ -50,88 +53,41 @@ export const PostCallModal = ({
     created && patientEmail ? buildMailtoHref(created, patientEmail, patientName, physioName) : undefined
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(26,28,107,0.45)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 50,
-      }}
-    >
-      <div style={{ width: 420, background: COLORS.surface, borderRadius: 16, padding: 28 }}>
-        {!created ? (
-          <>
-            <h2 style={{ color: COLORS.text.primary, fontSize: '1.1rem', fontWeight: 800, marginBottom: 4 }}>
-              Schedule next session
-            </h2>
-            <p style={{ color: COLORS.text.secondary, fontSize: '0.85rem', marginBottom: 16 }}>
-              Optional — you can also do this later from the patient profile.
-            </p>
-            <AppointmentForm onSubmit={(d) => void handleSubmit(d)} isSubmitting={isSubmitting} />
-            {error && <p style={{ color: COLORS.status.error, fontSize: '0.82rem', marginTop: 10 }}>{error}</p>}
-            <button
-              type="button"
-              onClick={onClose}
-              style={{
-                width: '100%',
-                marginTop: 12,
-                padding: '10px',
-                borderRadius: 10,
-                border: 'none',
-                background: 'transparent',
-                color: COLORS.text.muted,
-                cursor: 'pointer',
-              }}
+    <Modal maxWidth={420}>
+      {!created ? (
+        <>
+          <h2 style={{ color: COLORS.text.primary, fontSize: '1.15rem', fontWeight: 800, margin: '0 0 6px' }}>
+            Schedule next session
+          </h2>
+          <p style={{ color: COLORS.text.secondary, fontSize: '0.85rem', margin: '0 0 20px' }}>
+            Optional — you can also do this later from the patient profile.
+          </p>
+          <AppointmentForm onSubmit={(d) => void handleSubmit(d)} isSubmitting={isSubmitting} />
+          {error && <p style={{ color: COLORS.status.error, fontSize: '0.82rem', marginTop: 10 }}>{error}</p>}
+          <Button variant="ghost" fullWidth onClick={onClose} style={{ marginTop: 12 }}>
+            Skip for now
+          </Button>
+        </>
+      ) : (
+        <>
+          <p style={{ color: COLORS.status.success, fontWeight: 700, margin: '0 0 20px' }}>
+            {MESSAGES.appointments.createSuccess}
+          </p>
+          {mailtoHref && (
+            <Button
+              variant="primary"
+              fullWidth
+              style={{ marginBottom: 12 }}
+              onClick={() => window.open(mailtoHref, '_blank', 'noopener,noreferrer')}
             >
-              Skip for now
-            </button>
-          </>
-        ) : (
-          <>
-            <p style={{ color: COLORS.status.success, fontWeight: 700, marginBottom: 16 }}>
-              {MESSAGES.appointments.createSuccess}
-            </p>
-            {mailtoHref && (
-              <a
-                href={mailtoHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'block',
-                  textAlign: 'center',
-                  padding: '12px',
-                  borderRadius: 10,
-                  background: COLORS.primary,
-                  color: COLORS.text.inverse,
-                  fontWeight: 700,
-                  textDecoration: 'none',
-                  marginBottom: 12,
-                }}
-              >
-                {MESSAGES.appointments.shareEmailButton}
-              </a>
-            )}
-            <button
-              type="button"
-              onClick={onClose}
-              style={{
-                width: '100%',
-                padding: '10px',
-                borderRadius: 10,
-                border: `1px solid ${COLORS.border}`,
-                background: COLORS.background,
-                color: COLORS.text.primary,
-                cursor: 'pointer',
-              }}
-            >
-              Done
-            </button>
-          </>
-        )}
-      </div>
-    </div>
+              {MESSAGES.appointments.shareEmailButton}
+            </Button>
+          )}
+          <Button variant="secondary" fullWidth onClick={onClose}>
+            Done
+          </Button>
+        </>
+      )}
+    </Modal>
   )
 }

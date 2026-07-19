@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { COLORS } from '@/constants/colors'
+import { COLORS, RADII, SHADOWS } from '@/constants/colors'
 import { useCallTimer } from '@/hooks/useCallTimer'
 import { useJitsiCall } from '@/hooks/useJitsiCall'
 import { ControlBar } from './ControlBar'
@@ -22,7 +22,7 @@ export const VideoStage = ({
   onCallEnded,
 }: VideoStageProps): JSX.Element => {
   const containerRef = useRef<HTMLDivElement>(null)
-  const { isReady, isMuted, isCameraOff, toggleAudio, toggleCamera, endCall } = useJitsiCall({
+  const { isReady, callState, isMuted, isCameraOff, toggleAudio, toggleCamera, endCall } = useJitsiCall({
     roomName,
     displayName,
     containerRef,
@@ -37,11 +37,17 @@ export const VideoStage = ({
         width: '100%',
         height: '100%',
         background: COLORS.primary,
-        borderRadius: 16,
+        borderRadius: RADII.md,
+        boxShadow: SHADOWS.md,
         overflow: 'hidden',
       }}
     >
-      <VideoHeader patientName={patientName} sessionType={sessionType} formattedTime={formattedTime} />
+      <VideoHeader
+        patientName={patientName}
+        sessionType={sessionType}
+        formattedTime={formattedTime}
+        callState={callState}
+      />
       <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
       <ControlBar
         isMuted={isMuted}

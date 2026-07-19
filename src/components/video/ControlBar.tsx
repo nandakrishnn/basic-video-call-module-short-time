@@ -1,5 +1,6 @@
-import type { CSSProperties } from 'react'
-import { COLORS } from '@/constants/colors'
+import { Mic, MicOff, PhoneOff, Video, VideoOff } from 'lucide-react'
+import { Button } from '@/components/shared/Button'
+import { IconButton } from '@/components/shared/IconButton'
 
 interface ControlBarProps {
   isMuted: boolean
@@ -8,18 +9,6 @@ interface ControlBarProps {
   onToggleCamera: () => void
   onEndCall: () => void
 }
-
-const buttonStyle = (active: boolean): CSSProperties => ({
-  width: 48,
-  height: 48,
-  borderRadius: '50%',
-  border: 'none',
-  background: active ? COLORS.status.error : COLORS.video.controls,
-  color: COLORS.video.controlsText,
-  cursor: 'pointer',
-  fontSize: '0.75rem',
-  fontWeight: 700,
-})
 
 export const ControlBar = ({
   isMuted,
@@ -32,28 +21,31 @@ export const ControlBar = ({
     <div
       style={{
         position: 'absolute',
-        bottom: 16,
+        bottom: 20,
         left: '50%',
         transform: 'translateX(-50%)',
         display: 'flex',
+        alignItems: 'center',
         gap: 16,
         zIndex: 2,
       }}
     >
-      <button type="button" onClick={onToggleAudio} style={buttonStyle(isMuted)} aria-label="Toggle microphone">
-        {isMuted ? 'Unmute' : 'Mute'}
-      </button>
-      <button type="button" onClick={onToggleCamera} style={buttonStyle(isCameraOff)} aria-label="Toggle camera">
-        {isCameraOff ? 'Camera On' : 'Camera Off'}
-      </button>
-      <button
-        type="button"
-        onClick={onEndCall}
-        style={{ ...buttonStyle(true), width: 'auto', padding: '0 20px', borderRadius: 24 }}
-        aria-label="End call"
-      >
+      <IconButton
+        icon={isMuted ? <MicOff size={20} /> : <Mic size={20} />}
+        active={isMuted}
+        onClick={onToggleAudio}
+        aria-label="Toggle microphone"
+      />
+      <IconButton
+        icon={isCameraOff ? <VideoOff size={20} /> : <Video size={20} />}
+        active={isCameraOff}
+        onClick={onToggleCamera}
+        aria-label="Toggle camera"
+      />
+      <Button variant="danger" shape="pill" onClick={onEndCall} aria-label="End call">
+        <PhoneOff size={18} />
         End Call
-      </button>
+      </Button>
     </div>
   )
 }

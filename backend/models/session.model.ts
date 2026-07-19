@@ -59,6 +59,28 @@ export const findSessionById = async (id: string): Promise<Session | null> => {
   return mapRow(data as SessionRow)
 }
 
+export const findSessionsByPatient = async (patientId: string): Promise<Session[]> => {
+  const { data, error } = await db
+    .from('sessions')
+    .select('*')
+    .eq('patient_id', patientId)
+    .order('created_at', { ascending: false })
+
+  if (error || !data) return []
+  return (data as SessionRow[]).map(mapRow)
+}
+
+export const findSessionsByPhysio = async (physioId: string): Promise<Session[]> => {
+  const { data, error } = await db
+    .from('sessions')
+    .select('*')
+    .eq('physio_id', physioId)
+    .order('created_at', { ascending: false })
+
+  if (error || !data) return []
+  return (data as SessionRow[]).map(mapRow)
+}
+
 export const updateSessionStatus = async (
   id: string,
   status: SessionStatus,

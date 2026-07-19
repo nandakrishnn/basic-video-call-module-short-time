@@ -1,20 +1,22 @@
 import { COLORS } from '@/constants/colors'
-import { MESSAGES } from '@/constants/messages'
+import { Logo } from '@/components/shared/Logo'
 
 export const PoweredByBadge = (): JSX.Element => {
   return (
     <div
       style={{
         position: 'absolute',
-        bottom: 8,
-        right: 12,
-        fontSize: '0.7rem',
-        color: COLORS.text.inverse,
-        opacity: 0.6,
+        bottom: 10,
+        right: 14,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 6,
+        opacity: 0.7,
         zIndex: 2,
       }}
     >
-      {MESSAGES.session.poweredBy}
+      <span style={{ fontSize: '0.68rem', color: COLORS.text.inverse }}>Powered by</span>
+      <Logo surface="dark" size="sm" />
     </div>
   )
 }

@@ -1,7 +1,10 @@
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { PostCallModal } from '@/components/appointments/PostCallModal'
+import { PageState } from '@/components/shared/PageState'
 import { PhysioSessionPanel } from '@/components/video/PhysioSessionPanel'
+import { PostCallPatientPrompt } from '@/components/video/PostCallPatientPrompt'
+import { PreCallScreen } from '@/components/video/PreCallScreen'
 import { VideoStage } from '@/components/video/VideoStage'
 import { COLORS } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
@@ -22,6 +25,8 @@ const SessionPage = (): JSX.Element => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showPostCallModal, setShowPostCallModal] = useState(false)
+  const [hasJoined, setHasJoined] = useState(false)
+  const [callEndedForPatient, setCallEndedForPatient] = useState(false)
 
   useEffect(() => {
     if (!sessionId) return
@@ -50,7 +55,10 @@ const SessionPage = (): JSX.Element => {
     const token = getToken()
     if (!token) return
     endSessionRequest(token, sessionId).then((res) => {
-      if (user?.role !== 'physio') return
+      if (user?.role !== 'physio') {
+        setCallEndedForPatient(true)
+        return
+      }
       if (res.success) setShowPostCallModal(true)
       else void router.push(ROUTES.dashboardPhysio)
     })
@@ -82,15 +90,15 @@ const SessionPage = (): JSX.Element => {
   }
 
   if (isLoading || isAuthLoading) {
-    return <div style={{ padding: 40, color: COLORS.text.secondary }}>{MESSAGES.session.connecting}</div>
+    return <PageState tone="loading" message={MESSAGES.session.connecting} />
   }
 
   if (error || !session) {
-    return <div style={{ padding: 40, color: COLORS.status.error }}>{error ?? MESSAGES.session.notYetActive}</div>
+    return <PageState tone="error" message={error ?? MESSAGES.session.notYetActive} />
   }
 
   if (session.status === 'completed' || session.status === 'cancelled') {
-    return <div style={{ padding: 40, color: COLORS.text.secondary }}>{MESSAGES.session.ended}</div>
+    return <PageState tone="neutral" message={MESSAGES.session.ended} />
   }
 
   const isPhysio = user?.role === 'physio'
@@ -98,13 +106,19 @@ const SessionPage = (): JSX.Element => {
   return (
     <div style={{ display: 'flex', gap: 16, height: '100vh', padding: 16, background: COLORS.background }}>
       <div style={{ flex: 1 }}>
-        <VideoStage
-          roomName={session.roomName}
-          displayName={user?.fullName ?? 'Guest'}
-          patientName="Patient"
-          sessionType="Follow-up"
-          onCallEnded={handleCallEnded}
-        />
+        {callEndedForPatient ? (
+          <PostCallPatientPrompt onGoToDashboard={() => void router.push(ROUTES.dashboardPatient)} />
+        ) : hasJoined ? (
+          <VideoStage
+            roomName={session.roomName}
+            displayName={user?.fullName ?? 'Guest'}
+            patientName="Patient"
+            sessionType="Follow-up"
+            onCallEnded={handleCallEnded}
+          />
+        ) : (
+          <PreCallScreen patientName="Patient" sessionType="Follow-up" onJoin={() => setHasJoined(true)} />
+        )}
       </div>
       {isPhysio && (
         <PhysioSessionPanel

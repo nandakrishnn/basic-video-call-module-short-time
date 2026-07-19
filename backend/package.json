@@ -18,6 +18,7 @@
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^6.9.13",
     "puppeteer": "^22.10.0",
+    "telesignenterprisesdk": "^7.0.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {

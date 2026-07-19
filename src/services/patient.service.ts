@@ -4,8 +4,8 @@ import type { User } from '@/types/user.types'
 
 interface CreatePatientBody {
   fullName: string
-  email?: string
-  phone?: string
+  email: string
+  phone: string
 }
 
 export const listPatientsRequest = (token: string) => apiRequest<User[]>(API.patients.list, { token })

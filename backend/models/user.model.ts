@@ -71,14 +71,14 @@ export const createPatientUser = async (identifier: string, fullName: string): P
 
 export const createPatient = async (input: {
   fullName: string
-  email?: string
-  phone?: string
+  email: string
+  phone: string
 }): Promise<User> => {
   const { data, error } = await db
     .from('users')
     .insert({
-      email: input.email ?? null,
-      phone: input.phone ?? null,
+      email: input.email,
+      phone: input.phone,
       full_name: input.fullName,
       role: 'patient',
     })

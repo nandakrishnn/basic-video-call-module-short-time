@@ -15,7 +15,7 @@ export interface OtpRow {
 export const createOtpRecord = async (params: {
   identifier: string
   otpHash: string
-  sessionId: string
+  sessionId: string | null
   expiresAt: string
 }): Promise<void> => {
   const { error } = await db.from('otp_store').insert({
@@ -27,16 +27,11 @@ export const createOtpRecord = async (params: {
   if (error) throw new Error('Failed to create OTP record')
 }
 
-export const findActiveOtp = async (identifier: string, sessionId: string): Promise<OtpRow | null> => {
-  const { data, error } = await db
-    .from('otp_store')
-    .select('*')
-    .eq('identifier', identifier)
-    .eq('session_id', sessionId)
-    .is('verified_at', null)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
+export const findActiveOtp = async (identifier: string, sessionId: string | null): Promise<OtpRow | null> => {
+  let query = db.from('otp_store').select('*').eq('identifier', identifier).is('verified_at', null)
+  query = sessionId === null ? query.is('session_id', null) : query.eq('session_id', sessionId)
+
+  const { data, error } = await query.order('created_at', { ascending: false }).limit(1).maybeSingle()
 
   if (error || !data) return null
   return data as OtpRow

@@ -31,17 +31,25 @@ export const COLORS = {
     controlsText: '#FFFFFF',
     clinzorBadge: '#0071E3',
   },
+
+  glass: {
+    light: 'rgba(255,255,255,0.72)',
+    dark: 'rgba(26,28,107,0.72)',
+  },
 } as const
 
+// Actual font-family is applied once at the app root via src/lib/font.ts (next/font Inter) —
+// this token exists only for the rare inline reference that can't inherit it.
 export const FONTS = {
-  heading: "'Nunito', sans-serif",
-  body: "'Inter', sans-serif",
+  heading: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  body: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
 } as const
 
 export const RADII = {
   sm: '8px',
   md: '16px',
   lg: '24px',
+  pill: '999px',
 } as const
 
 export const SHADOWS = {

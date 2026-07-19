@@ -2,26 +2,16 @@ import type { Request, Response } from 'express'
 import { AuditAction, SessionStatus } from '../constants/enums'
 import { MESSAGES } from '../constants/messages'
 import { AppError } from '../middleware/error.middleware'
-import { createSessionRecord, findSessionById, updateSessionStatus } from '../models/session.model'
+import { findSessionById, updateSessionStatus } from '../models/session.model'
 import { logAudit } from '../services/audit.service'
-import { generateRoomLink, generateRoomName } from '../services/jitsi.service'
+import { createSessionForCall } from '../services/session.service'
 import { successResponse } from '../utils/response'
 
 export const createSession = async (req: Request, res: Response): Promise<void> => {
   const { patientId, appointmentId } = req.body as { patientId: string; appointmentId?: string }
   const physioId = req.user!.userId
 
-  const roomName = generateRoomName(physioId, patientId)
-  const roomLink = generateRoomLink(roomName)
-
-  const session = await createSessionRecord({ patientId, physioId, appointmentId, roomName, roomLink })
-
-  await logAudit({
-    userId: physioId,
-    action: AuditAction.SESSION_LINK_GENERATED,
-    resource: 'session',
-    resourceId: session.id,
-  })
+  const session = await createSessionForCall({ patientId, physioId, appointmentId })
 
   res.status(201).json(successResponse(session, MESSAGES.session.createSuccess))
 }

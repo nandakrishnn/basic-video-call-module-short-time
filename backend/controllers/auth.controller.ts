@@ -35,7 +35,7 @@ export const requestPatientOtp = async (req: Request, res: Response): Promise<vo
   const { identifier, sessionId } = req.body as RequestOtpInput
 
   const existingUser = await findUserByIdentifier(identifier)
-  await requestOtp(identifier, sessionId, existingUser?.id ?? null)
+  await requestOtp(identifier, sessionId ?? null, existingUser?.id ?? null)
 
   res.status(200).json(successResponse(null, MESSAGES.auth.otpSent))
 }
@@ -44,7 +44,7 @@ export const verifyPatientOtp = async (req: Request, res: Response): Promise<voi
   const { identifier, sessionId, otp } = req.body as VerifyOtpInput
 
   let user = await findUserByIdentifier(identifier)
-  await verifyOtp(identifier, sessionId, otp, user?.id ?? null)
+  await verifyOtp(identifier, sessionId ?? null, otp, user?.id ?? null)
 
   if (!user) {
     user = await createPatientUser(identifier, identifier)

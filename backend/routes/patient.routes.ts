@@ -7,13 +7,11 @@ import { requireRole } from '../middleware/role.middleware'
 import { validateBody } from '../middleware/validate.middleware'
 import { asyncHandler } from '../utils/asyncHandler'
 
-const createPatientSchema = z
-  .object({
-    fullName: z.string().min(1),
-    email: z.string().email().optional(),
-    phone: z.string().min(1).optional(),
-  })
-  .refine((data) => data.email ?? data.phone, { message: 'Email or phone is required.' })
+const createPatientSchema = z.object({
+  fullName: z.string().min(1),
+  email: z.string().email(),
+  phone: z.string().min(1),
+})
 
 const router = Router()
 

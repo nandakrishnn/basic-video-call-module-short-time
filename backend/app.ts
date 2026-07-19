@@ -4,6 +4,7 @@ import express from 'express'
 import { CONFIG } from './constants/config'
 import { errorHandler, notFoundHandler } from './middleware/error.middleware'
 import routes from './routes'
+import { checkDueAppointments } from './services/scheduler.service'
 
 const app = express()
 
@@ -15,8 +16,12 @@ app.use('/api', routes)
 app.use(notFoundHandler)
 app.use(errorHandler)
 
+const SCHEDULER_INTERVAL_MS = 60_000
+
 app.listen(CONFIG.app.port, () => {
   console.log(`Clinzor video backend listening on port ${CONFIG.app.port}`)
+  void checkDueAppointments()
+  setInterval(() => void checkDueAppointments(), SCHEDULER_INTERVAL_MS)
 })
 
 export default app

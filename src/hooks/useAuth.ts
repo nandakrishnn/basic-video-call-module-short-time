@@ -10,7 +10,7 @@ interface UseAuthResult {
   isLoading: boolean
   error: string | null
   login: (email: string, password: string) => Promise<boolean>
-  verifyOtp: (identifier: string, sessionId: string, otp: string) => Promise<boolean>
+  verifyOtp: (identifier: string, otp: string, sessionId?: string) => Promise<boolean>
   logout: () => void
 }
 
@@ -51,10 +51,10 @@ export const useAuth = (): UseAuthResult => {
   }, [])
 
   const verifyOtp = useCallback(
-    async (identifier: string, sessionId: string, otp: string): Promise<boolean> => {
+    async (identifier: string, otp: string, sessionId?: string): Promise<boolean> => {
       setIsLoading(true)
       setError(null)
-      const res = await verifyPatientOtpRequest(identifier, sessionId, otp)
+      const res = await verifyPatientOtpRequest(identifier, otp, sessionId)
       setIsLoading(false)
 
       if (!res.success) {

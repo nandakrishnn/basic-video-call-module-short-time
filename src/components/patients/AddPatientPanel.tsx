@@ -1,21 +1,21 @@
+import { X } from 'lucide-react'
 import { useState } from 'react'
+import { Button } from '@/components/shared/Button'
+import { Card } from '@/components/shared/Card'
+import { Input } from '@/components/shared/Input'
 import { COLORS } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
 import { createPatientRequest } from '@/services/patient.service'
+import type { User } from '@/types/user.types'
 
 interface AddPatientPanelProps {
   token: string
+  onPatientAdded?: (patient: User) => void
 }
 
-const fieldStyle = {
-  padding: '10px 12px',
-  borderRadius: 8,
-  border: `1px solid ${COLORS.border}`,
-  color: COLORS.text.primary,
-}
 const labelStyle = { fontSize: '0.78rem', fontWeight: 600, color: COLORS.text.primary }
 
-export const AddPatientPanel = ({ token }: AddPatientPanelProps): JSX.Element => {
+export const AddPatientPanel = ({ token, onPatientAdded }: AddPatientPanelProps): JSX.Element => {
   const [isOpen, setIsOpen] = useState(false)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -25,18 +25,14 @@ export const AddPatientPanel = ({ token }: AddPatientPanelProps): JSX.Element =>
   const [success, setSuccess] = useState(false)
 
   const handleSave = async (): Promise<void> => {
-    if (!name || (!email && !phone)) {
+    if (!name || !email || !phone) {
       setError(MESSAGES.newCall.missingContact)
       return
     }
 
     setIsSubmitting(true)
     setError(null)
-    const res = await createPatientRequest(token, {
-      fullName: name,
-      email: email || undefined,
-      phone: phone || undefined,
-    })
+    const res = await createPatientRequest(token, { fullName: name, email, phone })
     setIsSubmitting(false)
 
     if (!res.success) {
@@ -48,45 +44,26 @@ export const AddPatientPanel = ({ token }: AddPatientPanelProps): JSX.Element =>
     setName('')
     setEmail('')
     setPhone('')
+    onPatientAdded?.(res.data)
   }
 
   if (!isOpen) {
     return (
-      <button
-        type="button"
+      <Button
+        variant="secondary"
         onClick={() => {
           setIsOpen(true)
           setSuccess(false)
         }}
-        style={{
-          alignSelf: 'flex-start',
-          padding: '10px 20px',
-          borderRadius: 10,
-          border: `1px solid ${COLORS.border}`,
-          background: 'none',
-          color: COLORS.primary,
-          fontWeight: 700,
-          cursor: 'pointer',
-        }}
+        style={{ alignSelf: 'flex-start' }}
       >
         Add Patient
-      </button>
+      </Button>
     )
   }
 
   return (
-    <div
-      style={{
-        padding: 20,
-        borderRadius: 14,
-        background: COLORS.surface,
-        border: `1px solid ${COLORS.border}`,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 12,
-        maxWidth: 380,
-      }}
-    >
+    <Card style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 380 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2 style={{ color: COLORS.text.primary, fontSize: '1rem', fontWeight: 700, margin: 0 }}>
           {MESSAGES.newCall.addPatientTitle}
@@ -94,9 +71,17 @@ export const AddPatientPanel = ({ token }: AddPatientPanelProps): JSX.Element =>
         <button
           type="button"
           onClick={() => setIsOpen(false)}
-          style={{ border: 'none', background: 'none', color: COLORS.text.muted, cursor: 'pointer' }}
+          aria-label="Close"
+          style={{
+            border: 'none',
+            background: 'none',
+            color: COLORS.text.muted,
+            cursor: 'pointer',
+            display: 'flex',
+            padding: 4,
+          }}
         >
-          ✕
+          <X size={16} />
         </button>
       </div>
 
@@ -104,38 +89,24 @@ export const AddPatientPanel = ({ token }: AddPatientPanelProps): JSX.Element =>
         <p style={{ color: COLORS.status.success, fontSize: '0.85rem', margin: 0 }}>Patient added successfully.</p>
       )}
 
-      <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         <span style={labelStyle}>Full name</span>
-        <input type="text" value={name} onChange={(e) => setName(e.target.value)} style={fieldStyle} />
+        <Input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
       </label>
-      <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         <span style={labelStyle}>Email</span>
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={fieldStyle} />
+        <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
       </label>
-      <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         <span style={labelStyle}>Phone</span>
-        <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} style={fieldStyle} />
+        <Input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required />
       </label>
 
       {error && <p style={{ color: COLORS.status.error, fontSize: '0.85rem', margin: 0 }}>{error}</p>}
 
-      <button
-        type="button"
-        disabled={isSubmitting}
-        onClick={() => void handleSave()}
-        style={{
-          padding: '10px',
-          borderRadius: 10,
-          border: 'none',
-          background: COLORS.primary,
-          color: COLORS.text.inverse,
-          fontWeight: 700,
-          cursor: isSubmitting ? 'default' : 'pointer',
-          opacity: isSubmitting ? 0.7 : 1,
-        }}
-      >
+      <Button variant="primary" fullWidth isLoading={isSubmitting} onClick={() => void handleSave()}>
         {isSubmitting ? 'Saving…' : 'Save patient'}
-      </button>
-    </div>
+      </Button>
+    </Card>
   )
 }

@@ -1,5 +1,6 @@
 import { db } from '../db'
-import type { AppointmentStatus, AppointmentType } from '../constants/enums'
+import { AppointmentStatus } from '../constants/enums'
+import type { AppointmentType } from '../constants/enums'
 import type { Appointment } from '../types/appointment.types'
 
 interface AppointmentRow {
@@ -103,6 +104,21 @@ export const updateAppointmentRecord = async (
   const { data, error } = await db.from('appointments').update(payload).eq('id', id).select('*').single()
   if (error || !data) return null
   return mapRow(data as AppointmentRow)
+}
+
+export const findScheduledAppointmentsWithoutSession = async (): Promise<Appointment[]> => {
+  const { data, error } = await db
+    .from('appointments')
+    .select('*')
+    .eq('status', AppointmentStatus.SCHEDULED)
+    .is('session_id', null)
+
+  if (error || !data) return []
+  return (data as AppointmentRow[]).map(mapRow)
+}
+
+export const linkAppointmentSession = async (appointmentId: string, sessionId: string): Promise<void> => {
+  await db.from('appointments').update({ session_id: sessionId, updated_at: new Date().toISOString() }).eq('id', appointmentId)
 }
 
 export const findAppointmentsByDateRange = async (start: string, end: string): Promise<Appointment[]> => {

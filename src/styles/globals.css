@@ -1,0 +1,39 @@
+/* Resets only — all component styling stays inline, driven by src/constants/colors.ts */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+button,
+input,
+select,
+textarea,
+a {
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    color 200ms ease,
+    opacity 200ms ease,
+    transform 200ms ease;
+}
+
+/* Accent must match COLORS.primaryLight in src/constants/colors.ts */
+:focus-visible {
+  outline: 2px solid #0071e3;
+  outline-offset: 2px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

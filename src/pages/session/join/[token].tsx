@@ -1,5 +1,8 @@
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
+import { Card } from '@/components/shared/Card'
+import { Logo } from '@/components/shared/Logo'
+import { PageState } from '@/components/shared/PageState'
 import { JoinChoiceStep } from '@/components/video/JoinChoiceStep'
 import { JoinIdentifierStep } from '@/components/video/JoinIdentifierStep'
 import { JoinOtpStep } from '@/components/video/JoinOtpStep'
@@ -50,7 +53,7 @@ const JoinSessionPage = (): JSX.Element => {
     if (!token) return
     setIsSubmitting(true)
     setError(null)
-    const res = await verifyPatientOtpRequest(identifier, token, otp)
+    const res = await verifyPatientOtpRequest(identifier, otp, token)
     setIsSubmitting(false)
     if (res.success) {
       setToken(res.data.token)
@@ -61,44 +64,47 @@ const JoinSessionPage = (): JSX.Element => {
   }
 
   if (isLoading) {
-    return <div style={{ padding: 40, color: COLORS.text.secondary }}>{MESSAGES.session.connecting}</div>
+    return <PageState tone="loading" message={MESSAGES.session.connecting} />
   }
 
   if (error && !session) {
-    return <div style={{ padding: 40, color: COLORS.status.error }}>{error}</div>
+    return <PageState tone="error" message={error} />
   }
 
   return (
     <div
       style={{
-        maxWidth: 420,
-        margin: '80px auto',
-        padding: 32,
-        borderRadius: 16,
-        background: COLORS.surface,
-        boxShadow: '0 6px 32px rgba(26,28,107,0.10)',
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: COLORS.background,
+        padding: 20,
       }}
     >
-      {step === 'choice' && (
-        <JoinChoiceStep
-          onLogin={() =>
-            void router.push(`${ROUTES.login}?redirect=${encodeURIComponent(ROUTES.session(token ?? ''))}`)
-          }
-          onGuest={() => setStep('identifier')}
-        />
-      )}
-      {step === 'identifier' && (
-        <JoinIdentifierStep onSubmit={(v) => void handleRequestOtp(v)} isSubmitting={isSubmitting} />
-      )}
-      {step === 'otp' && (
-        <JoinOtpStep
-          otp={otp}
-          onOtpChange={setOtp}
-          onSubmit={() => void handleVerifyOtp()}
-          isSubmitting={isSubmitting}
-        />
-      )}
-      {error && <p style={{ color: COLORS.status.error, fontSize: '0.85rem', marginTop: 12 }}>{error}</p>}
+      <Card elevation="md" style={{ width: '100%', maxWidth: 420, display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <Logo surface="light" size="md" />
+        {step === 'choice' && (
+          <JoinChoiceStep
+            onLogin={() =>
+              void router.push(`${ROUTES.login}?redirect=${encodeURIComponent(ROUTES.session(token ?? ''))}`)
+            }
+            onGuest={() => setStep('identifier')}
+          />
+        )}
+        {step === 'identifier' && (
+          <JoinIdentifierStep onSubmit={(v) => void handleRequestOtp(v)} isSubmitting={isSubmitting} />
+        )}
+        {step === 'otp' && (
+          <JoinOtpStep
+            otp={otp}
+            onOtpChange={setOtp}
+            onSubmit={() => void handleVerifyOtp()}
+            isSubmitting={isSubmitting}
+          />
+        )}
+        {error && <p style={{ color: COLORS.status.error, fontSize: '0.85rem', margin: 0 }}>{error}</p>}
+      </Card>
     </div>
   )
 }

@@ -1,6 +1,8 @@
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 import { AppointmentForm } from '@/components/appointments/AppointmentForm'
+import { Card } from '@/components/shared/Card'
+import { PageState } from '@/components/shared/PageState'
 import { COLORS } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
 import { useAuth } from '@/hooks/useAuth'
@@ -35,26 +37,39 @@ const SchedulePage = (): JSX.Element => {
   }
 
   if (isAuthLoading) {
-    return <div style={{ padding: 40, color: COLORS.text.secondary }}>Loading…</div>
+    return <PageState tone="loading" message="Loading…" />
   }
 
   if (!patientId) {
-    return <div style={{ padding: 40, color: COLORS.status.error }}>No patient selected.</div>
+    return <PageState tone="error" message="No patient selected." />
   }
 
   return (
-    <div style={{ maxWidth: 480, margin: '60px auto', padding: 32, background: COLORS.surface, borderRadius: 16 }}>
-      <h1 style={{ color: COLORS.text.primary, fontSize: '1.2rem', fontWeight: 800, marginBottom: 20 }}>
-        Schedule appointment
-      </h1>
-      {success ? (
-        <p style={{ color: COLORS.status.success, fontWeight: 700 }}>{MESSAGES.appointments.createSuccess}</p>
-      ) : (
-        <>
-          <AppointmentForm onSubmit={(d) => void handleSubmit(d)} isSubmitting={isSubmitting} />
-          {error && <p style={{ color: COLORS.status.error, fontSize: '0.85rem', marginTop: 10 }}>{error}</p>}
-        </>
-      )}
+    <div
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: COLORS.background,
+        padding: 20,
+      }}
+    >
+      <Card elevation="md" style={{ width: '100%', maxWidth: 480 }}>
+        <h1 style={{ color: COLORS.text.primary, fontSize: '1.25rem', fontWeight: 800, margin: '0 0 20px' }}>
+          Schedule appointment
+        </h1>
+        {success ? (
+          <p style={{ color: COLORS.status.success, fontWeight: 700, margin: 0 }}>
+            {MESSAGES.appointments.createSuccess}
+          </p>
+        ) : (
+          <>
+            <AppointmentForm onSubmit={(d) => void handleSubmit(d)} isSubmitting={isSubmitting} />
+            {error && <p style={{ color: COLORS.status.error, fontSize: '0.85rem', marginTop: 10 }}>{error}</p>}
+          </>
+        )}
+      </Card>
     </div>
   )
 }

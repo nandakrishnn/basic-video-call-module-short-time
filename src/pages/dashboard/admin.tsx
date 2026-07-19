@@ -1,21 +1,18 @@
 import { useEffect, useState } from 'react'
+import { Card } from '@/components/shared/Card'
+import { DashboardHeader } from '@/components/shared/DashboardHeader'
 import { EmptyState } from '@/components/shared/EmptyState'
+import { Footer } from '@/components/shared/Footer'
+import { PageState } from '@/components/shared/PageState'
 import { StatCard } from '@/components/shared/StatCard'
 import { COLORS } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
 import { getAdminDashboardRequest } from '@/services/dashboard.service'
 import type { AdminDashboardData } from '@/types/dashboard.types'
+import { parseUtc } from '@/utils/date'
 import { getToken } from '@/utils/storage'
 
-const sectionTitleStyle = { color: COLORS.text.primary, fontSize: '1rem', fontWeight: 700, marginBottom: 12 }
-const listItemStyle = {
-  padding: '14px 16px',
-  borderRadius: 12,
-  background: COLORS.surface,
-  border: `1px solid ${COLORS.border}`,
-  color: COLORS.text.secondary,
-  fontSize: '0.85rem',
-}
+const sectionTitleStyle = { color: COLORS.text.primary, fontSize: '1.05rem', fontWeight: 700, marginBottom: 14 }
 
 const AdminDashboardPage = (): JSX.Element => {
   const [data, setData] = useState<AdminDashboardData | null>(null)
@@ -34,25 +31,27 @@ const AdminDashboardPage = (): JSX.Element => {
   }, [])
 
   if (isLoading) {
-    return <div style={{ padding: 40, color: COLORS.text.secondary }}>Loading…</div>
+    return <PageState tone="loading" message="Loading…" />
   }
 
   if (error || !data) {
-    return <div style={{ padding: 40, color: COLORS.status.error }}>{error ?? MESSAGES.errors.generic}</div>
+    return <PageState tone="error" message={error ?? MESSAGES.errors.generic} />
   }
 
   return (
-    <div
-      style={{
-        maxWidth: 960,
-        margin: '40px auto',
-        padding: '0 20px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 28,
-      }}
-    >
-      <h1 style={{ color: COLORS.text.primary, fontSize: '1.3rem', fontWeight: 800 }}>Clinic overview</h1>
+    <div style={{ minHeight: '100vh', background: COLORS.background }}>
+      <DashboardHeader title="Admin Dashboard" />
+      <div
+        style={{
+          maxWidth: 960,
+          margin: '0 auto',
+          padding: '32px 20px 60px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 32,
+        }}
+      >
+      <h1 style={{ color: COLORS.text.primary, fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>Clinic overview</h1>
 
       <div style={{ display: 'flex', gap: 16 }}>
         <StatCard label="Appointments today" value={data.stats.totalAppointmentsToday} />
@@ -67,9 +66,16 @@ const AdminDashboardPage = (): JSX.Element => {
         ) : (
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
             {data.todayAppointments.map((appointment) => (
-              <li key={appointment.id} style={listItemStyle}>
-                {new Date(appointment.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ·{' '}
-                {appointment.sessionType}
+              <li key={appointment.id}>
+                <Card padding={16}>
+                  <span style={{ color: COLORS.text.secondary, fontSize: '0.85rem' }}>
+                    {parseUtc(appointment.scheduledAt).toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}{' '}
+                    · {appointment.sessionType}
+                  </span>
+                </Card>
               </li>
             ))}
           </ul>
@@ -81,10 +87,12 @@ const AdminDashboardPage = (): JSX.Element => {
         {data.physios.length === 0 ? (
           <EmptyState message={MESSAGES.dashboard.emptyPatients} />
         ) : (
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
             {data.physios.map((physio) => (
-              <li key={physio.id} style={{ color: COLORS.text.secondary, fontSize: '0.85rem' }}>
-                {physio.fullName}
+              <li key={physio.id}>
+                <Card padding={16}>
+                  <span style={{ color: COLORS.text.secondary, fontSize: '0.85rem' }}>{physio.fullName}</span>
+                </Card>
               </li>
             ))}
           </ul>
@@ -96,15 +104,20 @@ const AdminDashboardPage = (): JSX.Element => {
         {data.patients.length === 0 ? (
           <EmptyState message={MESSAGES.dashboard.emptyPatients} />
         ) : (
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
             {data.patients.map((patient) => (
-              <li key={patient.id} style={{ color: COLORS.text.secondary, fontSize: '0.85rem' }}>
-                {patient.fullName}
+              <li key={patient.id}>
+                <Card padding={16}>
+                  <span style={{ color: COLORS.text.secondary, fontSize: '0.85rem' }}>{patient.fullName}</span>
+                </Card>
               </li>
             ))}
           </ul>
         )}
       </section>
+
+      <Footer />
+      </div>
     </div>
   )
 }
