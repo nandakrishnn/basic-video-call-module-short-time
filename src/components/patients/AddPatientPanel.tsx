@@ -78,7 +78,7 @@ export const AddPatientPanel = ({ token, onPatientAdded }: AddPatientPanelProps)
             color: COLORS.text.muted,
             cursor: 'pointer',
             display: 'flex',
-            padding: 4,
+            padding: 12,
           }}
         >
           <X size={16} />

@@ -1,6 +1,7 @@
-import { LayoutDashboard, LogOut, Mail } from 'lucide-react'
+import { LayoutDashboard, LogOut, Mail, Menu, X } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
+import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { Avatar } from '@/components/shared/Avatar'
 import { Button } from '@/components/shared/Button'
@@ -24,11 +25,13 @@ interface NavItemProps {
   label: string
   href: string
   active?: boolean
+  onClick?: () => void
 }
 
-const NavItem = ({ icon, label, href, active = false }: NavItemProps): JSX.Element => (
+const NavItem = ({ icon, label, href, active = false, onClick }: NavItemProps): JSX.Element => (
   <Link
     href={href}
+    onClick={onClick}
     style={{
       display: 'flex',
       alignItems: 'center',
@@ -50,82 +53,142 @@ const NavItem = ({ icon, label, href, active = false }: NavItemProps): JSX.Eleme
 export const DashboardSidebar = (): JSX.Element => {
   const router = useRouter()
   const { user, logout } = useAuth()
+  const [isOpen, setIsOpen] = useState(false)
 
   const handleLogout = (): void => {
     logout()
     void router.push(ROUTES.login)
   }
 
+  const closeDrawer = (): void => setIsOpen(false)
+
   return (
-    <aside
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        bottom: 0,
-        width: SIDEBAR_WIDTH,
-        background: COLORS.surface,
-        borderRight: `1px solid ${COLORS.border}`,
-        display: 'flex',
-        flexDirection: 'column',
-        padding: '24px 16px',
-        zIndex: 10,
-      }}
-    >
-      <div style={{ padding: '0 8px', marginBottom: 36 }}>
-        <Logo surface="light" size="md" />
-      </div>
-
-      <nav style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
-        <NavItem
-          icon={<LayoutDashboard size={18} />}
-          label="Dashboard"
-          href={ROUTES.dashboardPhysio}
-          active={router.pathname === ROUTES.dashboardPhysio}
-        />
-        <NavItem
-          icon={<Mail size={18} />}
-          label="Contact"
-          href={ROUTES.contact}
-          active={router.pathname === ROUTES.contact}
-        />
-      </nav>
-
-      {user && (
-        <div
+    <>
+      <div className="dashboard-mobile-topbar">
+        <button
+          type="button"
+          onClick={() => setIsOpen(true)}
+          aria-label="Open navigation"
           style={{
-            borderTop: `1px solid ${COLORS.border}`,
-            paddingTop: 16,
             display: 'flex',
-            flexDirection: 'column',
-            gap: 12,
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 40,
+            height: 40,
+            border: 'none',
+            background: 'transparent',
+            color: COLORS.text.primary,
+            cursor: 'pointer',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Avatar name={user.fullName} />
-            <div style={{ minWidth: 0 }}>
-              <p
-                style={{
-                  color: COLORS.text.primary,
-                  fontSize: '0.85rem',
-                  fontWeight: 700,
-                  margin: 0,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }}
-              >
-                {user.fullName}
-              </p>
-              <p style={{ color: COLORS.text.muted, fontSize: '0.72rem', margin: 0 }}>{ROLE_LABEL[user.role]}</p>
-            </div>
-          </div>
-          <Button variant="secondary" size="sm" fullWidth onClick={handleLogout}>
-            <LogOut size={15} />
-            {MESSAGES.nav.logout}
-          </Button>
+          <Menu size={22} />
+        </button>
+        <Logo surface="light" size="sm" />
+      </div>
+
+      <aside
+        className={`dashboard-sidebar${isOpen ? ' open' : ''}`}
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          bottom: 0,
+          width: SIDEBAR_WIDTH,
+          background: COLORS.surface,
+          borderRight: `1px solid ${COLORS.border}`,
+          display: 'flex',
+          flexDirection: 'column',
+          padding: '24px 16px',
+        }}
+      >
+        <div
+          style={{
+            padding: '0 8px',
+            marginBottom: 36,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <Logo surface="light" size="md" />
+          {isOpen && (
+            <button
+              type="button"
+              onClick={closeDrawer}
+              aria-label="Close navigation"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 32,
+                height: 32,
+                border: 'none',
+                background: 'transparent',
+                color: COLORS.text.secondary,
+                cursor: 'pointer',
+                padding: 0,
+              }}
+            >
+              <X size={18} />
+            </button>
+          )}
         </div>
-      )}
-    </aside>
+
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
+          <NavItem
+            icon={<LayoutDashboard size={18} />}
+            label="Dashboard"
+            href={ROUTES.dashboardPhysio}
+            active={router.pathname === ROUTES.dashboardPhysio}
+            onClick={closeDrawer}
+          />
+          <NavItem
+            icon={<Mail size={18} />}
+            label="Contact"
+            href={ROUTES.contact}
+            active={router.pathname === ROUTES.contact}
+            onClick={closeDrawer}
+          />
+        </nav>
+
+        {user && (
+          <div
+            style={{
+              borderTop: `1px solid ${COLORS.border}`,
+              paddingTop: 16,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 12,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Avatar name={user.fullName} />
+              <div style={{ minWidth: 0 }}>
+                <p
+                  style={{
+                    color: COLORS.text.primary,
+                    fontSize: '0.85rem',
+                    fontWeight: 700,
+                    margin: 0,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {user.fullName}
+                </p>
+                <p style={{ color: COLORS.text.muted, fontSize: '0.72rem', margin: 0 }}>{ROLE_LABEL[user.role]}</p>
+              </div>
+            </div>
+            <Button variant="secondary" size="sm" fullWidth onClick={handleLogout}>
+              <LogOut size={15} />
+              {MESSAGES.nav.logout}
+            </Button>
+          </div>
+        )}
+      </aside>
+
+      {isOpen && <div className="dashboard-sidebar-backdrop open" onClick={closeDrawer} />}
+    </>
   )
 }

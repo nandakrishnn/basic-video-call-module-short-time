@@ -138,7 +138,7 @@ export const NewCallPanel = ({ token, patients, onPatientAdded, onScheduled }: N
             color: COLORS.text.muted,
             cursor: 'pointer',
             display: 'flex',
-            padding: 4,
+            padding: 12,
           }}
         >
           <X size={16} />
@@ -201,7 +201,7 @@ export const NewCallPanel = ({ token, patients, onPatientAdded, onScheduled }: N
                 onChange={(e) => setNewPhone(e.target.value)}
                 required
               />
-              <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 <Button variant="primary" size="sm" isLoading={isSubmitting} onClick={() => void handleAddPatient()}>
                   Save patient
                 </Button>
@@ -221,7 +221,7 @@ export const NewCallPanel = ({ token, patients, onPatientAdded, onScheduled }: N
             </Button>
           )}
 
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <Button
               variant={scheduleMode === 'now' ? 'primary' : 'secondary'}
               size="sm"
@@ -239,7 +239,7 @@ export const NewCallPanel = ({ token, patients, onPatientAdded, onScheduled }: N
           </div>
 
           {scheduleMode === 'later' && (
-            <div style={{ display: 'flex', gap: 12 }}>
+            <div className="form-row-2up">
               <label style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <span style={labelStyle}>Date</span>
                 <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />

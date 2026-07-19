@@ -26,7 +26,7 @@ const VARIANT_STYLE: Record<ButtonVariant, CSSProperties> = {
 }
 
 const SIZE_STYLE: Record<ButtonSize, CSSProperties> = {
-  sm: { padding: '8px 16px', fontSize: '0.85rem' },
+  sm: { padding: '10px 16px', fontSize: '0.85rem' },
   md: { padding: '12px 20px', fontSize: '0.95rem' },
 }
 

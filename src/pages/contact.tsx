@@ -1,5 +1,5 @@
 import { BrandLinks } from '@/components/shared/BrandLinks'
-import { DashboardSidebar, SIDEBAR_WIDTH } from '@/components/shared/DashboardSidebar'
+import { DashboardSidebar } from '@/components/shared/DashboardSidebar'
 import { COLORS } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
 import { useAuth } from '@/hooks/useAuth'
@@ -27,8 +27,8 @@ const ContactPage = (): JSX.Element => {
       <div style={{ minHeight: '100vh', background: COLORS.background }}>
         <DashboardSidebar />
         <div
+          className="dashboard-content"
           style={{
-            marginLeft: SIDEBAR_WIDTH,
             minHeight: '100vh',
             display: 'flex',
             flexDirection: 'column',

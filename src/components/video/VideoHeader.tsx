@@ -40,16 +40,38 @@ export const VideoHeader = ({ patientName, sessionType, formattedTime, callState
         zIndex: 2,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0, overflow: 'hidden' }}>
         <Logo surface="dark" size="sm" />
-        <div style={{ width: 1, height: 24, background: 'rgba(255,255,255,0.2)' }} />
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <span style={{ color: COLORS.text.inverse, fontWeight: 700, fontSize: '0.9rem' }}>{patientName}</span>
-          <span style={{ color: COLORS.text.inverse, opacity: 0.7, fontSize: '0.78rem' }}>{sessionType}</span>
+        <div style={{ width: 1, height: 24, background: 'rgba(255,255,255,0.2)', flexShrink: 0 }} />
+        <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          <span
+            style={{
+              color: COLORS.text.inverse,
+              fontWeight: 700,
+              fontSize: '0.9rem',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {patientName}
+          </span>
+          <span
+            style={{
+              color: COLORS.text.inverse,
+              opacity: 0.7,
+              fontSize: '0.78rem',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {sessionType}
+          </span>
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
         <div
           style={{
             display: 'flex',

@@ -104,8 +104,8 @@ const SessionPage = (): JSX.Element => {
   const isPhysio = user?.role === 'physio'
 
   return (
-    <div style={{ display: 'flex', gap: 16, height: '100vh', padding: 16, background: COLORS.background }}>
-      <div style={{ flex: 1 }}>
+    <div className="session-layout" style={{ padding: 16, background: COLORS.background }}>
+      <div className="session-video-area" style={{ flex: 1 }}>
         {callEndedForPatient ? (
           <PostCallPatientPrompt onGoToDashboard={() => void router.push(ROUTES.dashboardPatient)} />
         ) : hasJoined ? (

@@ -24,7 +24,8 @@ export const PhysioSessionPanel = ({
   return (
     <Card
       elevation="md"
-      style={{ width: 280, display: 'flex', flexDirection: 'column', gap: 20 }}
+      className="session-side-panel"
+      style={{ display: 'flex', flexDirection: 'column', gap: 20 }}
     >
       <div>
         <h3 style={{ color: COLORS.text.primary, fontSize: '1.05rem', fontWeight: 800, margin: 0 }}>

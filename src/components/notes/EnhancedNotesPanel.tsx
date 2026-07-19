@@ -37,7 +37,7 @@ export const EnhancedNotesPanel = ({
 }: EnhancedNotesPanelProps): JSX.Element => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ display: 'flex', gap: 16 }}>
+      <div className="notes-columns">
         <div style={columnStyle}>
           <span style={labelStyle}>Raw notes</span>
           <div

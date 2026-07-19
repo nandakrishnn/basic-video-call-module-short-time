@@ -37,3 +37,109 @@ a {
     transform: rotate(360deg);
   }
 }
+
+/* Structural responsive classes — the one exception alongside the resets above.
+   Colors below mirror COLORS.surface / COLORS.border in src/constants/colors.ts;
+   CSS can't import that token file, so keep them in sync manually. */
+
+.dashboard-mobile-topbar {
+  display: none;
+}
+
+.dashboard-content {
+  margin-left: 240px;
+}
+
+.dashboard-sidebar {
+  transition: transform 220ms ease;
+  z-index: 10;
+}
+
+.dashboard-sidebar-backdrop {
+  display: none;
+}
+
+.session-layout {
+  display: flex;
+  gap: 16px;
+  height: 100vh;
+}
+
+.session-video-area {
+  min-height: 0;
+}
+
+.session-side-panel {
+  width: 280px;
+  flex-shrink: 0;
+}
+
+.notes-columns {
+  display: flex;
+  gap: 16px;
+}
+
+.form-row-2up {
+  display: flex;
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .dashboard-mobile-topbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #FFFFFF;
+    border-bottom: 1px solid rgba(26, 28, 107, 0.08);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .dashboard-content {
+    margin-left: 0;
+  }
+
+  .dashboard-sidebar {
+    transform: translateX(-100%);
+    z-index: 200;
+  }
+
+  .dashboard-sidebar.open {
+    transform: translateX(0);
+    box-shadow: 0 0 32px rgba(0, 0, 0, 0.28);
+  }
+
+  .dashboard-sidebar-backdrop.open {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 150;
+  }
+
+  .session-layout {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .session-video-area {
+    min-height: 55vh;
+  }
+
+  .session-side-panel {
+    width: 100%;
+  }
+
+  .notes-columns {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-row-2up {
+    flex-direction: column;
+  }
+}

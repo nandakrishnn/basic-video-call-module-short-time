@@ -53,7 +53,7 @@ const AdminDashboardPage = (): JSX.Element => {
       >
       <h1 style={{ color: COLORS.text.primary, fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>Clinic overview</h1>
 
-      <div style={{ display: 'flex', gap: 16 }}>
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
         <StatCard label="Appointments today" value={data.stats.totalAppointmentsToday} />
         <StatCard label="Physios" value={data.stats.totalPhysios} />
         <StatCard label="Patients" value={data.stats.totalPatients} />

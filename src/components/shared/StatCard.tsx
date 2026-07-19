@@ -10,7 +10,7 @@ interface StatCardProps {
 
 export const StatCard = ({ label, value, icon }: StatCardProps): JSX.Element => {
   return (
-    <Card style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 14 }}>
+    <Card style={{ flex: '1 1 150px', display: 'flex', alignItems: 'center', gap: 14 }}>
       {icon && (
         <div
           style={{

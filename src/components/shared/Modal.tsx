@@ -29,6 +29,8 @@ export const Modal = ({ children, maxWidth = 480, onOverlayClick }: ModalProps):
         style={{
           width: '100%',
           maxWidth,
+          maxHeight: '90vh',
+          overflowY: 'auto',
           background: COLORS.surface,
           borderRadius: RADII.lg,
           boxShadow: SHADOWS.lg,

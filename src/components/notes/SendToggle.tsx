@@ -11,7 +11,7 @@ interface SendToggleProps {
 
 export const SendToggle = ({ isEnabled, onToggle, onConfirm, isSending }: SendToggleProps): JSX.Element => {
   return (
-    <Card style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <Card style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
       <Toggle checked={isEnabled} onChange={onToggle} label="Send report to patient" />
       <Button variant="primary" isLoading={isSending} onClick={onConfirm}>
         {isSending ? 'Sending…' : 'Finish'}

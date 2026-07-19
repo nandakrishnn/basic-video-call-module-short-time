@@ -8,7 +8,7 @@ const fieldStyle: CSSProperties = {
   border: `1px solid ${COLORS.border}`,
   background: COLORS.surface,
   color: COLORS.text.primary,
-  fontSize: '0.95rem',
+  fontSize: '1rem',
 }
 
 export const Input = ({ style, ...rest }: InputHTMLAttributes<HTMLInputElement>): JSX.Element => (

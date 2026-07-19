@@ -9,7 +9,7 @@ import { NewCallPanel } from '@/components/session/NewCallPanel'
 import { Avatar } from '@/components/shared/Avatar'
 import { BrandLinks } from '@/components/shared/BrandLinks'
 import { Card } from '@/components/shared/Card'
-import { DashboardSidebar, SIDEBAR_WIDTH } from '@/components/shared/DashboardSidebar'
+import { DashboardSidebar } from '@/components/shared/DashboardSidebar'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { PageState } from '@/components/shared/PageState'
 import { StatCard } from '@/components/shared/StatCard'
@@ -89,8 +89,8 @@ const PhysioDashboardPage = (): JSX.Element => {
       <DashboardSidebar />
 
       <div
+        className="dashboard-content"
         style={{
-          marginLeft: SIDEBAR_WIDTH,
           maxWidth: 1080,
           padding: '32px 40px 60px',
           display: 'flex',

@@ -65,7 +65,7 @@ const PatientDashboardPage = (): JSX.Element => {
       >
         <h1 style={{ color: COLORS.text.primary, fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>Your sessions</h1>
 
-        <div style={{ display: 'flex', gap: 16 }}>
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
           <StatCard label="Total calls" value={data.stats.totalCalls} />
           <StatCard label="Total minutes" value={data.stats.totalMinutes} />
         </div>
@@ -113,7 +113,13 @@ const PatientDashboardPage = (): JSX.Element => {
                 <li key={call.sessionId}>
                   <Card
                     padding={16}
-                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                      gap: 8,
+                    }}
                   >
                     <div>
                       <p style={{ color: COLORS.text.primary, fontWeight: 700, fontSize: '0.9rem', margin: 0 }}>

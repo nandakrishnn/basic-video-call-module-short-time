@@ -33,7 +33,7 @@ export const AppointmentForm = ({ onSubmit, isSubmitting }: AppointmentFormProps
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      <div style={{ display: 'flex', gap: 12 }}>
+      <div className="form-row-2up">
         <label style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
           <span style={labelStyle}>Date</span>
           <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />

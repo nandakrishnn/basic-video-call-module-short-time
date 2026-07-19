@@ -26,7 +26,10 @@ export const ControlBar = ({
         transform: 'translateX(-50%)',
         display: 'flex',
         alignItems: 'center',
+        justifyContent: 'center',
+        flexWrap: 'wrap',
         gap: 16,
+        maxWidth: 'calc(100vw - 32px)',
         zIndex: 2,
       }}
     >
