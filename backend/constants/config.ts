@@ -27,5 +27,6 @@ export const CONFIG = {
   app: {
     url: process.env.NEXT_PUBLIC_APP_URL ?? '',
     port: Number(process.env.PORT ?? 5000),
+    backendUrl: process.env.RENDER_EXTERNAL_URL ?? process.env.NEXT_PUBLIC_API_URL ?? '',
   },
 } as const

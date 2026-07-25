@@ -1,11 +1,8 @@
-import path from 'path'
 import { CONFIG } from '../constants/config'
-import { transporter } from '../lib/nodemailer'
+import { EMAIL_FROM, resend } from '../lib/resend'
 import { parseUtc } from '../utils/date'
 
-const LOGO_PATH = path.join(__dirname, '../assets/clinzor-logo-white.png')
-const LOGO_CID = 'clinzor-logo-white'
-const logoAttachment = { filename: 'clinzor-logo-white.png', path: LOGO_PATH, cid: LOGO_CID }
+const LOGO_URL = `${CONFIG.app.backendUrl}/assets/clinzor-logo-white.png`
 
 const escapeHtml = (value: string): string => {
   const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }
@@ -21,7 +18,7 @@ const wrapEmailHtml = (bodyHtml: string): string => `
       <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="background:#FFFFFF;border-radius:16px;overflow:hidden;font-family:Arial,Helvetica,sans-serif;">
         <tr>
           <td align="center" style="background:#1A1C6B;padding:28px 32px;">
-            <img src="cid:${LOGO_CID}" alt="Clinzor" width="130" style="display:block;" />
+            <img src="${LOGO_URL}" alt="Clinzor" width="130" style="display:block;" />
           </td>
         </tr>
         <tr>
@@ -44,13 +41,12 @@ export const sendOtpEmail = async (to: string, otp: string): Promise<void> => {
     <p>It expires in ${CONFIG.otp.expiryMinutes} minutes.</p>
   `)
 
-  await transporter.sendMail({
-    from: process.env.GMAIL_USER,
+  await resend.emails.send({
+    from: EMAIL_FROM,
     to,
     subject: 'Your Clinzor verification code',
     text: `Your one-time verification code is ${otp}. It expires in ${CONFIG.otp.expiryMinutes} minutes.`,
     html,
-    attachments: [logoAttachment],
   })
 }
 
@@ -60,13 +56,12 @@ export const sendReportEmail = async (to: string, pdfUrl: string): Promise<void>
     ${buttonHtml(pdfUrl, 'View Report')}
   `)
 
-  await transporter.sendMail({
-    from: process.env.GMAIL_USER,
+  await resend.emails.send({
+    from: EMAIL_FROM,
     to,
     subject: 'Your Clinzor session report is ready',
     text: `Your session report is ready. View it here: ${pdfUrl}`,
     html,
-    attachments: [logoAttachment],
   })
 }
 
@@ -116,8 +111,8 @@ export const sendAppointmentScheduledEmail = async (
     <p>See you soon!<br/>Clinzor Team</p>
   `)
 
-  await transporter.sendMail({
-    from: process.env.GMAIL_USER,
+  await resend.emails.send({
+    from: EMAIL_FROM,
     to,
     subject: 'Your Clinzor appointment has been scheduled',
     text: [
@@ -135,7 +130,6 @@ export const sendAppointmentScheduledEmail = async (
       'Clinzor Team',
     ].join('\n'),
     html,
-    attachments: [logoAttachment],
   })
 }
 
@@ -159,8 +153,8 @@ export const sendCallStartingEmail = async (to: string, details: CallStartingDet
     <p style="color:#6E6E73;font-size:13px;">If the button doesn't work, copy and paste this link: ${escapeHtml(details.joinLink)}</p>
   `)
 
-  await transporter.sendMail({
-    from: process.env.GMAIL_USER,
+  await resend.emails.send({
+    from: EMAIL_FROM,
     to,
     subject: 'Your Clinzor call is starting now',
     text: [
@@ -173,6 +167,5 @@ export const sendCallStartingEmail = async (to: string, details: CallStartingDet
       'Clinzor Team',
     ].join('\n'),
     html,
-    attachments: [logoAttachment],
   })
 }
