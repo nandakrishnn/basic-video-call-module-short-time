@@ -1,5 +1,5 @@
 import { CONFIG } from '../constants/config'
-import { EMAIL_FROM, resend } from '../lib/resend'
+import { EMAIL_FROM, EMAIL_REPLY_TO, resend } from '../lib/resend'
 import { parseUtc } from '../utils/date'
 
 const LOGO_URL = `${CONFIG.app.backendUrl}/assets/clinzor-logo-white.png`
@@ -43,6 +43,7 @@ export const sendOtpEmail = async (to: string, otp: string): Promise<void> => {
 
   await resend.emails.send({
     from: EMAIL_FROM,
+    replyTo: EMAIL_REPLY_TO,
     to,
     subject: 'Your Clinzor verification code',
     text: `Your one-time verification code is ${otp}. It expires in ${CONFIG.otp.expiryMinutes} minutes.`,
@@ -58,6 +59,7 @@ export const sendReportEmail = async (to: string, pdfUrl: string): Promise<void>
 
   await resend.emails.send({
     from: EMAIL_FROM,
+    replyTo: EMAIL_REPLY_TO,
     to,
     subject: 'Your Clinzor session report is ready',
     text: `Your session report is ready. View it here: ${pdfUrl}`,
@@ -113,6 +115,7 @@ export const sendAppointmentScheduledEmail = async (
 
   await resend.emails.send({
     from: EMAIL_FROM,
+    replyTo: EMAIL_REPLY_TO,
     to,
     subject: 'Your Clinzor appointment has been scheduled',
     text: [
@@ -155,6 +158,7 @@ export const sendCallStartingEmail = async (to: string, details: CallStartingDet
 
   await resend.emails.send({
     from: EMAIL_FROM,
+    replyTo: EMAIL_REPLY_TO,
     to,
     subject: 'Your Clinzor call is starting now',
     text: [
