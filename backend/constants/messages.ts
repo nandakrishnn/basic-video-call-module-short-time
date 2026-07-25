@@ -42,6 +42,7 @@ export const MESSAGES = {
     approveSuccess: 'Notes approved successfully.',
     pdfGenerated: 'Report PDF generated successfully.',
     sendSuccess: 'Report sent to patient successfully.',
+    sendEmailFailed: 'Session finished, but the report email could not be sent to the patient.',
     notFound: 'Session notes not found.',
   },
 

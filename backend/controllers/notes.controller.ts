@@ -121,20 +121,30 @@ export const sendNotes = async (req: Request, res: Response): Promise<void> => {
   const patient = await findUserById(session.patientId)
   if (!patient?.email) throw new AppError(MESSAGES.auth.userNotFound, 404, 'USER_NOT_FOUND')
 
-  await sendReportEmail(patient.email, notes.pdfUrl)
+  let emailSent = true
+  try {
+    await sendReportEmail(patient.email, notes.pdfUrl)
+  } catch (err) {
+    emailSent = false
+    console.error('Failed to send report email:', err)
+  }
 
   const updated = await updateNotesRecord(notes.id, {
-    isSentToPatient: true,
-    sentAt: new Date().toISOString(),
+    isSentToPatient: emailSent,
+    ...(emailSent ? { sentAt: new Date().toISOString() } : {}),
   })
   if (!updated) throw new AppError(MESSAGES.notes.notFound, 404, 'NOTES_NOT_FOUND')
 
-  await logAudit({
-    userId: req.user?.userId ?? null,
-    action: AuditAction.REPORT_SENT,
-    resource: 'session_notes',
-    resourceId: notes.id,
-  })
+  if (emailSent) {
+    await logAudit({
+      userId: req.user?.userId ?? null,
+      action: AuditAction.REPORT_SENT,
+      resource: 'session_notes',
+      resourceId: notes.id,
+    })
+  }
 
-  res.status(200).json(successResponse(updated, MESSAGES.notes.sendSuccess))
+  res.status(200).json(
+    successResponse(updated, emailSent ? MESSAGES.notes.sendSuccess : MESSAGES.notes.sendEmailFailed),
+  )
 }
