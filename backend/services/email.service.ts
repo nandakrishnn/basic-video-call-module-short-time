@@ -4,6 +4,15 @@ import { parseUtc } from '../utils/date'
 
 const LOGO_URL = `${CONFIG.app.backendUrl}/assets/clinzor-logo-white.png`
 
+// The Resend SDK resolves with { data, error } instead of throwing on API
+// errors, so callers must check `error` explicitly or failures go unnoticed.
+const send = async (params: Parameters<typeof resend.emails.send>[0]): Promise<void> => {
+  const { error } = await resend.emails.send(params)
+  if (error) {
+    throw new Error(`Resend error (${error.name}): ${error.message}`)
+  }
+}
+
 const escapeHtml = (value: string): string => {
   const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }
   return value.replace(/[&<>"']/g, (char) => map[char] ?? char)
@@ -41,7 +50,7 @@ export const sendOtpEmail = async (to: string, otp: string): Promise<void> => {
     <p>It expires in ${CONFIG.otp.expiryMinutes} minutes.</p>
   `)
 
-  await resend.emails.send({
+  await send({
     from: EMAIL_FROM,
     replyTo: EMAIL_REPLY_TO,
     to,
@@ -57,7 +66,7 @@ export const sendReportEmail = async (to: string, pdfUrl: string): Promise<void>
     ${buttonHtml(pdfUrl, 'View Report')}
   `)
 
-  await resend.emails.send({
+  await send({
     from: EMAIL_FROM,
     replyTo: EMAIL_REPLY_TO,
     to,
@@ -113,7 +122,7 @@ export const sendAppointmentScheduledEmail = async (
     <p>See you soon!<br/>Clinzor Team</p>
   `)
 
-  await resend.emails.send({
+  await send({
     from: EMAIL_FROM,
     replyTo: EMAIL_REPLY_TO,
     to,
@@ -156,7 +165,7 @@ export const sendCallStartingEmail = async (to: string, details: CallStartingDet
     <p style="color:#6E6E73;font-size:13px;">If the button doesn't work, copy and paste this link: ${escapeHtml(details.joinLink)}</p>
   `)
 
-  await resend.emails.send({
+  await send({
     from: EMAIL_FROM,
     replyTo: EMAIL_REPLY_TO,
     to,
