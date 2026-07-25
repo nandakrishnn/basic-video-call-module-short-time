@@ -1,26 +1,41 @@
 import type { Request, Response } from 'express'
-import { AuditAction, SessionStatus } from '../constants/enums'
+import { AuditAction, SessionStatus, UserRole } from '../constants/enums'
 import { MESSAGES } from '../constants/messages'
 import { AppError } from '../middleware/error.middleware'
 import { findSessionById, updateSessionStatus } from '../models/session.model'
 import { findUserById } from '../models/user.model'
 import { logAudit } from '../services/audit.service'
+import { generateJitsiToken, getJitsiRoomPath } from '../services/jitsi.service'
 import { createSessionForCall } from '../services/session.service'
+import type { Session } from '../types/session.types'
 import { successResponse } from '../utils/response'
+
+const withJitsiToken = async (session: Session, userId: string, role: UserRole) => {
+  const user = await findUserById(userId)
+  const jitsiJwt = generateJitsiToken({
+    roomName: session.roomName,
+    name: user?.fullName ?? 'Guest',
+    email: user?.email ?? null,
+    moderator: role === UserRole.PHYSIO,
+  })
+  return { ...session, jitsiJwt, jitsiRoomName: getJitsiRoomPath(session.roomName) }
+}
 
 export const createSession = async (req: Request, res: Response): Promise<void> => {
   const { patientId, appointmentId } = req.body as { patientId: string; appointmentId?: string }
   const physioId = req.user!.userId
 
   const session = await createSessionForCall({ patientId, physioId, appointmentId })
+  const responseBody = await withJitsiToken(session, req.user!.userId, req.user!.role)
 
-  res.status(201).json(successResponse(session, MESSAGES.session.createSuccess))
+  res.status(201).json(successResponse(responseBody, MESSAGES.session.createSuccess))
 }
 
 export const getSession = async (req: Request, res: Response): Promise<void> => {
   const session = await findSessionById(req.params.id)
   if (!session) throw new AppError(MESSAGES.session.notFound, 404, 'SESSION_NOT_FOUND')
-  res.status(200).json(successResponse(session, MESSAGES.session.fetchSuccess))
+  const responseBody = await withJitsiToken(session, req.user!.userId, req.user!.role)
+  res.status(200).json(successResponse(responseBody, MESSAGES.session.fetchSuccess))
 }
 
 export const startSession = async (req: Request, res: Response): Promise<void> => {

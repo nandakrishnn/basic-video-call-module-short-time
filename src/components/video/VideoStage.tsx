@@ -9,6 +9,7 @@ import { VideoHeader } from './VideoHeader'
 interface VideoStageProps {
   roomName: string
   displayName: string
+  jwt?: string | null
   patientName: string
   sessionType: string
   onCallEnded: () => void
@@ -17,6 +18,7 @@ interface VideoStageProps {
 export const VideoStage = ({
   roomName,
   displayName,
+  jwt,
   patientName,
   sessionType,
   onCallEnded,
@@ -25,6 +27,7 @@ export const VideoStage = ({
   const { isReady, callState, isMuted, isCameraOff, toggleAudio, toggleCamera, endCall } = useJitsiCall({
     roomName,
     displayName,
+    jwt,
     containerRef,
     onCallEnded,
   })

@@ -1,9 +1,13 @@
 import { createHash } from 'crypto'
+import jwt from 'jsonwebtoken'
 import { CONFIG } from '../constants/config'
 
 const hashId = (id: string): string => {
   return createHash('sha256').update(id).digest('hex').slice(0, 6)
 }
+
+export const isJaasConfigured = (): boolean =>
+  Boolean(CONFIG.jaas.appId && CONFIG.jaas.apiKeyId && CONFIG.jaas.privateKey)
 
 export const generateRoomName = (physioId: string, patientId: string): string => {
   const physioHash = hashId(physioId)
@@ -12,6 +16,46 @@ export const generateRoomName = (physioId: string, patientId: string): string =>
   return `clinzor-${physioHash}-${patientHash}-${timestamp}`
 }
 
+// JaaS rooms are namespaced under the tenant's AppID (8x8.vc/<appId>/<room>).
+// Falls back to the plain room name on the public demo server when JaaS isn't configured.
+export const getJitsiRoomPath = (roomName: string): string =>
+  isJaasConfigured() ? `${CONFIG.jaas.appId}/${roomName}` : roomName
+
 export const generateRoomLink = (roomName: string): string => {
-  return `https://${CONFIG.jitsi.domain}/${roomName}`
+  const domain = isJaasConfigured() ? '8x8.vc' : CONFIG.jitsi.domain
+  return `https://${domain}/${getJitsiRoomPath(roomName)}`
+}
+
+interface JitsiTokenParams {
+  roomName: string
+  name: string
+  email: string | null
+  moderator: boolean
+}
+
+// Only meaningful when JaaS is configured — the public demo server needs no token.
+export const generateJitsiToken = (params: JitsiTokenParams): string | null => {
+  if (!isJaasConfigured()) return null
+
+  const now = Math.floor(Date.now() / 1000)
+  const payload = {
+    aud: 'jitsi',
+    iss: 'chat',
+    sub: CONFIG.jaas.appId,
+    room: params.roomName,
+    nbf: now - 10,
+    exp: now + 2 * 60 * 60,
+    context: {
+      user: {
+        name: params.name,
+        email: params.email ?? undefined,
+        moderator: params.moderator,
+      },
+    },
+  }
+
+  return jwt.sign(payload, CONFIG.jaas.privateKey, {
+    algorithm: 'RS256',
+    header: { alg: 'RS256', kid: CONFIG.jaas.apiKeyId },
+  })
 }

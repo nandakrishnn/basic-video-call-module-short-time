@@ -5,6 +5,7 @@ import { JITSI_CONFIG_OVERWRITE, JITSI_INTERFACE_CONFIG, loadJitsiScript } from 
 interface UseJitsiCallParams {
   roomName: string
   displayName: string
+  jwt?: string | null
   containerRef: RefObject<HTMLDivElement>
   onCallEnded?: () => void
 }
@@ -24,6 +25,7 @@ interface UseJitsiCallResult {
 export const useJitsiCall = ({
   roomName,
   displayName,
+  jwt,
   containerRef,
   onCallEnded,
 }: UseJitsiCallParams): UseJitsiCallResult => {
@@ -47,6 +49,7 @@ export const useJitsiCall = ({
         userInfo: { displayName },
         interfaceConfigOverwrite: JITSI_INTERFACE_CONFIG,
         configOverwrite: JITSI_CONFIG_OVERWRITE,
+        ...(jwt ? { jwt } : {}),
       })
 
       api.addListener('videoConferenceJoined', () => setCallState('connected'))
@@ -72,7 +75,7 @@ export const useJitsiCall = ({
       apiRef.current?.dispose()
       apiRef.current = null
     }
-  }, [roomName, displayName, containerRef, onCallEnded])
+  }, [roomName, displayName, jwt, containerRef, onCallEnded])
 
   const toggleAudio = useCallback(() => {
     apiRef.current?.executeCommand('toggleAudio')

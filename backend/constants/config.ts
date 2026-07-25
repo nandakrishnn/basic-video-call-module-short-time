@@ -20,6 +20,13 @@ export const CONFIG = {
     domain: process.env.NEXT_PUBLIC_JITSI_DOMAIN ?? 'meet.jit.si',
   },
 
+  jaas: {
+    appId: process.env.JAAS_APP_ID ?? '',
+    apiKeyId: process.env.JAAS_API_KEY_ID ?? '',
+    // Render env vars store the PEM on one line; restore real newlines.
+    privateKey: (process.env.JAAS_PRIVATE_KEY ?? '').replace(/\\n/g, '\n'),
+  },
+
   bcrypt: {
     saltRounds: 10,
   },

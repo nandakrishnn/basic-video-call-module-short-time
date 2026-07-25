@@ -110,8 +110,9 @@ const SessionPage = (): JSX.Element => {
           <PostCallPatientPrompt onGoToDashboard={() => void router.push(ROUTES.dashboardPatient)} />
         ) : hasJoined ? (
           <VideoStage
-            roomName={session.roomName}
+            roomName={session.jitsiRoomName ?? session.roomName}
             displayName={user?.fullName ?? 'Guest'}
+            jwt={session.jitsiJwt}
             patientName="Patient"
             sessionType="Follow-up"
             onCallEnded={handleCallEnded}

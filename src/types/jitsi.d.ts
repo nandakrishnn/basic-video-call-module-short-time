@@ -9,6 +9,7 @@ declare global {
     userInfo?: { displayName: string }
     interfaceConfigOverwrite?: Record<string, unknown>
     configOverwrite?: Record<string, unknown>
+    jwt?: string
   }
 
   interface JitsiMeetExternalApiInstance {

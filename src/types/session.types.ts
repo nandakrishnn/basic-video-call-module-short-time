@@ -12,6 +12,9 @@ export interface Session {
   startedAt: string | null
   endedAt: string | null
   patientIdentifier?: string | null
+  // Present when JaaS is configured server-side; null on the public demo server.
+  jitsiJwt?: string | null
+  jitsiRoomName?: string
 }
 
 export interface JitsiConfig {
