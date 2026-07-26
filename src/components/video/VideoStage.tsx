@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { COLORS, RADII, SHADOWS } from '@/constants/colors'
 import { useCallTimer } from '@/hooks/useCallTimer'
+import { useFullscreen } from '@/hooks/useFullscreen'
 import { useJitsiCall } from '@/hooks/useJitsiCall'
 import { ControlBar } from './ControlBar'
 import { PoweredByBadge } from './PoweredByBadge'
@@ -23,6 +24,7 @@ export const VideoStage = ({
   sessionType,
   onCallEnded,
 }: VideoStageProps): JSX.Element => {
+  const stageRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const { isReady, callState, isMuted, isCameraOff, toggleAudio, toggleCamera, endCall } = useJitsiCall({
     roomName,
@@ -31,10 +33,12 @@ export const VideoStage = ({
     containerRef,
     onCallEnded,
   })
+  const { isFullscreen, toggleFullscreen } = useFullscreen(stageRef)
   const formattedTime = useCallTimer(isReady)
 
   return (
     <div
+      ref={stageRef}
       style={{
         position: 'relative',
         width: '100%',
@@ -55,8 +59,10 @@ export const VideoStage = ({
       <ControlBar
         isMuted={isMuted}
         isCameraOff={isCameraOff}
+        isFullscreen={isFullscreen}
         onToggleAudio={toggleAudio}
         onToggleCamera={toggleCamera}
+        onToggleFullscreen={toggleFullscreen}
         onEndCall={endCall}
       />
       <PoweredByBadge />

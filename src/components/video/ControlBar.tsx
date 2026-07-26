@@ -1,20 +1,24 @@
-import { Mic, MicOff, PhoneOff, Video, VideoOff } from 'lucide-react'
+import { Maximize, Mic, MicOff, Minimize, PhoneOff, Video, VideoOff } from 'lucide-react'
 import { Button } from '@/components/shared/Button'
 import { IconButton } from '@/components/shared/IconButton'
 
 interface ControlBarProps {
   isMuted: boolean
   isCameraOff: boolean
+  isFullscreen: boolean
   onToggleAudio: () => void
   onToggleCamera: () => void
+  onToggleFullscreen: () => void
   onEndCall: () => void
 }
 
 export const ControlBar = ({
   isMuted,
   isCameraOff,
+  isFullscreen,
   onToggleAudio,
   onToggleCamera,
+  onToggleFullscreen,
   onEndCall,
 }: ControlBarProps): JSX.Element => {
   return (
@@ -44,6 +48,11 @@ export const ControlBar = ({
         active={isCameraOff}
         onClick={onToggleCamera}
         aria-label="Toggle camera"
+      />
+      <IconButton
+        icon={isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+        onClick={onToggleFullscreen}
+        aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
       />
       <Button variant="danger" shape="pill" onClick={onEndCall} aria-label="End call">
         <PhoneOff size={18} />
