@@ -142,4 +142,8 @@ a {
   .form-row-2up {
     flex-direction: column;
   }
+
+  .powered-by-badge {
+    display: none;
+  }
 }

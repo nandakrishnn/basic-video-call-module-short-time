@@ -3,7 +3,10 @@ import { Logo } from '@/components/shared/Logo'
 
 export const PoweredByBadge = (): JSX.Element => {
   return (
+    // Hidden below 480px (see globals.css) — on narrow screens the control
+    // bar wraps to two rows and its bottom row was overlapping this badge.
     <div
+      className="powered-by-badge"
       style={{
         position: 'absolute',
         bottom: 10,

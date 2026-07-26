@@ -12,7 +12,10 @@ export const TroubleshootButton = ({ counterpartName, onOpenChat }: Troubleshoot
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <div style={{ position: 'absolute', top: 78, right: 16, zIndex: 3 }}>
+    // Anchored top-left rather than top-right — Jitsi's own participant
+    // thumbnail is typically rendered top-right, and the two were overlapping
+    // on narrower viewports where Jitsi's layout shifts.
+    <div style={{ position: 'absolute', top: 78, left: 16, zIndex: 3 }}>
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
@@ -41,7 +44,7 @@ export const TroubleshootButton = ({ counterpartName, onOpenChat }: Troubleshoot
           style={{
             position: 'absolute',
             top: 'calc(100% + 10px)',
-            right: 0,
+            left: 0,
             width: 240,
             background: COLORS.surface,
             borderRadius: RADII.md,
