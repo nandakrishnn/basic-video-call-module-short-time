@@ -52,10 +52,14 @@ export const generateJitsiToken = (params: JitsiTokenParams): string | null => {
       user: {
         name: params.name,
         email: params.email ?? undefined,
-        moderator: params.moderator,
+        // JaaS's validator expects these as strings, not booleans — a real
+        // boolean can get silently ignored, leaving the user unauthenticated.
+        moderator: params.moderator ? 'true' : 'false',
       },
     },
   }
+
+  console.log('Jitsi JWT payload:', JSON.stringify(payload))
 
   return jwt.sign(payload, CONFIG.jaas.privateKey, {
     algorithm: 'RS256',
