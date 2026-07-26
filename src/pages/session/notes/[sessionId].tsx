@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { EnhancedNotesPanel } from '@/components/notes/EnhancedNotesPanel'
 import { RawNotesEditor } from '@/components/notes/RawNotesEditor'
 import { SendToggle } from '@/components/notes/SendToggle'
@@ -13,7 +13,7 @@ import {
   generatePdfRequest,
   sendNotesRequest,
 } from '@/services/notes.service'
-import { getToken } from '@/utils/storage'
+import { clearQuickNote, getQuickNote, getToken } from '@/utils/storage'
 
 type Step = 'raw' | 'enhance' | 'send' | 'done'
 
@@ -28,6 +28,15 @@ const NotesPage = (): JSX.Element => {
   const [sendEnabled, setSendEnabled] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!sessionId) return
+    const draft = getQuickNote(sessionId)
+    if (draft) {
+      setRawNotes(draft)
+      clearQuickNote(sessionId)
+    }
+  }, [sessionId])
 
   const handleAutoSave = async (value: string): Promise<void> => {
     const token = getToken()

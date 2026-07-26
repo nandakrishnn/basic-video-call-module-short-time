@@ -5,6 +5,7 @@ import { PageState } from '@/components/shared/PageState'
 import { PhysioSessionPanel } from '@/components/video/PhysioSessionPanel'
 import { PostCallPatientPrompt } from '@/components/video/PostCallPatientPrompt'
 import { PreCallScreen } from '@/components/video/PreCallScreen'
+import { QuickNoteModal } from '@/components/video/QuickNoteModal'
 import { VideoStage } from '@/components/video/VideoStage'
 import { COLORS } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
@@ -14,7 +15,7 @@ import { createAppointmentRequest } from '@/services/appointment.service'
 import { endSessionRequest, getSessionRequest, startSessionRequest } from '@/services/session.service'
 import type { Appointment, AppointmentType } from '@/types/appointment.types'
 import type { Session } from '@/types/session.types'
-import { getToken } from '@/utils/storage'
+import { getQuickNote, getToken, setQuickNote } from '@/utils/storage'
 
 const SessionPage = (): JSX.Element => {
   const router = useRouter()
@@ -27,6 +28,7 @@ const SessionPage = (): JSX.Element => {
   const [showPostCallModal, setShowPostCallModal] = useState(false)
   const [hasJoined, setHasJoined] = useState(false)
   const [callEndedForPatient, setCallEndedForPatient] = useState(false)
+  const [showQuickNote, setShowQuickNote] = useState(false)
 
   useEffect(() => {
     if (!sessionId) return
@@ -128,8 +130,15 @@ const SessionPage = (): JSX.Element => {
           sessionNumber={1}
           scheduledAt={session.startedAt ?? ''}
           actualStartAt={session.startedAt}
-          onQuickNote={() => {}}
+          onQuickNote={() => setShowQuickNote(true)}
           onEndCallAndWriteNotes={handleEndAndWriteNotes}
+        />
+      )}
+      {showQuickNote && sessionId && (
+        <QuickNoteModal
+          initialValue={getQuickNote(sessionId)}
+          onSave={(value) => setQuickNote(sessionId, value)}
+          onClose={() => setShowQuickNote(false)}
         />
       )}
       {showPostCallModal && (
