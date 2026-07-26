@@ -1,14 +1,17 @@
-import { Maximize, Mic, MicOff, Minimize, PhoneOff, Video, VideoOff } from 'lucide-react'
+import { LayoutGrid, Maximize, Mic, MicOff, Minimize, PhoneOff, Video, VideoOff } from 'lucide-react'
 import { Button } from '@/components/shared/Button'
 import { IconButton } from '@/components/shared/IconButton'
+import { COLORS } from '@/constants/colors'
 
 interface ControlBarProps {
   isMuted: boolean
   isCameraOff: boolean
   isFullscreen: boolean
+  isSplitView: boolean
   onToggleAudio: () => void
   onToggleCamera: () => void
   onToggleFullscreen: () => void
+  onToggleSplitView: () => void
   onEndCall: () => void
 }
 
@@ -16,9 +19,11 @@ export const ControlBar = ({
   isMuted,
   isCameraOff,
   isFullscreen,
+  isSplitView,
   onToggleAudio,
   onToggleCamera,
   onToggleFullscreen,
+  onToggleSplitView,
   onEndCall,
 }: ControlBarProps): JSX.Element => {
   return (
@@ -48,6 +53,13 @@ export const ControlBar = ({
         active={isCameraOff}
         onClick={onToggleCamera}
         aria-label="Toggle camera"
+      />
+      <IconButton
+        icon={<LayoutGrid size={20} />}
+        active={isSplitView}
+        activeColor={COLORS.primaryLight}
+        onClick={onToggleSplitView}
+        aria-label={isSplitView ? 'Switch to speaker view' : 'Switch to split view'}
       />
       <IconButton
         icon={isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}

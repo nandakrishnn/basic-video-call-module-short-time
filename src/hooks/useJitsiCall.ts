@@ -17,8 +17,10 @@ interface UseJitsiCallResult {
   callState: CallState
   isMuted: boolean
   isCameraOff: boolean
+  isSplitView: boolean
   toggleAudio: () => void
   toggleCamera: () => void
+  toggleSplitView: () => void
   endCall: () => void
 }
 
@@ -34,6 +36,7 @@ export const useJitsiCall = ({
   const [callState, setCallState] = useState<CallState>('connecting')
   const [isMuted, setIsMuted] = useState(false)
   const [isCameraOff, setIsCameraOff] = useState(false)
+  const [isSplitView, setIsSplitView] = useState(false)
 
   useEffect(() => {
     let disposed = false
@@ -65,6 +68,10 @@ export const useJitsiCall = ({
         const payload = args[0] as { muted?: boolean } | undefined
         if (payload && typeof payload.muted === 'boolean') setIsCameraOff(payload.muted)
       })
+      api.addListener('tileViewChanged', (...args: unknown[]) => {
+        const payload = args[0] as { enabled?: boolean } | undefined
+        if (payload && typeof payload.enabled === 'boolean') setIsSplitView(payload.enabled)
+      })
 
       apiRef.current = api
       setIsReady(true)
@@ -85,9 +92,23 @@ export const useJitsiCall = ({
     apiRef.current?.executeCommand('toggleVideo')
   }, [])
 
+  const toggleSplitView = useCallback(() => {
+    apiRef.current?.executeCommand('toggleTileView')
+  }, [])
+
   const endCall = useCallback(() => {
     apiRef.current?.executeCommand('hangup')
   }, [])
 
-  return { isReady, callState, isMuted, isCameraOff, toggleAudio, toggleCamera, endCall }
+  return {
+    isReady,
+    callState,
+    isMuted,
+    isCameraOff,
+    isSplitView,
+    toggleAudio,
+    toggleCamera,
+    toggleSplitView,
+    endCall,
+  }
 }

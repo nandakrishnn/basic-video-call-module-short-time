@@ -26,7 +26,17 @@ export const VideoStage = ({
 }: VideoStageProps): JSX.Element => {
   const stageRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const { isReady, callState, isMuted, isCameraOff, toggleAudio, toggleCamera, endCall } = useJitsiCall({
+  const {
+    isReady,
+    callState,
+    isMuted,
+    isCameraOff,
+    isSplitView,
+    toggleAudio,
+    toggleCamera,
+    toggleSplitView,
+    endCall,
+  } = useJitsiCall({
     roomName,
     displayName,
     jwt,
@@ -60,9 +70,11 @@ export const VideoStage = ({
         isMuted={isMuted}
         isCameraOff={isCameraOff}
         isFullscreen={isFullscreen}
+        isSplitView={isSplitView}
         onToggleAudio={toggleAudio}
         onToggleCamera={toggleCamera}
         onToggleFullscreen={toggleFullscreen}
+        onToggleSplitView={toggleSplitView}
         onEndCall={endCall}
       />
       <PoweredByBadge />
