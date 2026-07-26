@@ -20,12 +20,34 @@ import { useAuth } from '@/hooks/useAuth'
 import { getPhysioDashboardRequest } from '@/services/dashboard.service'
 import { listPatientsRequest } from '@/services/patient.service'
 import { createSessionRequest } from '@/services/session.service'
+import type { Appointment } from '@/types/appointment.types'
 import type { PhysioDashboardData } from '@/types/dashboard.types'
 import type { User } from '@/types/user.types'
+import { isPast, parseUtc } from '@/utils/date'
 import { getToken } from '@/utils/storage'
 
 const sectionTitleStyle = { color: COLORS.text.primary, fontSize: '1.05rem', fontWeight: 700, marginBottom: 14 }
 const statIconStyle = { width: 20, height: 20 }
+const groupLabelStyle = {
+  color: COLORS.text.muted,
+  fontSize: '0.72rem',
+  fontWeight: 700,
+  textTransform: 'uppercase' as const,
+  letterSpacing: 0.4,
+}
+
+type TimePeriod = 'Morning' | 'Afternoon' | 'Evening'
+const TIME_PERIODS: TimePeriod[] = ['Morning', 'Afternoon', 'Evening']
+
+const periodOf = (appointment: Appointment): TimePeriod => {
+  const hour = parseUtc(appointment.scheduledAt).getHours()
+  if (hour < 12) return 'Morning'
+  if (hour < 17) return 'Afternoon'
+  return 'Evening'
+}
+
+const isUpcoming = (appointment: Appointment): boolean =>
+  appointment.status === 'scheduled' && !isPast(parseUtc(appointment.scheduledAt))
 
 const PhysioDashboardPage = (): JSX.Element => {
   const router = useRouter()
@@ -162,16 +184,44 @@ const PhysioDashboardPage = (): JSX.Element => {
               {data.todayAppointments.length === 0 ? (
                 <EmptyState message={MESSAGES.dashboard.emptyToday} />
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {data.todayAppointments.map((appointment) => (
+                (() => {
+                  const upcoming = data.todayAppointments.filter(isUpcoming)
+                  const past = data.todayAppointments.filter((a) => !isUpcoming(a))
+
+                  const renderRow = (appointment: Appointment) => (
                     <TodayAppointmentRow
                       key={appointment.id}
                       appointment={appointment}
                       isStarting={startingSessionFor === appointment.id}
                       onStartCall={() => void handleStartCall(appointment.patientId, appointment.id)}
                     />
-                  ))}
-                </div>
+                  )
+
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                      {upcoming.length === 0 ? (
+                        <EmptyState message={MESSAGES.dashboard.allCaughtUpToday} />
+                      ) : (
+                        TIME_PERIODS.map((period) => {
+                          const items = upcoming.filter((a) => periodOf(a) === period)
+                          if (items.length === 0) return null
+                          return (
+                            <div key={period} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                              <span style={groupLabelStyle}>{period}</span>
+                              {items.map(renderRow)}
+                            </div>
+                          )
+                        })
+                      )}
+                      {past.length > 0 && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                          <span style={groupLabelStyle}>Past</span>
+                          {past.map(renderRow)}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })()
               )}
             </section>
 

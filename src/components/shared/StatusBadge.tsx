@@ -1,12 +1,13 @@
 import { COLORS, RADII } from '@/constants/colors'
 
-type Status = 'scheduled' | 'completed' | 'cancelled' | 'active'
+type Status = 'scheduled' | 'completed' | 'cancelled' | 'active' | 'missed'
 
 const STATUS_COLOR: Record<Status, string> = {
   scheduled: COLORS.status.info,
   active: COLORS.status.success,
   completed: COLORS.text.muted,
   cancelled: COLORS.status.error,
+  missed: COLORS.status.warning,
 }
 
 interface StatusBadgeProps {

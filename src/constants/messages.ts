@@ -52,6 +52,7 @@ export const MESSAGES = {
 
   dashboard: {
     emptyToday: 'No sessions scheduled for today.',
+    allCaughtUpToday: "You're all caught up for today.",
     emptyUpcoming: 'No upcoming appointments.',
     emptyPatients: 'No patients yet.',
     emptyPastCalls: 'No past calls yet.',

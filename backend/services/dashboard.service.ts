@@ -62,7 +62,9 @@ export const getPhysioDashboard = async (physioId: string) => {
   const todayEnd = endOfDay(now)
 
   const allAppointments = await findAppointmentsByPhysio(physioId)
-  const todayAppointments = allAppointments.filter((a) => a.scheduledAt >= todayStart && a.scheduledAt <= todayEnd)
+  const todayAppointments = allAppointments
+    .filter((a) => a.scheduledAt >= todayStart && a.scheduledAt <= todayEnd)
+    .sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt))
   const upcomingThisWeek = allAppointments.filter(
     (a) => a.scheduledAt > todayEnd && a.status === AppointmentStatus.SCHEDULED,
   )

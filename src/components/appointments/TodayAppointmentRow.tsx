@@ -3,7 +3,7 @@ import { Card } from '@/components/shared/Card'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { COLORS } from '@/constants/colors'
 import type { Appointment } from '@/types/appointment.types'
-import { parseUtc } from '@/utils/date'
+import { isPast, parseUtc } from '@/utils/date'
 
 interface TodayAppointmentRowProps {
   appointment: Appointment
@@ -16,6 +16,9 @@ export const TodayAppointmentRow = ({
   isStarting,
   onStartCall,
 }: TodayAppointmentRowProps): JSX.Element => {
+  const isMissed = appointment.status === 'scheduled' && isPast(parseUtc(appointment.scheduledAt))
+  const canStart = appointment.status === 'scheduled' && !isMissed
+
   return (
     <Card style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} padding={16}>
       <div>
@@ -26,12 +29,14 @@ export const TodayAppointmentRow = ({
           <span style={{ color: COLORS.text.secondary, fontSize: '0.8rem', textTransform: 'capitalize' }}>
             {appointment.sessionType}
           </span>
-          <StatusBadge status={appointment.status} />
+          <StatusBadge status={isMissed ? 'missed' : appointment.status} />
         </div>
       </div>
-      <Button variant="primary" size="sm" isLoading={isStarting} onClick={onStartCall}>
-        {isStarting ? 'Starting…' : 'Start Call'}
-      </Button>
+      {canStart && (
+        <Button variant="primary" size="sm" isLoading={isStarting} onClick={onStartCall}>
+          {isStarting ? 'Starting…' : 'Start Call'}
+        </Button>
+      )}
     </Card>
   )
 }

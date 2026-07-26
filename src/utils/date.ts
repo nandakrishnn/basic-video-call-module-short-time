@@ -7,3 +7,5 @@ export const parseUtc = (isoLike: string): Date => {
   const hasZone = /Z$|[+-]\d{2}:?\d{2}$/.test(isoLike)
   return new Date(hasZone ? isoLike : `${isoLike}Z`)
 }
+
+export const isPast = (date: Date): boolean => date.getTime() < Date.now()
