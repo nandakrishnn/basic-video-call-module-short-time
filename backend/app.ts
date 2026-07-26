@@ -22,6 +22,11 @@ const SCHEDULER_INTERVAL_MS = 60_000
 
 app.listen(CONFIG.app.port, () => {
   console.log(`Clinzor video backend listening on port ${CONFIG.app.port}`)
+  if (process.env.JAAS_PRIVATE_KEY) {
+    const key = CONFIG.jaas.privateKey
+    const looksValid = key.startsWith('-----BEGIN PRIVATE KEY-----') && key.trimEnd().endsWith('-----END PRIVATE KEY-----')
+    console.log(`JAAS_PRIVATE_KEY loaded: length=${key.length}, looksValidPem=${looksValid}`)
+  }
   void checkDueAppointments()
   setInterval(() => void checkDueAppointments(), SCHEDULER_INTERVAL_MS)
 })

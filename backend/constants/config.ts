@@ -1,3 +1,12 @@
+// Accepts either a raw multi-line PEM (pasted as-is) or a single-line version
+// with literal \n escapes (needed on platforms whose env var UI can't hold
+// real newlines) — normalizes either into an actual multi-line PEM string.
+const normalizePemKey = (raw: string): string => {
+  const trimmed = raw.trim()
+  const hasRealNewlines = trimmed.includes('\n')
+  return (hasRealNewlines ? trimmed : trimmed.replace(/\\n/g, '\n')) + '\n'
+}
+
 export const CONFIG = {
   otp: {
     length: 4,
@@ -23,8 +32,7 @@ export const CONFIG = {
   jaas: {
     appId: process.env.JAAS_APP_ID ?? '',
     apiKeyId: process.env.JAAS_API_KEY_ID ?? '',
-    // Render env vars store the PEM on one line; restore real newlines.
-    privateKey: (process.env.JAAS_PRIVATE_KEY ?? '').replace(/\\n/g, '\n'),
+    privateKey: process.env.JAAS_PRIVATE_KEY ? normalizePemKey(process.env.JAAS_PRIVATE_KEY) : '',
   },
 
   bcrypt: {
