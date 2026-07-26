@@ -22,4 +22,9 @@ export const CONFIG = {
     defaultPageSize: 20,
     maxPageSize: 100,
   },
+
+  support: {
+    // TODO: replace with the real support line once available.
+    phoneNumber: '+91 98765 43210',
+  },
 } as const

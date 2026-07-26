@@ -21,6 +21,7 @@ interface UseJitsiCallResult {
   toggleAudio: () => void
   toggleCamera: () => void
   toggleSplitView: () => void
+  openChat: () => void
   endCall: () => void
 }
 
@@ -96,6 +97,10 @@ export const useJitsiCall = ({
     apiRef.current?.executeCommand('toggleTileView')
   }, [])
 
+  const openChat = useCallback(() => {
+    apiRef.current?.executeCommand('toggleChat')
+  }, [])
+
   const endCall = useCallback(() => {
     apiRef.current?.executeCommand('hangup')
   }, [])
@@ -109,6 +114,7 @@ export const useJitsiCall = ({
     toggleAudio,
     toggleCamera,
     toggleSplitView,
+    openChat,
     endCall,
   }
 }

@@ -5,6 +5,7 @@ import { useFullscreen } from '@/hooks/useFullscreen'
 import { useJitsiCall } from '@/hooks/useJitsiCall'
 import { ControlBar } from './ControlBar'
 import { PoweredByBadge } from './PoweredByBadge'
+import { TroubleshootButton } from './TroubleshootButton'
 import { VideoHeader } from './VideoHeader'
 
 interface VideoStageProps {
@@ -35,6 +36,7 @@ export const VideoStage = ({
     toggleAudio,
     toggleCamera,
     toggleSplitView,
+    openChat,
     endCall,
   } = useJitsiCall({
     roomName,
@@ -66,6 +68,7 @@ export const VideoStage = ({
         callState={callState}
       />
       <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
+      <TroubleshootButton counterpartName={patientName} onOpenChat={openChat} />
       <ControlBar
         isMuted={isMuted}
         isCameraOff={isCameraOff}
