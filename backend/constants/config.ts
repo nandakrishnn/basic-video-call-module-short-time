@@ -35,5 +35,8 @@ export const CONFIG = {
     url: process.env.NEXT_PUBLIC_APP_URL ?? '',
     port: Number(process.env.PORT ?? 5000),
     backendUrl: process.env.RENDER_EXTERNAL_URL ?? process.env.NEXT_PUBLIC_API_URL ?? '',
+    // The server's own locale/TZ (Render defaults to UTC) has nothing to do with the
+    // recipient's — every date/time shown to a user must be pinned to this explicitly.
+    timezone: process.env.APP_TIMEZONE ?? 'Asia/Kolkata',
   },
 } as const

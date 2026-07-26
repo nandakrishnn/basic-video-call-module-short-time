@@ -89,13 +89,18 @@ export const sendAppointmentScheduledEmail = async (
   details: AppointmentScheduledDetails,
 ): Promise<void> => {
   const scheduledDate = parseUtc(details.scheduledAt)
-  const dateLabel = scheduledDate.toLocaleDateString(undefined, {
+  const dateLabel = scheduledDate.toLocaleDateString('en-IN', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric',
+    timeZone: CONFIG.app.timezone,
   })
-  const timeLabel = scheduledDate.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+  const timeLabel = scheduledDate.toLocaleTimeString('en-IN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: CONFIG.app.timezone,
+  })
 
   const patientName = escapeHtml(details.patientName)
   const physioName = escapeHtml(details.physioName)
@@ -153,7 +158,11 @@ interface CallStartingDetails {
 
 export const sendCallStartingEmail = async (to: string, details: CallStartingDetails): Promise<void> => {
   const now = new Date()
-  const timeLabel = now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+  const timeLabel = now.toLocaleTimeString('en-IN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: CONFIG.app.timezone,
+  })
 
   const patientName = escapeHtml(details.patientName)
   const physioName = escapeHtml(details.physioName)

@@ -35,6 +35,7 @@ const PhysioDashboardPage = (): JSX.Element => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [startingSessionFor, setStartingSessionFor] = useState<string | null>(null)
+  const [startCallError, setStartCallError] = useState<string | null>(null)
   const [patients, setPatients] = useState<User[]>([])
   const token = getToken()
 
@@ -69,11 +70,16 @@ const PhysioDashboardPage = (): JSX.Element => {
     const token = getToken()
     if (!token) return
 
+    setStartCallError(null)
     setStartingSessionFor(appointmentId)
     const res = await createSessionRequest(token, patientId, appointmentId)
     setStartingSessionFor(null)
 
-    if (res.success) void router.push(ROUTES.session(res.data.id))
+    if (res.success) {
+      void router.push(ROUTES.session(res.data.id))
+    } else {
+      setStartCallError(res.message)
+    }
   }
 
   if (isLoading || isAuthLoading) {
@@ -148,6 +154,11 @@ const PhysioDashboardPage = (): JSX.Element => {
 
             <section>
               <h2 style={sectionTitleStyle}>Today&apos;s appointments</h2>
+              {startCallError && (
+                <p style={{ color: COLORS.status.error, fontSize: '0.85rem', margin: '0 0 12px' }}>
+                  {startCallError}
+                </p>
+              )}
               {data.todayAppointments.length === 0 ? (
                 <EmptyState message={MESSAGES.dashboard.emptyToday} />
               ) : (

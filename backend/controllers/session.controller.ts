@@ -12,12 +12,21 @@ import { successResponse } from '../utils/response'
 
 const withJitsiToken = async (session: Session, userId: string, role: UserRole) => {
   const user = await findUserById(userId)
-  const jitsiJwt = generateJitsiToken({
-    roomName: session.roomName,
-    name: user?.fullName ?? 'Guest',
-    email: user?.email ?? null,
-    moderator: role === UserRole.PHYSIO,
-  })
+
+  let jitsiJwt: string | null = null
+  try {
+    jitsiJwt = generateJitsiToken({
+      roomName: session.roomName,
+      name: user?.fullName ?? 'Guest',
+      email: user?.email ?? null,
+      moderator: role === UserRole.PHYSIO,
+    })
+  } catch (err) {
+    // A misconfigured JAAS_PRIVATE_KEY shouldn't break session creation/lookup —
+    // fall back to no token so the rest of the request still succeeds.
+    console.error('Failed to generate Jitsi JWT:', err)
+  }
+
   return { ...session, jitsiJwt, jitsiRoomName: getJitsiRoomPath(session.roomName) }
 }
 
