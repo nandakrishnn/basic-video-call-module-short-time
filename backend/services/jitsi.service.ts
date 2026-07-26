@@ -42,7 +42,10 @@ export const generateJitsiToken = (params: JitsiTokenParams): string | null => {
     aud: 'jitsi',
     iss: 'chat',
     sub: CONFIG.jaas.appId,
-    room: params.roomName,
+    // Wildcard rather than the bare room name — the frontend actually joins
+    // the tenant-prefixed path (`${appId}/${roomName}`), and a mismatched
+    // `room` claim gets the token silently rejected as unauthenticated.
+    room: '*',
     nbf: now - 10,
     exp: now + 2 * 60 * 60,
     context: {
