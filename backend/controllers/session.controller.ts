@@ -58,7 +58,8 @@ export const startSession = async (req: Request, res: Response): Promise<void> =
     resourceId: session.id,
   })
 
-  res.status(200).json(successResponse(session, MESSAGES.session.startSuccess))
+  const responseBody = await withJitsiToken(session, req.user!.userId, req.user!.role)
+  res.status(200).json(successResponse(responseBody, MESSAGES.session.startSuccess))
 }
 
 export const endSession = async (req: Request, res: Response): Promise<void> => {
