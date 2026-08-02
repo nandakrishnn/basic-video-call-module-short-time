@@ -5,11 +5,48 @@ import { CONFIG } from '@/constants/config'
 
 interface TroubleshootButtonProps {
   counterpartName: string
-  onOpenChat: () => void
+  isChatOpen: boolean
+  onToggleChat: () => void
 }
 
-export const TroubleshootButton = ({ counterpartName, onOpenChat }: TroubleshootButtonProps): JSX.Element => {
+export const TroubleshootButton = ({
+  counterpartName,
+  isChatOpen,
+  onToggleChat,
+}: TroubleshootButtonProps): JSX.Element => {
   const [isOpen, setIsOpen] = useState(false)
+
+  // While Jitsi's own chat panel is open, it owns the layout (full-screen on
+  // mobile, docked on desktop) — swap to a plain "close chat" affordance
+  // instead of our popover, which would otherwise render on top of it.
+  if (isChatOpen) {
+    return (
+      <div style={{ position: 'absolute', top: 16, left: 16, zIndex: 3 }}>
+        <button
+          type="button"
+          onClick={onToggleChat}
+          aria-label="Close chat"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '8px 14px',
+            borderRadius: RADII.pill,
+            border: 'none',
+            background: COLORS.primaryLight,
+            color: COLORS.text.inverse,
+            fontSize: '0.78rem',
+            fontWeight: 700,
+            cursor: 'pointer',
+            boxShadow: SHADOWS.md,
+          }}
+        >
+          <X size={16} />
+          Close chat
+        </button>
+      </div>
+    )
+  }
 
   return (
     // Anchored top-left rather than top-right — Jitsi's own participant
@@ -73,7 +110,7 @@ export const TroubleshootButton = ({ counterpartName, onOpenChat }: Troubleshoot
           <button
             type="button"
             onClick={() => {
-              onOpenChat()
+              onToggleChat()
               setIsOpen(false)
             }}
             style={{

@@ -1,4 +1,6 @@
+import { PhoneOff } from 'lucide-react'
 import { useRef } from 'react'
+import { Button } from '@/components/shared/Button'
 import { COLORS, RADII, SHADOWS } from '@/constants/colors'
 import { useCallTimer } from '@/hooks/useCallTimer'
 import { useFullscreen } from '@/hooks/useFullscreen'
@@ -35,10 +37,11 @@ export const VideoStage = ({
     isMuted,
     isCameraOff,
     isSplitView,
+    isChatOpen,
     toggleAudio,
     toggleCamera,
     toggleSplitView,
-    openChat,
+    toggleChat,
     endCall,
   } = useJitsiCall({
     roomName,
@@ -63,26 +66,49 @@ export const VideoStage = ({
         overflow: 'hidden',
       }}
     >
-      <VideoHeader
-        patientName={patientName}
-        sessionType={sessionType}
-        formattedTime={formattedTime}
-        callState={callState}
-      />
+      {/* Jitsi's own chat panel takes over the iframe's layout (full-screen on
+          mobile, a docked side panel on desktop) — our fixed overlays would
+          sit on top of and clash with it, so they hide while chat is open. */}
+      {!isChatOpen && (
+        <VideoHeader
+          patientName={patientName}
+          sessionType={sessionType}
+          formattedTime={formattedTime}
+          callState={callState}
+        />
+      )}
       <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
-      <TroubleshootButton counterpartName={counterpartName} onOpenChat={openChat} />
-      <ControlBar
-        isMuted={isMuted}
-        isCameraOff={isCameraOff}
-        isFullscreen={isFullscreen}
-        isSplitView={isSplitView}
-        onToggleAudio={toggleAudio}
-        onToggleCamera={toggleCamera}
-        onToggleFullscreen={toggleFullscreen}
-        onToggleSplitView={toggleSplitView}
-        onEndCall={endCall}
-      />
-      <PoweredByBadge />
+      <TroubleshootButton counterpartName={counterpartName} isChatOpen={isChatOpen} onToggleChat={toggleChat} />
+      {isChatOpen && (
+        <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 3 }}>
+          <Button
+            variant="danger"
+            shape="pill"
+            size="sm"
+            onClick={endCall}
+            style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <PhoneOff size={15} />
+            End Call
+          </Button>
+        </div>
+      )}
+      {!isChatOpen && (
+        <>
+          <ControlBar
+            isMuted={isMuted}
+            isCameraOff={isCameraOff}
+            isFullscreen={isFullscreen}
+            isSplitView={isSplitView}
+            onToggleAudio={toggleAudio}
+            onToggleCamera={toggleCamera}
+            onToggleFullscreen={toggleFullscreen}
+            onToggleSplitView={toggleSplitView}
+            onEndCall={endCall}
+          />
+          <PoweredByBadge />
+        </>
+      )}
     </div>
   )
 }

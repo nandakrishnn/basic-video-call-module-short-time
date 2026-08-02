@@ -18,10 +18,11 @@ interface UseJitsiCallResult {
   isMuted: boolean
   isCameraOff: boolean
   isSplitView: boolean
+  isChatOpen: boolean
   toggleAudio: () => void
   toggleCamera: () => void
   toggleSplitView: () => void
-  openChat: () => void
+  toggleChat: () => void
   endCall: () => void
 }
 
@@ -38,6 +39,7 @@ export const useJitsiCall = ({
   const [isMuted, setIsMuted] = useState(false)
   const [isCameraOff, setIsCameraOff] = useState(false)
   const [isSplitView, setIsSplitView] = useState(false)
+  const [isChatOpen, setIsChatOpen] = useState(false)
 
   useEffect(() => {
     let disposed = false
@@ -73,6 +75,13 @@ export const useJitsiCall = ({
         const payload = args[0] as { enabled?: boolean } | undefined
         if (payload && typeof payload.enabled === 'boolean') setIsSplitView(payload.enabled)
       })
+      // Tracks Jitsi's own chat panel state directly (rather than a locally
+      // toggled flag) so we stay in sync even if the user closes it from
+      // Jitsi's own chat header instead of our button.
+      api.addListener('chatUpdated', (...args: unknown[]) => {
+        const payload = args[0] as { isOpen?: boolean } | undefined
+        if (payload && typeof payload.isOpen === 'boolean') setIsChatOpen(payload.isOpen)
+      })
 
       apiRef.current = api
       setIsReady(true)
@@ -97,7 +106,7 @@ export const useJitsiCall = ({
     apiRef.current?.executeCommand('toggleTileView')
   }, [])
 
-  const openChat = useCallback(() => {
+  const toggleChat = useCallback(() => {
     apiRef.current?.executeCommand('toggleChat')
   }, [])
 
@@ -111,10 +120,11 @@ export const useJitsiCall = ({
     isMuted,
     isCameraOff,
     isSplitView,
+    isChatOpen,
     toggleAudio,
     toggleCamera,
     toggleSplitView,
-    openChat,
+    toggleChat,
     endCall,
   }
 }
