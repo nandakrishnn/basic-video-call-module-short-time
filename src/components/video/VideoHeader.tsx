@@ -26,10 +26,6 @@ export const VideoHeader = ({ patientName, sessionType, formattedTime, callState
   return (
     <div
       style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -37,6 +33,7 @@ export const VideoHeader = ({ patientName, sessionType, formattedTime, callState
         background: COLORS.glass.dark,
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
+        flexShrink: 0,
         zIndex: 2,
       }}
     >

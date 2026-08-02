@@ -52,7 +52,7 @@ export const TroubleshootButton = ({
     // Anchored top-left rather than top-right — Jitsi's own participant
     // thumbnail is typically rendered top-right, and the two were overlapping
     // on narrower viewports where Jitsi's layout shifts.
-    <div style={{ position: 'absolute', top: 78, left: 16, zIndex: 3 }}>
+    <div style={{ position: 'absolute', top: 16, left: 16, zIndex: 3 }}>
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}

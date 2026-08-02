@@ -57,7 +57,8 @@ export const VideoStage = ({
     <div
       ref={stageRef}
       style={{
-        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
         width: '100%',
         height: '100%',
         background: COLORS.primary,
@@ -77,38 +78,43 @@ export const VideoStage = ({
           callState={callState}
         />
       )}
-      <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
-      <TroubleshootButton counterpartName={counterpartName} isChatOpen={isChatOpen} onToggleChat={toggleChat} />
-      {isChatOpen && (
-        <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 3 }}>
-          <Button
-            variant="danger"
-            shape="pill"
-            size="sm"
-            onClick={endCall}
-            style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-          >
-            <PhoneOff size={15} />
-            End Call
-          </Button>
-        </div>
-      )}
-      {!isChatOpen && (
-        <>
-          <ControlBar
-            isMuted={isMuted}
-            isCameraOff={isCameraOff}
-            isFullscreen={isFullscreen}
-            isSplitView={isSplitView}
-            onToggleAudio={toggleAudio}
-            onToggleCamera={toggleCamera}
-            onToggleFullscreen={toggleFullscreen}
-            onToggleSplitView={toggleSplitView}
-            onEndCall={endCall}
-          />
-          <PoweredByBadge />
-        </>
-      )}
+      {/* Video sits below the header (not underneath it) so Jitsi's own
+          overlays — like its participant thumbnail near the top edge —
+          never end up hidden behind our header bar. */}
+      <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
+        <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
+        <TroubleshootButton counterpartName={counterpartName} isChatOpen={isChatOpen} onToggleChat={toggleChat} />
+        {isChatOpen && (
+          <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 3 }}>
+            <Button
+              variant="danger"
+              shape="pill"
+              size="sm"
+              onClick={endCall}
+              style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+            >
+              <PhoneOff size={15} />
+              End Call
+            </Button>
+          </div>
+        )}
+        {!isChatOpen && (
+          <>
+            <ControlBar
+              isMuted={isMuted}
+              isCameraOff={isCameraOff}
+              isFullscreen={isFullscreen}
+              isSplitView={isSplitView}
+              onToggleAudio={toggleAudio}
+              onToggleCamera={toggleCamera}
+              onToggleFullscreen={toggleFullscreen}
+              onToggleSplitView={toggleSplitView}
+              onEndCall={endCall}
+            />
+            <PoweredByBadge />
+          </>
+        )}
+      </div>
     </div>
   )
 }
