@@ -13,6 +13,7 @@ interface VideoStageProps {
   displayName: string
   jwt?: string | null
   patientName: string
+  counterpartName: string
   sessionType: string
   onCallEnded: () => void
 }
@@ -22,6 +23,7 @@ export const VideoStage = ({
   displayName,
   jwt,
   patientName,
+  counterpartName,
   sessionType,
   onCallEnded,
 }: VideoStageProps): JSX.Element => {
@@ -68,7 +70,7 @@ export const VideoStage = ({
         callState={callState}
       />
       <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
-      <TroubleshootButton counterpartName={patientName} onOpenChat={openChat} />
+      <TroubleshootButton counterpartName={counterpartName} onOpenChat={openChat} />
       <ControlBar
         isMuted={isMuted}
         isCameraOff={isCameraOff}

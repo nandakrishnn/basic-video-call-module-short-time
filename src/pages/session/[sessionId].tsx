@@ -116,6 +116,7 @@ const SessionPage = (): JSX.Element => {
             displayName={user?.fullName ?? 'Guest'}
             jwt={session.jitsiJwt}
             patientName="Patient"
+            counterpartName={isPhysio ? 'Patient' : 'Doctor'}
             sessionType="Follow-up"
             onCallEnded={handleCallEnded}
           />

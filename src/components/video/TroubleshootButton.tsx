@@ -19,7 +19,7 @@ export const TroubleshootButton = ({ counterpartName, onOpenChat }: Troubleshoot
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        aria-label="Facing troubles?"
+        aria-label="Chat with us"
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -27,16 +27,16 @@ export const TroubleshootButton = ({ counterpartName, onOpenChat }: Troubleshoot
           padding: '8px 14px',
           borderRadius: RADII.pill,
           border: 'none',
-          background: 'rgba(255,255,255,0.16)',
+          background: COLORS.primaryLight,
           color: COLORS.text.inverse,
           fontSize: '0.78rem',
-          fontWeight: 600,
+          fontWeight: 700,
           cursor: 'pointer',
-          boxShadow: SHADOWS.sm,
+          boxShadow: SHADOWS.md,
         }}
       >
         <LifeBuoy size={16} />
-        Facing troubles?
+        Chat with us
       </button>
 
       {isOpen && (
