@@ -24,7 +24,6 @@ export const CONFIG = {
   },
 
   support: {
-    // TODO: replace with the real support line once available.
-    phoneNumber: '+91 98765 43210',
+    phoneNumber: '+91 74831 69750',
   },
 } as const
