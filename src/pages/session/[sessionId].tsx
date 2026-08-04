@@ -43,14 +43,34 @@ const SessionPage = (): JSX.Element => {
       .finally(() => setIsLoading(false))
   }, [sessionId])
 
+  const isPhysio = user?.role === 'physio'
+
+  // Only the physio starting the session flips it to 'active' — a patient
+  // opening the join link first must not be able to trigger this themselves.
   useEffect(() => {
-    if (!session || !sessionId || session.status !== 'scheduled') return
+    if (!isPhysio || !session || !sessionId || session.status !== 'scheduled') return
     const token = getToken()
     if (!token) return
     startSessionRequest(token, sessionId).then((res) => {
       if (res.success) setSession(res.data)
     })
-  }, [session, sessionId])
+  }, [isPhysio, session, sessionId])
+
+  // Patient side: keep checking until the physio has actually started the
+  // session, rather than letting them straight into an empty/unattended call.
+  useEffect(() => {
+    if (isPhysio || !sessionId || session?.status !== 'scheduled') return
+    const token = getToken()
+    if (!token) return
+
+    const interval = setInterval(() => {
+      getSessionRequest(token, sessionId).then((res) => {
+        if (res.success) setSession(res.data)
+      })
+    }, 5000)
+
+    return () => clearInterval(interval)
+  }, [isPhysio, session?.status, sessionId])
 
   const handleCallEnded = (): void => {
     if (!sessionId) return
@@ -103,7 +123,9 @@ const SessionPage = (): JSX.Element => {
     return <PageState tone="neutral" message={MESSAGES.session.ended} />
   }
 
-  const isPhysio = user?.role === 'physio'
+  if (!isPhysio && session.status === 'scheduled') {
+    return <PageState tone="loading" message={MESSAGES.session.waitingForPhysio} />
+  }
 
   return (
     <div className="session-layout" style={{ padding: 16, background: COLORS.background }}>
@@ -115,6 +137,7 @@ const SessionPage = (): JSX.Element => {
             roomName={session.jitsiRoomName ?? session.roomName}
             displayName={user?.fullName ?? 'Guest'}
             jwt={session.jitsiJwt}
+            isModerator={isPhysio}
             patientName="Patient"
             counterpartName={isPhysio ? 'Patient' : 'Doctor'}
             sessionType="Follow-up"

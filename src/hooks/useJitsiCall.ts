@@ -6,11 +6,17 @@ interface UseJitsiCallParams {
   roomName: string
   displayName: string
   jwt?: string | null
+  isModerator?: boolean
   containerRef: RefObject<HTMLDivElement>
   onCallEnded?: () => void
 }
 
 export type CallState = 'connecting' | 'connected' | 'ended'
+
+export interface KnockingParticipant {
+  id: string
+  name: string
+}
 
 interface UseJitsiCallResult {
   isReady: boolean
@@ -19,10 +25,13 @@ interface UseJitsiCallResult {
   isCameraOff: boolean
   isSplitView: boolean
   isChatOpen: boolean
+  knockingParticipants: KnockingParticipant[]
   toggleAudio: () => void
   toggleCamera: () => void
   toggleSplitView: () => void
   toggleChat: () => void
+  admitParticipant: (id: string) => void
+  rejectParticipant: (id: string) => void
   endCall: () => void
 }
 
@@ -30,6 +39,7 @@ export const useJitsiCall = ({
   roomName,
   displayName,
   jwt,
+  isModerator = false,
   containerRef,
   onCallEnded,
 }: UseJitsiCallParams): UseJitsiCallResult => {
@@ -40,6 +50,7 @@ export const useJitsiCall = ({
   const [isCameraOff, setIsCameraOff] = useState(false)
   const [isSplitView, setIsSplitView] = useState(false)
   const [isChatOpen, setIsChatOpen] = useState(false)
+  const [knockingParticipants, setKnockingParticipants] = useState<KnockingParticipant[]>([])
 
   useEffect(() => {
     let disposed = false
@@ -58,7 +69,16 @@ export const useJitsiCall = ({
         ...(jwt ? { jwt } : {}),
       })
 
-      api.addListener('videoConferenceJoined', () => setCallState('connected'))
+      api.addListener('videoConferenceJoined', () => {
+        setCallState('connected')
+        // Locks the room via Jitsi's native Lobby — only the moderator (the
+        // physio, who is always first to actually join since patients wait
+        // on our own gate until the session is active) can enable it, so
+        // anyone joining after this is held for explicit admission.
+        if (isModerator) {
+          apiRef.current?.executeCommand('toggleLobby', true)
+        }
+      })
       api.addListener('videoConferenceLeft', () => {
         setCallState('ended')
         onCallEnded?.()
@@ -82,6 +102,14 @@ export const useJitsiCall = ({
         const payload = args[0] as { isOpen?: boolean } | undefined
         if (payload && typeof payload.isOpen === 'boolean') setIsChatOpen(payload.isOpen)
       })
+      api.addListener('knockingParticipant', (...args: unknown[]) => {
+        const payload = args[0] as { participant?: { id: string; name: string } } | undefined
+        const participant = payload?.participant
+        if (!participant) return
+        setKnockingParticipants((prev) =>
+          prev.some((p) => p.id === participant.id) ? prev : [...prev, participant],
+        )
+      })
 
       apiRef.current = api
       setIsReady(true)
@@ -92,7 +120,7 @@ export const useJitsiCall = ({
       apiRef.current?.dispose()
       apiRef.current = null
     }
-  }, [roomName, displayName, jwt, containerRef, onCallEnded])
+  }, [roomName, displayName, jwt, isModerator, containerRef, onCallEnded])
 
   const toggleAudio = useCallback(() => {
     apiRef.current?.executeCommand('toggleAudio')
@@ -110,6 +138,16 @@ export const useJitsiCall = ({
     apiRef.current?.executeCommand('toggleChat')
   }, [])
 
+  const admitParticipant = useCallback((id: string) => {
+    apiRef.current?.executeCommand('answerKnockingParticipant', id, true)
+    setKnockingParticipants((prev) => prev.filter((p) => p.id !== id))
+  }, [])
+
+  const rejectParticipant = useCallback((id: string) => {
+    apiRef.current?.executeCommand('answerKnockingParticipant', id, false)
+    setKnockingParticipants((prev) => prev.filter((p) => p.id !== id))
+  }, [])
+
   const endCall = useCallback(() => {
     apiRef.current?.executeCommand('hangup')
   }, [])
@@ -121,10 +159,13 @@ export const useJitsiCall = ({
     isCameraOff,
     isSplitView,
     isChatOpen,
+    knockingParticipants,
     toggleAudio,
     toggleCamera,
     toggleSplitView,
     toggleChat,
+    admitParticipant,
+    rejectParticipant,
     endCall,
   }
 }

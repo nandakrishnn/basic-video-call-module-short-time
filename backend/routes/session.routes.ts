@@ -29,7 +29,7 @@ router.post(
   asyncHandler(createSession),
 )
 router.get('/:id', authenticate, asyncHandler(getSession))
-router.patch('/:id/start', authenticate, asyncHandler(startSession))
+router.patch('/:id/start', authenticate, requireRole(UserRole.PHYSIO, UserRole.ADMIN), asyncHandler(startSession))
 router.patch('/:id/end', authenticate, asyncHandler(endSession))
 router.get('/:id/join-token', asyncHandler(getJoinToken))
 router.post('/:id/share-log', authenticate, asyncHandler(shareLog))

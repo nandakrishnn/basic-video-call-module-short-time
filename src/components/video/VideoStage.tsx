@@ -6,6 +6,7 @@ import { useCallTimer } from '@/hooks/useCallTimer'
 import { useFullscreen } from '@/hooks/useFullscreen'
 import { useJitsiCall } from '@/hooks/useJitsiCall'
 import { ControlBar } from './ControlBar'
+import { LobbyRequests } from './LobbyRequests'
 import { PoweredByBadge } from './PoweredByBadge'
 import { TroubleshootButton } from './TroubleshootButton'
 import { VideoHeader } from './VideoHeader'
@@ -14,6 +15,7 @@ interface VideoStageProps {
   roomName: string
   displayName: string
   jwt?: string | null
+  isModerator?: boolean
   patientName: string
   counterpartName: string
   sessionType: string
@@ -24,6 +26,7 @@ export const VideoStage = ({
   roomName,
   displayName,
   jwt,
+  isModerator,
   patientName,
   counterpartName,
   sessionType,
@@ -38,15 +41,19 @@ export const VideoStage = ({
     isCameraOff,
     isSplitView,
     isChatOpen,
+    knockingParticipants,
     toggleAudio,
     toggleCamera,
     toggleSplitView,
     toggleChat,
+    admitParticipant,
+    rejectParticipant,
     endCall,
   } = useJitsiCall({
     roomName,
     displayName,
     jwt,
+    isModerator,
     containerRef,
     onCallEnded,
   })
@@ -84,6 +91,14 @@ export const VideoStage = ({
       <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
         <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
         <TroubleshootButton counterpartName={counterpartName} isChatOpen={isChatOpen} onToggleChat={toggleChat} />
+        {isModerator && (
+          <LobbyRequests
+            participants={knockingParticipants}
+            offsetTop={isChatOpen ? 70 : 16}
+            onAdmit={admitParticipant}
+            onReject={rejectParticipant}
+          />
+        )}
         {isChatOpen && (
           <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 3 }}>
             <Button

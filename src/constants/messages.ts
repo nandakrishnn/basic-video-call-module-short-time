@@ -19,6 +19,7 @@ export const MESSAGES = {
     connecting: 'Connecting to your session…',
     ended: 'This session has ended.',
     notYetActive: 'This session is not active yet.',
+    waitingForPhysio: "Waiting for your physio to start the session — you'll be connected automatically.",
     poweredBy: 'Powered by Clinzor',
     readyTitle: 'Ready to join',
     deviceChecking: 'Checking your camera and microphone…',
