@@ -29,6 +29,7 @@ const SessionPage = (): JSX.Element => {
   const [hasJoined, setHasJoined] = useState(false)
   const [callEndedForPatient, setCallEndedForPatient] = useState(false)
   const [showQuickNote, setShowQuickNote] = useState(false)
+  const [isEndingCall, setIsEndingCall] = useState(false)
 
   useEffect(() => {
     if (!sessionId) return
@@ -76,6 +77,7 @@ const SessionPage = (): JSX.Element => {
     if (!sessionId) return
     const token = getToken()
     if (!token) return
+    setIsEndingCall(true)
     endSessionRequest(token, sessionId).then((res) => {
       if (user?.role !== 'physio') {
         setCallEndedForPatient(true)
@@ -132,6 +134,8 @@ const SessionPage = (): JSX.Element => {
       <div className="session-video-area" style={{ flex: 1 }}>
         {callEndedForPatient ? (
           <PostCallPatientPrompt onGoToDashboard={() => void router.push(ROUTES.dashboardPatient)} />
+        ) : isEndingCall ? (
+          <PageState tone="loading" message={MESSAGES.session.endingCall} />
         ) : hasJoined ? (
           <VideoStage
             roomName={session.jitsiRoomName ?? session.roomName}

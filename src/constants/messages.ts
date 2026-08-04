@@ -17,6 +17,7 @@ export const MESSAGES = {
     loginOption: 'Log in to your account',
     guestOption: 'Join as guest with OTP',
     connecting: 'Connecting to your session…',
+    endingCall: 'Ending session…',
     ended: 'This session has ended.',
     notYetActive: 'This session is not active yet.',
     waitingForPhysio: "Waiting for your physio to start the session — you'll be connected automatically.",
