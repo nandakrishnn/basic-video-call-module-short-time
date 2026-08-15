@@ -3,9 +3,8 @@ import { EMAIL_FROM, EMAIL_REPLY_TO, resend } from '../lib/resend'
 import { parseUtc } from '../utils/date'
 
 const LOGO_URL = `${CONFIG.app.backendUrl}/assets/clinzor-logo-white.png`
-const FOOTER_LOGO_URL = `${CONFIG.app.backendUrl}/assets/clinzor-logo.png`
 // Served from the frontend's /public folder, not the backend.
-const YOURPHYSIO_LOGO_URL = `${CONFIG.app.url}/yorphysio-mark.webp`
+const YOURPHYSIO_LOGO_URL = `${CONFIG.app.url}/${encodeURIComponent('Yorphysio Plan - 6.png')}`
 
 // The Resend SDK resolves with { data, error } instead of throwing on API
 // errors, so callers must check `error` explicitly or failures go unnoticed.
@@ -39,15 +38,15 @@ const wrapEmailHtml = (bodyHtml: string): string => `
           </td>
         </tr>
         <tr>
-          <td align="center" style="padding:20px 32px 28px; border-top:1px solid #F0F0F2;">
-            <p style="margin:0 0 10px; color:#86868B; font-size:12px;">Co-powered by</p>
+          <td align="center" style="background:#1A1C6B; padding:22px 32px 26px;">
+            <p style="margin:0 0 12px; color:rgba(255,255,255,0.65); font-size:12px;">Co-powered by</p>
             <table role="presentation" cellpadding="0" cellspacing="0">
               <tr>
-                <td style="padding-right:14px;">
-                  <img src="${FOOTER_LOGO_URL}" alt="Clinzor" width="72" style="display:block;" />
+                <td style="padding-right:16px;">
+                  <img src="${LOGO_URL}" alt="Clinzor" width="72" style="display:block;" />
                 </td>
-                <td style="border-left:1px solid #F0F0F2; padding-left:14px;">
-                  <img src="${YOURPHYSIO_LOGO_URL}" alt="YourPhysio" width="72" style="display:block;" />
+                <td style="border-left:1px solid rgba(255,255,255,0.2); padding-left:16px;">
+                  <img src="${YOURPHYSIO_LOGO_URL}" alt="YourPhysio" width="40" style="display:block; border-radius:8px;" />
                 </td>
               </tr>
             </table>
