@@ -9,6 +9,7 @@ import {
   findUserById,
   findUserByIdentifier,
 } from '../models/user.model'
+import { syncPatientToPhysioPlatform } from '../services/physioPlatformSync.service'
 import type { LoginInput, RequestOtpInput, VerifyOtpInput } from '../types/user.types'
 import { compareValue } from '../utils/hash'
 import { successResponse } from '../utils/response'
@@ -48,6 +49,11 @@ export const verifyPatientOtp = async (req: Request, res: Response): Promise<voi
 
   if (!user) {
     user = await createPatientUser(identifier, identifier)
+    try {
+      await syncPatientToPhysioPlatform(user)
+    } catch (err) {
+      console.error('Failed to sync patient to physio-platform:', err)
+    }
   }
 
   const token = generateToken({ userId: user.id, role: user.role })
