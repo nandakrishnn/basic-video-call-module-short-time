@@ -196,7 +196,7 @@ export const sendCallStartingEmail = async (to: string, details: CallStartingDet
     from: EMAIL_FROM,
     replyTo: EMAIL_REPLY_TO,
     to,
-    subject: 'Your Clinzor call is starting now',
+    subject: 'YourPhysio video call session is starting now',
     text: [
       `Hi ${details.patientName},`,
       '',
