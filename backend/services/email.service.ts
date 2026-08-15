@@ -4,7 +4,7 @@ import { parseUtc } from '../utils/date'
 
 const LOGO_URL = `${CONFIG.app.backendUrl}/assets/clinzor-logo-white.png`
 // Served from the frontend's /public folder, not the backend.
-const YOURPHYSIO_LOGO_URL = `${CONFIG.app.url}/${encodeURIComponent('Yorphysio Plan - 6.png')}`
+const YORPHYSIO_LOGO_URL = `${CONFIG.app.url}/${encodeURIComponent('Yorphysio Plan - 6.png')}`
 
 // The Resend SDK resolves with { data, error } instead of throwing on API
 // errors, so callers must check `error` explicitly or failures go unnoticed.
@@ -46,7 +46,7 @@ const wrapEmailHtml = (bodyHtml: string): string => `
                   <img src="${LOGO_URL}" alt="Clinzor" width="72" style="display:block;" />
                 </td>
                 <td style="border-left:1px solid rgba(255,255,255,0.2); padding-left:16px;">
-                  <img src="${YOURPHYSIO_LOGO_URL}" alt="YourPhysio" width="40" style="display:block; border-radius:8px;" />
+                  <img src="${YORPHYSIO_LOGO_URL}" alt="YorPhysio" width="40" style="display:block; border-radius:8px;" />
                 </td>
               </tr>
             </table>
@@ -195,7 +195,7 @@ export const sendCallStartingEmail = async (to: string, details: CallStartingDet
     from: EMAIL_FROM,
     replyTo: EMAIL_REPLY_TO,
     to,
-    subject: 'YourPhysio video call session is starting now',
+    subject: 'YorPhysio video call session is starting now',
     text: [
       `Hi ${details.patientName},`,
       '',
