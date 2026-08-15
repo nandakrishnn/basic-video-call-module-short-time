@@ -84,9 +84,9 @@ export const MESSAGES = {
 
   brand: {
     clinzorEyebrow: 'The platform',
-    clinzorBody: 'Clinical-grade technology — AI, pose detection, video calls, session management — built for physiotherapy professionals.',
+    clinzorBody: 'Clinical-grade technology built for physiotherapy professionals, including AI, pose detection, video calls, and session management.',
     yorphysioEyebrow: 'The service',
-    yorphysioBody: 'The consumer-facing brand — booking, physio matching, home visits, and video consultations — powered by the Clinzor platform.',
+    yorphysioBody: 'The consumer-facing brand powered by the Clinzor platform, offering booking, physio matching, home visits, and video consultations.',
     contactLink: 'Contact us',
   },
 
