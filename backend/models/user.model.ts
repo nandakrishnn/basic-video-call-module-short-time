@@ -1,5 +1,10 @@
+import { MESSAGES } from '../constants/messages'
 import { db } from '../db'
+import { AppError } from '../middleware/error.middleware'
 import type { User } from '../types/user.types'
+
+// Postgres unique_violation - thrown when email or phone already exists.
+const isDuplicateKeyError = (error: { code?: string } | null): boolean => error?.code === '23505'
 
 interface UserRow {
   id: string
@@ -65,7 +70,13 @@ export const createPatientUser = async (identifier: string, fullName: string): P
     .select('*')
     .single()
 
-  if (error || !data) throw new Error('Failed to create patient user')
+  if (error || !data) {
+    if (isDuplicateKeyError(error)) {
+      throw new AppError(MESSAGES.patient.duplicateContact, 409, 'PATIENT_DUPLICATE_CONTACT')
+    }
+    console.error('Failed to create patient user:', error)
+    throw new Error('Failed to create patient user')
+  }
   return mapRow(data as UserRow)
 }
 
@@ -85,6 +96,12 @@ export const createPatient = async (input: {
     .select('*')
     .single()
 
-  if (error || !data) throw new Error('Failed to create patient')
+  if (error || !data) {
+    if (isDuplicateKeyError(error)) {
+      throw new AppError(MESSAGES.patient.duplicateContact, 409, 'PATIENT_DUPLICATE_CONTACT')
+    }
+    console.error('Failed to create patient:', error)
+    throw new Error('Failed to create patient')
+  }
   return mapRow(data as UserRow)
 }

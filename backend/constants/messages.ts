@@ -55,6 +55,7 @@ export const MESSAGES = {
   patient: {
     createSuccess: 'Patient added successfully.',
     listSuccess: 'Patients fetched successfully.',
+    duplicateContact: 'A patient with this email or phone number already exists.',
   },
 
   validation: {
