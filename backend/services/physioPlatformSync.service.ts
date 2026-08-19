@@ -53,14 +53,21 @@ export const syncPatientToPhysioPlatform = async (patient: User): Promise<void> 
       throw new Error(`physio-platform auth user creation failed: ${authError?.message}`)
     }
 
+    // Upsert rather than insert: createUser can return an *existing* auth
+    // user (e.g. the phone already belongs to someone there) even when our
+    // own email-based lookup above found nothing - a plain insert would
+    // collide on the auth_user_id unique constraint in that case.
     const { data: profile, error: profileError } = await physioPlatformSupabase
       .from('profiles')
-      .insert({
-        auth_user_id: authUser.user.id,
-        role: 'patient',
-        full_name: patient.fullName,
-        email: patient.email,
-      })
+      .upsert(
+        {
+          auth_user_id: authUser.user.id,
+          role: 'patient',
+          full_name: patient.fullName,
+          email: patient.email,
+        },
+        { onConflict: 'auth_user_id' },
+      )
       .select('id')
       .single()
     if (profileError || !profile) {
