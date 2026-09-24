@@ -3,6 +3,7 @@ import { AddPatientPanel } from '@/components/patients/AddPatientPanel'
 import { PatientListItem } from '@/components/patients/PatientListItem'
 import { DashboardSidebar } from '@/components/shared/DashboardSidebar'
 import { EmptyState } from '@/components/shared/EmptyState'
+import { ListPageSkeleton } from '@/components/shared/ListPageSkeleton'
 import { PageState } from '@/components/shared/PageState'
 import { SearchInput } from '@/components/shared/SearchInput'
 import { COLORS, FONT_SIZES } from '@/constants/colors'
@@ -48,7 +49,7 @@ const PatientsPage = (): JSX.Element => {
   }, [patients, query])
 
   if (isLoading) {
-    return <PageState tone="loading" message="Loading…" />
+    return <ListPageSkeleton variant="grid" rows={6} />
   }
 
   if (error) {

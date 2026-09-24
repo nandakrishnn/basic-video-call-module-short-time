@@ -2,6 +2,7 @@ import { useRouter } from 'next/router'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { RescheduleModal } from '@/components/appointments/RescheduleModal'
 import { AppointmentsTable } from '@/components/dashboard/AppointmentsTable'
+import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton'
 import { DashboardTopbar } from '@/components/dashboard/DashboardTopbar'
 import { HeroBanner } from '@/components/dashboard/HeroBanner'
 import { NextSessionCard } from '@/components/dashboard/NextSessionCard'
@@ -10,7 +11,6 @@ import { NewCallPanel } from '@/components/session/NewCallPanel'
 import { Card } from '@/components/shared/Card'
 import { DashboardSidebar } from '@/components/shared/DashboardSidebar'
 import { DatePicker } from '@/components/shared/DatePicker'
-import { PageState } from '@/components/shared/PageState'
 import { COLORS, FONT_SIZES } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
 import { ROUTES } from '@/constants/routes'
@@ -153,7 +153,7 @@ const PhysioDashboardPage = (): JSX.Element => {
   }, [appointments, patientsById, tab, anchorDate, query])
 
   if (isLoading || isAuthLoading) {
-    return <PageState tone="loading" message="Loading…" />
+    return <DashboardSkeleton />
   }
 
   return (

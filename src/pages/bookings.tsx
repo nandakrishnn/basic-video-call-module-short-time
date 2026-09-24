@@ -3,6 +3,7 @@ import { RescheduleModal } from '@/components/appointments/RescheduleModal'
 import { AppointmentList } from '@/components/appointments/AppointmentList'
 import { DashboardSidebar } from '@/components/shared/DashboardSidebar'
 import { EmptyState } from '@/components/shared/EmptyState'
+import { ListPageSkeleton } from '@/components/shared/ListPageSkeleton'
 import { PageState } from '@/components/shared/PageState'
 import { COLORS, FONT_SIZES, RADII } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
@@ -74,7 +75,7 @@ const BookingsPage = (): JSX.Element => {
   }, [appointments, filter])
 
   if (isLoading || isAuthLoading) {
-    return <PageState tone="loading" message="Loading…" />
+    return <ListPageSkeleton variant="rows" filterCount={5} rows={5} />
   }
 
   if (error) {

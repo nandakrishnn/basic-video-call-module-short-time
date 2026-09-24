@@ -170,6 +170,46 @@ a {
   }
 }
 
+/* Skeletons ----------------------------------------------------------------
+   A highlight sweeps across a tinted block. The sweep is decorative, so under
+   reduced-motion the block simply holds its tint rather than animating. */
+
+@keyframes skeleton-sweep {
+  from {
+    background-position: 180% 0;
+  }
+  to {
+    background-position: -80% 0;
+  }
+}
+
+.skeleton {
+  display: block;
+  background-color: var(--color-surface-alt);
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.85) 50%,
+    transparent 100%
+  );
+  background-size: 220% 100%;
+  background-repeat: no-repeat;
+  animation: skeleton-sweep 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    background-image: none;
+    animation: none;
+  }
+}
+
+.skeleton-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
 @keyframes modal-fade-in {
   from {
     opacity: 0;
