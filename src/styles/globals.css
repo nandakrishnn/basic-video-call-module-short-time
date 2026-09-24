@@ -20,11 +20,14 @@
   --color-primary-softer: #FDF6F4;
   --color-accent: #473521;
 
-  /* Surfaces --------------------------------------------------------------- */
-  --color-bg: #FBF7F4;
+  /* Surfaces ---------------------------------------------------------------
+     Page and card are both pure white, so cards are separated by their border
+     and shadow alone — keep --color-border visible enough to carry that on its
+     own, and prefer --color-surface-alt for any fill meant to read as inset. */
+  --color-bg: #FFFFFF;
   --color-surface: #FFFFFF;
   --color-surface-alt: #F8F0EC;
-  --color-border: #F0E2DB;
+  --color-border: #EADCD2;
   --color-border-strong: #E3CDC2;
 
   /* Text ------------------------------------------------------------------- */
