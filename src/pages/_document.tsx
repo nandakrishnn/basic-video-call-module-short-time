@@ -12,6 +12,9 @@ const Document = (): JSX.Element => (
       <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
       <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png" />
       <link rel="apple-touch-icon" sizes="180x180" href="/favicon-180.png" />
+      {/* The one literal colour outside globals.css: a meta tag is read by the
+          browser chrome before any stylesheet, so it cannot use a CSS variable.
+          Mirrors --color-primary. */}
       <meta name="theme-color" content="#D86F4E" />
     </Head>
     <body>

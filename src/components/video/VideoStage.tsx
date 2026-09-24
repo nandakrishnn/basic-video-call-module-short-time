@@ -1,4 +1,4 @@
-import { PhoneOff, SignalHigh } from 'lucide-react'
+import { PhoneOff } from 'lucide-react'
 import { useRef } from 'react'
 import { Button } from '@/components/shared/Button'
 import { COLORS, RADII, SHADOWS } from '@/constants/colors'
@@ -96,26 +96,9 @@ export const VideoStage = ({
       <div style={{ position: 'relative', flex: 1, minHeight: 240 }}>
         <div ref={containerRef} style={{ width: '100%', height: '100%', overflow: 'hidden' }} />
 
-        {!isChatOpen && (
-          <>
-            <span className="call-pill" style={{ top: 16, left: 16 }}>
-              <span
-                style={{
-                  width: 7,
-                  height: 7,
-                  borderRadius: '50%',
-                  background: callState === 'connected' ? COLORS.status.success : COLORS.status.warning,
-                }}
-              />
-              {counterpartName}
-            </span>
-
-            <span className="call-pill" style={{ bottom: 20, left: 16 }}>
-              <SignalHigh size={15} />
-              {callState === 'connected' ? 'Good Connection' : 'Connecting…'}
-            </span>
-          </>
-        )}
+        {/* No name or connection pill over the video: the header above already
+            shows both, and the name pill sat at the same top-left coordinates
+            as the chat button, so the two overlapped. */}
         <TroubleshootButton counterpartName={counterpartName} isChatOpen={isChatOpen} onToggleChat={toggleChat} />
         {isModerator && (
           <LobbyRequests

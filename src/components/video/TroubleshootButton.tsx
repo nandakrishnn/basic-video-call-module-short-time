@@ -1,6 +1,6 @@
 import { LifeBuoy, MessageCircle, Phone, X } from 'lucide-react'
 import { useState } from 'react'
-import { COLORS, RADII, SHADOWS } from '@/constants/colors'
+import { COLORS, FONT_SIZES, RADII, SHADOWS } from '@/constants/colors'
 import { CONFIG } from '@/constants/config'
 
 interface TroubleshootButtonProps {
@@ -29,19 +29,19 @@ export const TroubleshootButton = ({
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 6,
-            padding: '8px 14px',
+            gap: 9,
+            padding: '13px 22px',
             borderRadius: RADII.pill,
             border: 'none',
             background: COLORS.primaryLight,
             color: COLORS.text.inverse,
-            fontSize: '0.78rem',
+            fontSize: FONT_SIZES.md,
             fontWeight: 700,
             cursor: 'pointer',
             boxShadow: SHADOWS.md,
           }}
         >
-          <X size={16} />
+          <X size={19} />
           Close chat
         </button>
       </div>
@@ -60,19 +60,19 @@ export const TroubleshootButton = ({
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: 6,
-          padding: '8px 14px',
+          gap: 9,
+          padding: '13px 22px',
           borderRadius: RADII.pill,
           border: 'none',
           background: COLORS.primaryLight,
           color: COLORS.text.inverse,
-          fontSize: '0.78rem',
+          fontSize: FONT_SIZES.md,
           fontWeight: 700,
           cursor: 'pointer',
           boxShadow: SHADOWS.md,
         }}
       >
-        <LifeBuoy size={16} />
+        <LifeBuoy size={19} />
         Chat with us
       </button>
 

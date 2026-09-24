@@ -700,23 +700,6 @@ a {
   white-space: nowrap;
 }
 
-/* Floating status pills over the video */
-.call-pill {
-  position: absolute;
-  z-index: 2;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 7px 13px;
-  border-radius: var(--radius-pill);
-  background: var(--color-overlay);
-  color: var(--color-text-inverse);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
 @media (max-width: 640px) {
   .video-header-meta {
     gap: var(--space-3);
