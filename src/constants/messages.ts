@@ -12,6 +12,10 @@ export const MESSAGES = {
   },
 
   session: {
+    rolePatient: 'Patient',
+    rolePhysio: 'Your physio',
+    contactLabel: 'Contact',
+    typeLabel: 'Session',
     joinChoiceTitle: 'Join your session',
     joinChoiceBody: 'Log in to your Clinzor account, or continue as a guest with a one-time code.',
     loginOption: 'Log in to your account',

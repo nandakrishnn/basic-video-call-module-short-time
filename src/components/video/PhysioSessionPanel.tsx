@@ -1,14 +1,17 @@
-import { NotebookPen, PhoneOff } from 'lucide-react'
+import { Mail, NotebookPen, PhoneOff, Phone as PhoneIcon } from 'lucide-react'
 import { Avatar } from '@/components/shared/Avatar'
 import { Button } from '@/components/shared/Button'
 import { Card } from '@/components/shared/Card'
 import { COLORS, FONT_SIZES, RADII } from '@/constants/colors'
+import { MESSAGES } from '@/constants/messages'
+import type { PatientSummary } from '@/types/user.types'
 import { parseUtc } from '@/utils/date'
 
 interface PhysioSessionPanelProps {
-  patientName: string
+  /** Joined from the patient list; absent until that request lands. */
+  patient?: PatientSummary
   patientAge: number | null
-  sessionNumber: number
+  sessionType: string
   scheduledAt: string
   actualStartAt: string | null
   onQuickNote: () => void
@@ -34,27 +37,45 @@ const labelStyle = {
   letterSpacing: '0.09em',
 }
 
+const contactRowStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  color: COLORS.text.secondary,
+  fontSize: FONT_SIZES.sm,
+  minWidth: 0,
+}
+
+const truncate = {
+  whiteSpace: 'nowrap' as const,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+}
+
 export const PhysioSessionPanel = ({
-  patientName,
+  patient,
   patientAge,
-  sessionNumber,
+  sessionType,
   scheduledAt,
   actualStartAt,
   onQuickNote,
   onEndCallAndWriteNotes,
 }: PhysioSessionPanelProps): JSX.Element => {
+  const name = patient?.fullName ?? MESSAGES.appointments.unknownPatient
+  const issue = patient?.issue?.trim()
+
   return (
     <Card
       elevation="sm"
       padding={22}
       className="session-side-panel"
-      style={{ display: 'flex', flexDirection: 'column', gap: 22 }}
+      style={{ display: 'flex', flexDirection: 'column', gap: 20 }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
-        <Avatar name={patientName} size={46} />
+        <Avatar name={name} size={46} />
         <div style={{ minWidth: 0 }}>
-          <h3 style={{ color: COLORS.text.primary, fontSize: FONT_SIZES.lg, fontWeight: 800, margin: 0 }}>
-            {patientName}
+          <h3 style={{ color: COLORS.text.primary, fontSize: FONT_SIZES.lg, fontWeight: 800, margin: 0, ...truncate }}>
+            {name}
           </h3>
           {patientAge !== null && (
             <p style={{ color: COLORS.text.secondary, fontSize: FONT_SIZES.sm, margin: '2px 0 0' }}>
@@ -63,6 +84,48 @@ export const PhysioSessionPanel = ({
           )}
         </div>
       </div>
+
+      {issue && (
+        <div>
+          <span style={labelStyle}>{MESSAGES.patients.fieldIssue}</span>
+          <p
+            style={{
+              display: 'inline-block',
+              margin: '6px 0 0',
+              padding: '5px 11px',
+              borderRadius: RADII.pill,
+              background: COLORS.primarySoft,
+              color: COLORS.primaryStrong,
+              fontSize: FONT_SIZES.base,
+              fontWeight: 700,
+            }}
+          >
+            {issue}
+          </p>
+        </div>
+      )}
+
+      {(patient?.phone || patient?.email) && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 7, minWidth: 0 }}>
+          <span style={labelStyle}>{MESSAGES.session.contactLabel}</span>
+          {patient.phone && (
+            <a href={`tel:${patient.phone}`} style={{ ...contactRowStyle, textDecoration: 'none' }}>
+              <PhoneIcon size={14} style={{ flexShrink: 0 }} />
+              <span style={truncate}>{patient.phone}</span>
+            </a>
+          )}
+          {patient.email && (
+            <a
+              href={`mailto:${patient.email}`}
+              title={patient.email}
+              style={{ ...contactRowStyle, textDecoration: 'none' }}
+            >
+              <Mail size={14} style={{ flexShrink: 0 }} />
+              <span style={truncate}>{patient.email}</span>
+            </a>
+          )}
+        </div>
+      )}
 
       <div
         style={{
@@ -76,9 +139,16 @@ export const PhysioSessionPanel = ({
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <span style={labelStyle}>Session</span>
-          <span style={{ color: COLORS.text.primary, fontSize: FONT_SIZES.md, fontWeight: 700 }}>
-            Follow-up #{sessionNumber}
+          <span style={labelStyle}>{MESSAGES.session.typeLabel}</span>
+          <span
+            style={{
+              color: COLORS.text.primary,
+              fontSize: FONT_SIZES.md,
+              fontWeight: 700,
+              textTransform: 'capitalize',
+            }}
+          >
+            {sessionType}
           </span>
         </div>
 

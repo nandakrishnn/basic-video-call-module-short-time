@@ -11,11 +11,27 @@ import { COLORS } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
 import { ROUTES } from '@/constants/routes'
 import { useAuth } from '@/hooks/useAuth'
-import { createAppointmentRequest } from '@/services/appointment.service'
+import { createAppointmentRequest, getAppointmentsByPhysioRequest } from '@/services/appointment.service'
+import { listPatientsRequest } from '@/services/patient.service'
 import { endSessionRequest, getSessionRequest, startSessionRequest } from '@/services/session.service'
 import type { Appointment, AppointmentType } from '@/types/appointment.types'
 import type { Session } from '@/types/session.types'
+import type { User } from '@/types/user.types'
 import { getQuickNote, getToken, setQuickNote } from '@/utils/storage'
+
+const DEFAULT_SESSION_TYPE = 'followup'
+
+const ageFromDob = (dob: string | null): number | null => {
+  if (!dob) return null
+  const born = new Date(dob)
+  if (Number.isNaN(born.getTime())) return null
+  const now = new Date()
+  let age = now.getFullYear() - born.getFullYear()
+  const beforeBirthday =
+    now.getMonth() < born.getMonth() || (now.getMonth() === born.getMonth() && now.getDate() < born.getDate())
+  if (beforeBirthday) age -= 1
+  return age >= 0 && age < 130 ? age : null
+}
 
 const SessionPage = (): JSX.Element => {
   const router = useRouter()
@@ -30,6 +46,8 @@ const SessionPage = (): JSX.Element => {
   const [callEndedForPatient, setCallEndedForPatient] = useState(false)
   const [showQuickNote, setShowQuickNote] = useState(false)
   const [isEndingCall, setIsEndingCall] = useState(false)
+  const [patient, setPatient] = useState<User | null>(null)
+  const [sessionType, setSessionType] = useState(DEFAULT_SESSION_TYPE)
 
   useEffect(() => {
     if (!sessionId) return
@@ -45,6 +63,34 @@ const SessionPage = (): JSX.Element => {
   }, [sessionId])
 
   const isPhysio = user?.role === 'physio'
+
+  // The session record carries only patientId, and /api/patients is physio-only,
+  // so the patient's details are joined here rather than shipped with it. The
+  // panel that shows them renders for the physio alone, so the role restriction
+  // costs nothing.
+  useEffect(() => {
+    if (!isPhysio || !session) return
+    const token = getToken()
+    if (!token) return
+
+    listPatientsRequest(token).then((res) => {
+      if (!res.success) return
+      setPatient(res.data.find((candidate) => candidate.id === session.patientId) ?? null)
+    })
+  }, [isPhysio, session])
+
+  // Session type lives on the appointment, not the session.
+  useEffect(() => {
+    if (!isPhysio || !session?.appointmentId || !user) return
+    const token = getToken()
+    if (!token) return
+
+    getAppointmentsByPhysioRequest(token, user.id).then((res) => {
+      if (!res.success) return
+      const appointment = res.data.find((a) => a.id === session.appointmentId)
+      if (appointment) setSessionType(appointment.sessionType)
+    })
+  }, [isPhysio, session?.appointmentId, user])
 
   // Only the physio starting the session flips it to 'active' — a patient
   // opening the join link first must not be able to trigger this themselves.
@@ -99,6 +145,14 @@ const SessionPage = (): JSX.Element => {
     return res.success ? res.data : null
   }
 
+  // The physio sees the patient; the patient sees their physio. Falls back to a
+  // role word until the join lands, rather than the literal "Patient" this
+  // screen used to show both sides.
+  const counterpartLabel = isPhysio
+    ? (patient?.fullName ?? MESSAGES.session.rolePatient)
+    : MESSAGES.session.rolePhysio
+  const sessionSubtitle = isPhysio && patient?.issue?.trim() ? patient.issue.trim() : sessionType
+
   const handleClosePostCallModal = (): void => {
     setShowPostCallModal(false)
     void router.push(ROUTES.dashboardPhysio)
@@ -142,20 +196,24 @@ const SessionPage = (): JSX.Element => {
             displayName={user?.fullName ?? 'Guest'}
             jwt={session.jitsiJwt}
             isModerator={isPhysio}
-            patientName="Patient"
-            counterpartName={isPhysio ? 'Patient' : 'Doctor'}
-            sessionType="Follow-up"
+            patientName={counterpartLabel}
+            counterpartName={counterpartLabel}
+            sessionType={sessionSubtitle}
             onCallEnded={handleCallEnded}
           />
         ) : (
-          <PreCallScreen patientName="Patient" sessionType="Follow-up" onJoin={() => setHasJoined(true)} />
+          <PreCallScreen
+            patientName={counterpartLabel}
+            sessionType={sessionSubtitle}
+            onJoin={() => setHasJoined(true)}
+          />
         )}
       </div>
       {isPhysio && (
         <PhysioSessionPanel
-          patientName="Patient"
-          patientAge={null}
-          sessionNumber={1}
+          patient={patient ?? undefined}
+          patientAge={ageFromDob(patient?.dateOfBirth ?? null)}
+          sessionType={sessionType}
           scheduledAt={session.startedAt ?? ''}
           actualStartAt={session.startedAt}
           onQuickNote={() => setShowQuickNote(true)}
@@ -171,8 +229,8 @@ const SessionPage = (): JSX.Element => {
       )}
       {showPostCallModal && (
         <PostCallModal
-          patientEmail={null}
-          patientName="Patient"
+          patientEmail={patient?.email ?? null}
+          patientName={counterpartLabel}
           physioName={user?.fullName ?? ''}
           onSchedule={handleSchedule}
           onClose={handleClosePostCallModal}
