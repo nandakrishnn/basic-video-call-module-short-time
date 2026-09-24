@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "tsx watch app.ts",
-    "build": "tsc && node -e \"require('fs').cpSync('assets','dist/assets',{recursive:true})\"",
+    "build": "puppeteer browsers install chrome && tsc && node -e \"require('fs').cpSync('assets','dist/assets',{recursive:true})\"",
     "start": "node dist/app.js",
     "type-check": "tsc --noEmit"
   },

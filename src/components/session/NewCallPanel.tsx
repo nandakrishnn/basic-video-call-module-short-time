@@ -1,6 +1,7 @@
 import { Check, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/shared/Button'
+import { DatePicker } from '@/components/shared/DatePicker'
 import { Field } from '@/components/shared/Field'
 import { Input, Select } from '@/components/shared/Input'
 import { Modal } from '@/components/shared/Modal'
@@ -41,6 +42,10 @@ export const NewCallPanel = ({
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Local-time key so "today" matches the user's calendar, not UTC's.
+  const now = new Date()
+  const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 
   const resetAndClose = (): void => {
     setIsOpen(false)
@@ -237,7 +242,12 @@ export const NewCallPanel = ({
               <div className="form-row-2up">
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <Field label={MESSAGES.newCall.fieldDate}>
-                    <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                    <DatePicker
+                      value={date}
+                      onChange={setDate}
+                      min={todayKey}
+                      ariaLabel={MESSAGES.newCall.fieldDate}
+                    />
                   </Field>
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>

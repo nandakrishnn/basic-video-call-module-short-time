@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@/components/shared/Button'
+import { DatePicker } from '@/components/shared/DatePicker'
 import { Field } from '@/components/shared/Field'
 import { Input } from '@/components/shared/Input'
 import { Modal } from '@/components/shared/Modal'
@@ -35,6 +36,7 @@ export const RescheduleModal = ({
   onRescheduled,
 }: RescheduleModalProps): JSX.Element => {
   const initial = toInputParts(appointment.scheduledAt)
+  const todayKey = toInputParts(new Date().toISOString()).date
   const [date, setDate] = useState(initial.date)
   const [time, setTime] = useState(initial.time)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -103,7 +105,7 @@ export const RescheduleModal = ({
         <div className="form-row-2up">
           <div style={{ flex: 1, minWidth: 0 }}>
             <Field label={MESSAGES.newCall.fieldDate}>
-              <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+              <DatePicker value={date} onChange={setDate} min={todayKey} ariaLabel={MESSAGES.newCall.fieldDate} />
             </Field>
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>

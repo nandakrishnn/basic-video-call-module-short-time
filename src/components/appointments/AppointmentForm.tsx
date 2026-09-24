@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@/components/shared/Button'
+import { DatePicker } from '@/components/shared/DatePicker'
 import { Input, Select, Textarea } from '@/components/shared/Input'
 import { COLORS } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
@@ -34,9 +35,9 @@ export const AppointmentForm = ({ onSubmit, isSubmitting }: AppointmentFormProps
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div className="form-row-2up">
-        <label style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <label style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 }}>
           <span style={labelStyle}>Date</span>
-          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          <DatePicker value={date} onChange={setDate} ariaLabel="Date" />
         </label>
         <label style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
           <span style={labelStyle}>Time</span>

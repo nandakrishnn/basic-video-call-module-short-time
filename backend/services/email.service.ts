@@ -2,6 +2,19 @@ import { CONFIG } from '../constants/config'
 import { EMAIL_FROM, EMAIL_REPLY_TO, resend } from '../lib/resend'
 import { parseUtc } from '../utils/date'
 
+/**
+ * Email clients strip <style> and CSS variables, so every colour has to be an
+ * inline literal. These mirror the YorPhysio tokens in src/styles/globals.css
+ * — the one place outside that file where the palette is repeated.
+ */
+const BRAND = {
+  canvas: '#FBF7F4',
+  panel: '#473521',
+  primary: '#B55D42',
+  text: '#3D2B1E',
+  muted: '#7A6354',
+} as const
+
 const LOGO_URL = `${CONFIG.app.backendUrl}/assets/clinzor-logo-white.png`
 // Served from the frontend's /public folder, not the backend.
 const YORPHYSIO_LOGO_URL = `${CONFIG.app.url}/${encodeURIComponent('Yorphysio Plan - 6.png')}`
@@ -23,22 +36,22 @@ const escapeHtml = (value: string): string => {
 // Table-based layout (not flexbox/grid) is deliberate — it's the only layout method
 // that renders consistently across email clients (Outlook in particular).
 const wrapEmailHtml = (bodyHtml: string): string => `
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 0;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${BRAND.canvas};padding:32px 0;">
   <tr>
     <td align="center">
       <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="background:#FFFFFF;border-radius:16px;overflow:hidden;font-family:Arial,Helvetica,sans-serif;">
         <tr>
-          <td align="center" style="background:#1A1C6B;padding:28px 32px;">
+          <td align="center" style="background:${BRAND.panel};padding:28px 32px;">
             <img src="${LOGO_URL}" alt="Clinzor" width="130" style="display:block;" />
           </td>
         </tr>
         <tr>
-          <td style="padding:32px; color:#1D1D1F; font-size:15px; line-height:1.6;">
+          <td style="padding:32px; color:${BRAND.text}; font-size:15px; line-height:1.6;">
             ${bodyHtml}
           </td>
         </tr>
         <tr>
-          <td align="center" style="background:#1A1C6B; padding:22px 32px 26px;">
+          <td align="center" style="background:${BRAND.panel}; padding:22px 32px 26px;">
             <p style="margin:0 0 12px; color:rgba(255,255,255,0.65); font-size:12px;">Co-powered by</p>
             <table role="presentation" cellpadding="0" cellspacing="0">
               <tr>
@@ -78,7 +91,7 @@ const formatSlot = (isoLike: string): { dateLabel: string; timeLabel: string } =
 }
 
 const buttonHtml = (href: string, label: string): string =>
-  `<p style="text-align:center;margin:24px 0;"><a href="${href}" style="display:inline-block;background:#1A1C6B;color:#FFFFFF;text-decoration:none;padding:12px 28px;border-radius:999px;font-weight:bold;font-size:15px;">${escapeHtml(label)}</a></p>`
+  `<p style="text-align:center;margin:24px 0;"><a href="${href}" style="display:inline-block;background:${BRAND.primary};color:#FFFFFF;text-decoration:none;padding:12px 28px;border-radius:999px;font-weight:bold;font-size:15px;">${escapeHtml(label)}</a></p>`
 
 export const sendOtpEmail = async (to: string, otp: string): Promise<void> => {
   const html = wrapEmailHtml(`
@@ -136,15 +149,15 @@ export const sendAppointmentScheduledEmail = async (
     <p>Your ${sessionType} session with ${physioName} has been scheduled.</p>
     <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:20px 0;font-size:14px;">
       <tr>
-        <td style="color:#6E6E73;padding:4px 0;">Date</td>
+        <td style="color:${BRAND.muted};padding:4px 0;">Date</td>
         <td style="text-align:right;font-weight:bold;padding:4px 0;">${escapeHtml(dateLabel)}</td>
       </tr>
       <tr>
-        <td style="color:#6E6E73;padding:4px 0;">Time</td>
+        <td style="color:${BRAND.muted};padding:4px 0;">Time</td>
         <td style="text-align:right;font-weight:bold;padding:4px 0;">${escapeHtml(timeLabel)}</td>
       </tr>
       <tr>
-        <td style="color:#6E6E73;padding:4px 0;">Duration</td>
+        <td style="color:${BRAND.muted};padding:4px 0;">Duration</td>
         <td style="text-align:right;font-weight:bold;padding:4px 0;">${details.durationMinutes} minutes</td>
       </tr>
     </table>
@@ -200,19 +213,19 @@ export const sendAppointmentRescheduledEmail = async (
     <p>Your ${sessionType} session with ${physioName} has been moved to a new time.</p>
     <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:20px 0;font-size:14px;">
       <tr>
-        <td style="color:#6E6E73;padding:4px 0;">Was</td>
-        <td style="text-align:right;padding:4px 0;color:#6E6E73;text-decoration:line-through;">${escapeHtml(previous.dateLabel)}, ${escapeHtml(previous.timeLabel)}</td>
+        <td style="color:${BRAND.muted};padding:4px 0;">Was</td>
+        <td style="text-align:right;padding:4px 0;color:${BRAND.muted};text-decoration:line-through;">${escapeHtml(previous.dateLabel)}, ${escapeHtml(previous.timeLabel)}</td>
       </tr>
       <tr>
-        <td style="color:#6E6E73;padding:4px 0;">Now</td>
+        <td style="color:${BRAND.muted};padding:4px 0;">Now</td>
         <td style="text-align:right;font-weight:bold;padding:4px 0;">${escapeHtml(next.dateLabel)}</td>
       </tr>
       <tr>
-        <td style="color:#6E6E73;padding:4px 0;">Time</td>
+        <td style="color:${BRAND.muted};padding:4px 0;">Time</td>
         <td style="text-align:right;font-weight:bold;padding:4px 0;">${escapeHtml(next.timeLabel)}</td>
       </tr>
       <tr>
-        <td style="color:#6E6E73;padding:4px 0;">Duration</td>
+        <td style="color:${BRAND.muted};padding:4px 0;">Duration</td>
         <td style="text-align:right;font-weight:bold;padding:4px 0;">${details.durationMinutes} minutes</td>
       </tr>
     </table>
@@ -264,7 +277,7 @@ export const sendCallStartingEmail = async (to: string, details: CallStartingDet
     <p>Hi ${patientName},</p>
     <p>Your physio, ${physioName}, is ready for your session at ${escapeHtml(timeLabel)}.</p>
     ${buttonHtml(details.joinLink, 'Join Call')}
-    <p style="color:#6E6E73;font-size:13px;">If the button doesn't work, copy and paste this link: ${escapeHtml(details.joinLink)}</p>
+    <p style="color:${BRAND.muted};font-size:13px;">If the button doesn't work, copy and paste this link: ${escapeHtml(details.joinLink)}</p>
   `)
 
   await send({

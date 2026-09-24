@@ -29,12 +29,15 @@ const buildHtml = (data: PdfReportData): string => {
     <html>
       <head>
         <style>
-          body { font-family: 'Inter', sans-serif; color: #1D1D1F; padding: 40px; }
-          h1 { font-family: 'Nunito', sans-serif; color: #1A1C6B; font-size: 22px; margin-bottom: 4px; }
-          .meta { color: #6E6E73; font-size: 13px; margin-bottom: 24px; }
-          .divider { border-top: 1px solid #E5E5EA; margin: 20px 0; }
+          /* Mirrors the YorPhysio tokens in src/styles/globals.css. The PDF is
+             rendered by Chrome in this process and cannot import that file, so
+             these are the one place the palette is repeated — keep in sync. */
+          body { font-family: 'Inter', Arial, sans-serif; color: #3D2B1E; padding: 40px; }
+          h1 { color: #473521; font-size: 22px; margin-bottom: 4px; }
+          .meta { color: #7A6354; font-size: 13px; margin-bottom: 24px; }
+          .divider { border-top: 1px solid #F0E2DB; margin: 20px 0; }
           .notes { white-space: pre-wrap; font-size: 14px; line-height: 1.7; }
-          .footer { margin-top: 40px; color: #86868B; font-size: 11px; }
+          .footer { margin-top: 40px; color: #7E6F64; font-size: 11px; }
         </style>
       </head>
       <body>
@@ -54,7 +57,13 @@ const buildHtml = (data: PdfReportData): string => {
 }
 
 export const generateReportPdf = async (data: PdfReportData): Promise<Buffer> => {
-  const browser = await puppeteer.launch({ args: ['--no-sandbox'] })
+  // --disable-dev-shm-usage matters on Render: the container's /dev/shm is tiny
+  // and Chrome crashes mid-render without it. --no-sandbox is required since
+  // the process runs as root in that container.
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
+  })
   try {
     const page = await browser.newPage()
     await page.setContent(buildHtml(data), { waitUntil: 'networkidle0' })

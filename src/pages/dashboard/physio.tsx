@@ -9,8 +9,9 @@ import { AddPatientPanel } from '@/components/patients/AddPatientPanel'
 import { NewCallPanel } from '@/components/session/NewCallPanel'
 import { Card } from '@/components/shared/Card'
 import { DashboardSidebar } from '@/components/shared/DashboardSidebar'
+import { DatePicker } from '@/components/shared/DatePicker'
 import { PageState } from '@/components/shared/PageState'
-import { COLORS, FONT_SIZES, RADII } from '@/constants/colors'
+import { COLORS, FONT_SIZES } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
 import { ROUTES } from '@/constants/routes'
 import { useAuth } from '@/hooks/useAuth'
@@ -201,21 +202,13 @@ const PhysioDashboardPage = (): JSX.Element => {
             </div>
 
             <div className="dash-toolbar-actions">
-              <input
-                type="date"
-                value={anchorDate}
-                onChange={(e) => setAnchorDate(e.target.value)}
-                aria-label={MESSAGES.newCall.fieldDate}
-                style={{
-                  padding: '10px 14px',
-                  borderRadius: RADII.sm,
-                  border: `1px solid ${COLORS.border}`,
-                  background: COLORS.surface,
-                  color: COLORS.text.primary,
-                  fontSize: FONT_SIZES.base,
-                  fontFamily: 'inherit',
-                }}
-              />
+              <div style={{ minWidth: 210 }}>
+                <DatePicker
+                  value={anchorDate}
+                  onChange={setAnchorDate}
+                  ariaLabel={MESSAGES.newCall.fieldDate}
+                />
+              </div>
               {token && (
                 <>
                   <AddPatientPanel token={token} onPatientAdded={handlePatientAdded} />
