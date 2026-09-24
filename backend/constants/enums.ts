@@ -48,4 +48,5 @@ export enum AuditAction {
   PDF_GENERATED = 'pdf_generated',
   REPORT_SENT = 'report_sent',
   APPOINTMENT_SCHEDULED = 'appointment_scheduled',
+  APPOINTMENT_RESCHEDULED = 'appointment_rescheduled',
 }

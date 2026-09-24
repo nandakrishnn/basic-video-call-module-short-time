@@ -36,7 +36,10 @@ export const enhanceNotes = async (req: Request, res: Response): Promise<void> =
   let enhancedNotes: string
   try {
     enhancedNotes = await enhanceNotesWithAI(notes.rawNotes)
-  } catch {
+  } catch (err) {
+    // Without this the underlying cause — bad model name, missing key, safety
+    // block — is swallowed and every failure looks identical from the client.
+    console.error('Gemini note enhancement failed:', err)
     throw new AppError(MESSAGES.notes.enhanceFailed, 502, 'AI_ENHANCE_FAILED')
   }
 

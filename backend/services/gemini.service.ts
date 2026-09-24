@@ -1,3 +1,5 @@
+import { HarmBlockThreshold, HarmCategory } from '@google/generative-ai'
+import { CONFIG } from '../constants/config'
 import { genAI } from '../lib/gemini'
 
 const SYSTEM_PROMPT = `You are a clinical documentation assistant helping a
@@ -39,8 +41,52 @@ guessing or filling in plausible-sounding clinical content.
 
 Return only the formatted notes. Nothing else.`
 
+// Physiotherapy notes describe injury, pain and physical manipulation, which
+// the default medium thresholds can score as harmful and block outright. These
+// are clinician-authored records for a medical file, so only high-confidence
+// hits should stop a request.
+const SAFETY_SETTINGS = [
+  HarmCategory.HARM_CATEGORY_HARASSMENT,
+  HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+  HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+  HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+].map((category) => ({ category, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH }))
+
 export const enhanceNotesWithAI = async (rawNotes: string): Promise<string> => {
-  const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash' })
-  const result = await model.generateContent([SYSTEM_PROMPT, rawNotes])
-  return result.response.text()
+  if (!process.env.GEMINI_API_KEY) {
+    throw new Error('GEMINI_API_KEY is not set — note enhancement cannot run.')
+  }
+
+  const model = genAI.getGenerativeModel({
+    model: CONFIG.gemini.model,
+    // Passed as a real system instruction rather than a leading user turn, so
+    // the "invent nothing" rule is weighted as instruction, not as content the
+    // model may treat as part of the notes.
+    systemInstruction: SYSTEM_PROMPT,
+    safetySettings: SAFETY_SETTINGS,
+    generationConfig: {
+      temperature: CONFIG.gemini.temperature,
+      maxOutputTokens: CONFIG.gemini.maxOutputTokens,
+    },
+  })
+
+  const result = await model.generateContent(rawNotes)
+  const { response } = result
+
+  // A blocked prompt or a candidate stopped for safety leaves .text() throwing
+  // an opaque error, so surface the real reason for the log instead.
+  const blockReason = response.promptFeedback?.blockReason
+  if (blockReason) {
+    throw new Error(`Gemini blocked the prompt (${blockReason}).`)
+  }
+
+  const finishReason = response.candidates?.[0]?.finishReason
+  if (finishReason && finishReason !== 'STOP' && finishReason !== 'MAX_TOKENS') {
+    throw new Error(`Gemini returned no usable output (finishReason: ${finishReason}).`)
+  }
+
+  const text = response.text().trim()
+  if (!text) throw new Error('Gemini returned an empty response.')
+
+  return text
 }

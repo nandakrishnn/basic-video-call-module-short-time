@@ -17,6 +17,7 @@ const withJitsiToken = async (session: Session, userId: string, role: UserRole) 
   try {
     jitsiJwt = generateJitsiToken({
       roomName: session.roomName,
+      userId,
       name: user?.fullName ?? 'Guest',
       email: user?.email ?? null,
       moderator: role === UserRole.PHYSIO,

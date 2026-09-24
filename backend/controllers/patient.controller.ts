@@ -11,8 +11,8 @@ export const listPatients = async (_req: Request, res: Response): Promise<void> 
 }
 
 export const createPatientHandler = async (req: Request, res: Response): Promise<void> => {
-  const { fullName, email, phone } = req.body as CreatePatientInput
-  const patient = await createPatient({ fullName, email, phone })
+  const { fullName, email, phone, issue } = req.body as CreatePatientInput
+  const patient = await createPatient({ fullName, email, phone, issue })
 
   try {
     await syncPatientToPhysioPlatform(patient)

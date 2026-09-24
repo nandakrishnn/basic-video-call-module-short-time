@@ -12,7 +12,7 @@ import {
 } from '../models/appointment.model'
 import { findUserById } from '../models/user.model'
 import { logAudit } from '../services/audit.service'
-import { sendAppointmentScheduledEmail } from '../services/email.service'
+import { sendAppointmentRescheduledEmail, sendAppointmentScheduledEmail } from '../services/email.service'
 import type { CreateAppointmentInput, UpdateAppointmentInput } from '../types/appointment.types'
 import { successResponse } from '../utils/response'
 
@@ -73,6 +73,43 @@ export const updateAppointment = async (req: Request, res: Response): Promise<vo
   const updates = req.body as UpdateAppointmentInput
   const appointment = await updateAppointmentRecord(req.params.id, updates)
   if (!appointment) throw new AppError(MESSAGES.appointment.notFound, 404, 'APPOINTMENT_NOT_FOUND')
+
+  // Compare against the stored value rather than trusting the request body — a
+  // PATCH that resends the same time is an edit, not a reschedule, and must not
+  // email the patient about a change that didn't happen.
+  const wasRescheduled =
+    updates.scheduledAt !== undefined &&
+    new Date(existing.scheduledAt).getTime() !== new Date(appointment.scheduledAt).getTime()
+
+  if (wasRescheduled) {
+    await logAudit({
+      userId: req.user!.userId,
+      action: AuditAction.APPOINTMENT_RESCHEDULED,
+      resource: 'appointment',
+      resourceId: appointment.id,
+    })
+
+    const [patient, physio] = await Promise.all([
+      findUserById(appointment.patientId),
+      findUserById(appointment.physioId),
+    ])
+
+    if (patient?.email) {
+      try {
+        await sendAppointmentRescheduledEmail(patient.email, {
+          patientName: patient.fullName,
+          physioName: physio?.fullName ?? 'your physio',
+          previousScheduledAt: existing.scheduledAt,
+          scheduledAt: appointment.scheduledAt,
+          sessionType: appointment.sessionType,
+          durationMinutes: appointment.durationMinutes,
+        })
+      } catch (err) {
+        // The booking is already moved — a failed notification must not fail the request.
+        console.error('Failed to send reschedule email:', err)
+      }
+    }
+  }
 
   res.status(200).json(successResponse(appointment, MESSAGES.appointment.updateSuccess))
 }

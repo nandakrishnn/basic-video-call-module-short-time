@@ -28,10 +28,24 @@ export const generateRoomLink = (roomName: string): string => {
 
 interface JitsiTokenParams {
   roomName: string
+  userId: string
   name: string
   email: string | null
   moderator: boolean
 }
+
+// JaaS rejects a token whose payload has no `context.features` with
+// "Authentication failed … The `features` object is missing from the payload",
+// so it must always be present even when every capability is off. Values are
+// strings to match `context.user.moderator` below; Jitsi accepts 'true'/true
+// interchangeably when reading them.
+const JAAS_FEATURES = {
+  livestreaming: 'false',
+  recording: 'false',
+  transcription: 'false',
+  'outbound-call': 'false',
+  'sip-outbound-call': 'false',
+} as const
 
 // Only meaningful when JaaS is configured — the public demo server needs no token.
 export const generateJitsiToken = (params: JitsiTokenParams): string | null => {
@@ -49,17 +63,21 @@ export const generateJitsiToken = (params: JitsiTokenParams): string | null => {
     nbf: now - 10,
     exp: now + 2 * 60 * 60,
     context: {
+      features: JAAS_FEATURES,
       user: {
+        // JaaS expects a stable per-participant id alongside the display
+        // fields; without it participants can collide in its reporting.
+        id: params.userId,
         name: params.name,
         email: params.email ?? undefined,
+        avatar: '',
         // JaaS's validator expects these as strings, not booleans — a real
         // boolean can get silently ignored, leaving the user unauthenticated.
         moderator: params.moderator ? 'true' : 'false',
+        'hidden-from-recorder': 'false',
       },
     },
   }
-
-  console.log('Jitsi JWT payload:', JSON.stringify(payload))
 
   return jwt.sign(payload, CONFIG.jaas.privateKey, {
     algorithm: 'RS256',

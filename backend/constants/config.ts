@@ -35,6 +35,18 @@ export const CONFIG = {
     privateKey: process.env.JAAS_PRIVATE_KEY ? normalizePemKey(process.env.JAAS_PRIVATE_KEY) : '',
   },
 
+  gemini: {
+    // Must be a model the Generative Language endpoint actually serves — an
+    // unknown name fails the whole request with a 404, not a fallback.
+    // gemini-3.5-flash is current and stable; gemini-3.5-flash-lite is cheaper
+    // for this reformatting job, gemini-3.8-flash more capable. Do NOT drop to
+    // the 2.5 line, which is now limited-access.
+    model: process.env.GEMINI_MODEL ?? 'gemini-3.5-flash',
+    // Clinical notes must be reformatted, not creatively rewritten.
+    temperature: 0.2,
+    maxOutputTokens: 2048,
+  },
+
   bcrypt: {
     saltRounds: 10,
   },

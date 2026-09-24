@@ -24,6 +24,12 @@ export const errorHandler = (
   _next: NextFunction,
 ): void => {
   if (err instanceof AppError) {
+    // 4xx are expected outcomes (bad input, not found) and would only add noise,
+    // but a 5xx is a server-side failure — logging nothing here leaves the real
+    // cause invisible, which is exactly how AI_ENHANCE_FAILED became a dead end.
+    if (err.statusCode >= 500) {
+      console.error(`AppError ${err.statusCode} ${err.code}:`, err.message)
+    }
     res.status(err.statusCode).json(errorResponse(err.message, err.code))
     return
   }

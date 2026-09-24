@@ -11,6 +11,7 @@ const createPatientSchema = z.object({
   fullName: z.string().min(1),
   email: z.string().email(),
   phone: z.string().min(1),
+  issue: z.string().max(255).optional(),
 })
 
 const router = Router()

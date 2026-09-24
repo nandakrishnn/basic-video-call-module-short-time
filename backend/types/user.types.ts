@@ -9,6 +9,8 @@ export interface User {
   passwordHash: string | null
   dateOfBirth: string | null
   specialization: string | null
+  /** Presenting complaint, e.g. "Neck pain". Patients only. */
+  issue: string | null
   createdAt: string
   updatedAt: string
 }
@@ -38,4 +40,5 @@ export interface CreatePatientInput {
   fullName: string
   email: string
   phone: string
+  issue?: string
 }

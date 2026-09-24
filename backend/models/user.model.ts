@@ -15,6 +15,7 @@ interface UserRow {
   password_hash: string | null
   date_of_birth: string | null
   specialization: string | null
+  issue: string | null
   created_at: string
   updated_at: string
 }
@@ -28,6 +29,7 @@ const mapRow = (row: UserRow): User => ({
   passwordHash: row.password_hash,
   dateOfBirth: row.date_of_birth,
   specialization: row.specialization,
+  issue: row.issue,
   createdAt: row.created_at,
   updatedAt: row.updated_at,
 })
@@ -84,6 +86,7 @@ export const createPatient = async (input: {
   fullName: string
   email: string
   phone: string
+  issue?: string
 }): Promise<User> => {
   const { data, error } = await db
     .from('users')
@@ -91,6 +94,7 @@ export const createPatient = async (input: {
       email: input.email,
       phone: input.phone,
       full_name: input.fullName,
+      issue: input.issue ?? null,
       role: 'patient',
     })
     .select('*')

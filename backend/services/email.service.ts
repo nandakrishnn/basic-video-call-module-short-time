@@ -57,6 +57,26 @@ const wrapEmailHtml = (bodyHtml: string): string => `
   </tr>
 </table>`
 
+// Appointment times are stored UTC but always shown to the patient in the
+// clinic's timezone, so every slot label goes through here.
+const formatSlot = (isoLike: string): { dateLabel: string; timeLabel: string } => {
+  const date = parseUtc(isoLike)
+  return {
+    dateLabel: date.toLocaleDateString('en-IN', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      timeZone: CONFIG.app.timezone,
+    }),
+    timeLabel: date.toLocaleTimeString('en-IN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: CONFIG.app.timezone,
+    }),
+  }
+}
+
 const buttonHtml = (href: string, label: string): string =>
   `<p style="text-align:center;margin:24px 0;"><a href="${href}" style="display:inline-block;background:#1A1C6B;color:#FFFFFF;text-decoration:none;padding:12px 28px;border-radius:999px;font-weight:bold;font-size:15px;">${escapeHtml(label)}</a></p>`
 
@@ -105,19 +125,7 @@ export const sendAppointmentScheduledEmail = async (
   to: string,
   details: AppointmentScheduledDetails,
 ): Promise<void> => {
-  const scheduledDate = parseUtc(details.scheduledAt)
-  const dateLabel = scheduledDate.toLocaleDateString('en-IN', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    timeZone: CONFIG.app.timezone,
-  })
-  const timeLabel = scheduledDate.toLocaleTimeString('en-IN', {
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZone: CONFIG.app.timezone,
-  })
+  const { dateLabel, timeLabel } = formatSlot(details.scheduledAt)
 
   const patientName = escapeHtml(details.patientName)
   const physioName = escapeHtml(details.physioName)
@@ -161,6 +169,74 @@ export const sendAppointmentScheduledEmail = async (
       "You'll get another email with your join link shortly before the session starts.",
       '',
       'See you soon!',
+      'Clinzor Team',
+    ].join('\n'),
+    html,
+  })
+}
+
+interface AppointmentRescheduledDetails {
+  patientName: string
+  physioName: string
+  previousScheduledAt: string
+  scheduledAt: string
+  sessionType: string
+  durationMinutes: number
+}
+
+export const sendAppointmentRescheduledEmail = async (
+  to: string,
+  details: AppointmentRescheduledDetails,
+): Promise<void> => {
+  const previous = formatSlot(details.previousScheduledAt)
+  const next = formatSlot(details.scheduledAt)
+
+  const patientName = escapeHtml(details.patientName)
+  const physioName = escapeHtml(details.physioName)
+  const sessionType = escapeHtml(details.sessionType)
+
+  const html = wrapEmailHtml(`
+    <p>Hi ${patientName},</p>
+    <p>Your ${sessionType} session with ${physioName} has been moved to a new time.</p>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:20px 0;font-size:14px;">
+      <tr>
+        <td style="color:#6E6E73;padding:4px 0;">Was</td>
+        <td style="text-align:right;padding:4px 0;color:#6E6E73;text-decoration:line-through;">${escapeHtml(previous.dateLabel)}, ${escapeHtml(previous.timeLabel)}</td>
+      </tr>
+      <tr>
+        <td style="color:#6E6E73;padding:4px 0;">Now</td>
+        <td style="text-align:right;font-weight:bold;padding:4px 0;">${escapeHtml(next.dateLabel)}</td>
+      </tr>
+      <tr>
+        <td style="color:#6E6E73;padding:4px 0;">Time</td>
+        <td style="text-align:right;font-weight:bold;padding:4px 0;">${escapeHtml(next.timeLabel)}</td>
+      </tr>
+      <tr>
+        <td style="color:#6E6E73;padding:4px 0;">Duration</td>
+        <td style="text-align:right;font-weight:bold;padding:4px 0;">${details.durationMinutes} minutes</td>
+      </tr>
+    </table>
+    <p>No action is needed from you — just join at the new time. You'll get your join link shortly before the session starts.</p>
+    <p>See you then!<br/>Clinzor Team</p>
+  `)
+
+  await send({
+    from: EMAIL_FROM,
+    replyTo: EMAIL_REPLY_TO,
+    to,
+    subject: 'Your Clinzor appointment has been rescheduled',
+    text: [
+      `Hi ${details.patientName},`,
+      '',
+      `Your ${details.sessionType} session with ${details.physioName} has been moved to a new time.`,
+      '',
+      `Was: ${previous.dateLabel}, ${previous.timeLabel}`,
+      `Now: ${next.dateLabel}, ${next.timeLabel}`,
+      `Duration: ${details.durationMinutes} minutes`,
+      '',
+      "No action is needed from you — just join at the new time. You'll get your join link shortly before the session starts.",
+      '',
+      'See you then!',
       'Clinzor Team',
     ].join('\n'),
     html,
