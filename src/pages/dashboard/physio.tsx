@@ -90,6 +90,18 @@ const PhysioDashboardPage = (): JSX.Element => {
     loadAppointments()
   }, [loadAppointments])
 
+  // loadAppointments bails without clearing isLoading when there is no signed-in
+  // user, so without this the page would sit on its skeleton forever. Once auth
+  // has settled with nobody signed in, send them to log in — this route is
+  // physio-only and previously had no guard at all.
+  useEffect(() => {
+    if (isAuthLoading) return
+    if (!user || !getToken()) {
+      setIsLoading(false)
+      void router.push(ROUTES.login)
+    }
+  }, [isAuthLoading, user, router])
+
   useEffect(() => {
     const token = getToken()
     if (!token) return

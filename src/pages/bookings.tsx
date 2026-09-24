@@ -1,3 +1,4 @@
+import { useRouter } from 'next/router'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { RescheduleModal } from '@/components/appointments/RescheduleModal'
 import { AppointmentList } from '@/components/appointments/AppointmentList'
@@ -7,6 +8,7 @@ import { ListPageSkeleton } from '@/components/shared/ListPageSkeleton'
 import { PageState } from '@/components/shared/PageState'
 import { COLORS, FONT_SIZES, RADII } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
+import { ROUTES } from '@/constants/routes'
 import { useAuth } from '@/hooks/useAuth'
 import { getAppointmentsByPhysioRequest } from '@/services/appointment.service'
 import { listPatientsRequest } from '@/services/patient.service'
@@ -25,6 +27,7 @@ const FILTERS: { key: BookingFilter; label: string }[] = [
 ]
 
 const BookingsPage = (): JSX.Element => {
+  const router = useRouter()
   const { user, isLoading: isAuthLoading } = useAuth()
 
   const [appointments, setAppointments] = useState<Appointment[]>([])
@@ -49,6 +52,17 @@ const BookingsPage = (): JSX.Element => {
   useEffect(() => {
     loadAppointments()
   }, [loadAppointments])
+
+  // Without this the page holds its skeleton forever when nobody is signed in:
+  // loadAppointments returns early and never reaches the finally that clears
+  // isLoading. This route is physio-only and had no guard.
+  useEffect(() => {
+    if (isAuthLoading) return
+    if (!user || !getToken()) {
+      setIsLoading(false)
+      void router.push(ROUTES.login)
+    }
+  }, [isAuthLoading, user, router])
 
   // Appointments carry only patientId, so names are joined from the patient list.
   useEffect(() => {

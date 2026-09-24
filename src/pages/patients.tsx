@@ -1,3 +1,4 @@
+import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
 import { AddPatientPanel } from '@/components/patients/AddPatientPanel'
 import { PatientListItem } from '@/components/patients/PatientListItem'
@@ -8,6 +9,7 @@ import { PageState } from '@/components/shared/PageState'
 import { SearchInput } from '@/components/shared/SearchInput'
 import { COLORS, FONT_SIZES } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
+import { ROUTES } from '@/constants/routes'
 import { listPatientsRequest } from '@/services/patient.service'
 import type { User } from '@/types/user.types'
 import { getToken } from '@/utils/storage'
@@ -18,6 +20,7 @@ const matches = (patient: User, query: string): boolean => {
 }
 
 const PatientsPage = (): JSX.Element => {
+  const router = useRouter()
   const [patients, setPatients] = useState<User[]>([])
   const [query, setQuery] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -27,7 +30,10 @@ const PatientsPage = (): JSX.Element => {
   useEffect(() => {
     const token = getToken()
     if (!token) {
+      // Physio-only route: stop loading and send them to log in rather than
+      // leaving the skeleton up with nothing on its way.
       setIsLoading(false)
+      void router.push(ROUTES.login)
       return
     }
     listPatientsRequest(token)
