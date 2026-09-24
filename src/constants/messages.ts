@@ -1,6 +1,11 @@
 // Every user-facing string and error message. Never hardcode copy elsewhere.
 
 export const MESSAGES = {
+  app: {
+    title: 'YorPhysio',
+    description: 'Video physiotherapy sessions, appointments and session reports.',
+  },
+
   auth: {
     otpSentTitle: 'OTP sent',
     otpSentBody: 'Enter the 4-digit code we sent to verify your identity.',
