@@ -6,6 +6,7 @@ interface CreatePatientBody {
   fullName: string
   email: string
   phone: string
+  issue?: string
 }
 
 export const listPatientsRequest = (token: string) => apiRequest<User[]>(API.patients.list, { token })

@@ -12,6 +12,9 @@ export const CONFIG = {
     defaultDurationMinutes: 30,
     joinWindowMinutesBeforeStart: 5,
     autoSaveDraftIntervalSeconds: 30,
+    // Rescheduling locks this many minutes ahead of the slot — too late to move
+    // it without the patient already being on their way.
+    rescheduleLockMinutesBeforeStart: 30,
   },
 
   jitsi: {

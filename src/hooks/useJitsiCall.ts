@@ -44,6 +44,16 @@ export const useJitsiCall = ({
   onCallEnded,
 }: UseJitsiCallParams): UseJitsiCallResult => {
   const apiRef = useRef<JitsiMeetExternalApiInstance | null>(null)
+
+  // Held in a ref and deliberately kept out of the effect's dependencies.
+  // Callers pass an inline arrow, so its identity changes on every parent
+  // render — as a dependency it would dispose the live call and rebuild the
+  // iframe each time, dropping the participant back to "Connecting…".
+  const onCallEndedRef = useRef(onCallEnded)
+  useEffect(() => {
+    onCallEndedRef.current = onCallEnded
+  }, [onCallEnded])
+
   const [isReady, setIsReady] = useState(false)
   const [callState, setCallState] = useState<CallState>('connecting')
   const [isMuted, setIsMuted] = useState(false)
@@ -81,7 +91,7 @@ export const useJitsiCall = ({
       })
       api.addListener('videoConferenceLeft', () => {
         setCallState('ended')
-        onCallEnded?.()
+        onCallEndedRef.current?.()
       })
       api.addListener('audioMuteStatusChanged', (...args: unknown[]) => {
         const payload = args[0] as { muted?: boolean } | undefined
@@ -120,7 +130,9 @@ export const useJitsiCall = ({
       apiRef.current?.dispose()
       apiRef.current = null
     }
-  }, [roomName, displayName, jwt, isModerator, containerRef, onCallEnded])
+    // containerRef is a stable ref object and onCallEnded is read through a ref,
+    // so only a genuine change of room or identity may rebuild the call.
+  }, [roomName, displayName, jwt, isModerator, containerRef])
 
   const toggleAudio = useCallback(() => {
     apiRef.current?.executeCommand('toggleAudio')

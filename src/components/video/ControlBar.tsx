@@ -1,7 +1,6 @@
 import { LayoutGrid, Maximize, Mic, MicOff, Minimize, PhoneOff, Video, VideoOff } from 'lucide-react'
-import { Button } from '@/components/shared/Button'
-import { IconButton } from '@/components/shared/IconButton'
-import { COLORS } from '@/constants/colors'
+import type { ReactNode } from 'react'
+import { COLORS, FONT_SIZES, RADII, SHADOWS } from '@/constants/colors'
 
 interface ControlBarProps {
   isMuted: boolean
@@ -14,6 +13,30 @@ interface ControlBarProps {
   onToggleSplitView: () => void
   onEndCall: () => void
 }
+
+interface ControlProps {
+  icon: ReactNode
+  label: string
+  /** Toggled-off state — mic muted, camera stopped — shown in the danger tone. */
+  danger?: boolean
+  active?: boolean
+  onClick: () => void
+}
+
+const Control = ({ icon, label, danger = false, active = false, onClick }: ControlProps): JSX.Element => (
+  <button type="button" onClick={onClick} aria-label={label} className="call-control">
+    <span
+      className="call-control-icon"
+      style={{
+        background: danger ? COLORS.status.error : active ? COLORS.onDark.border : COLORS.onDark.fill,
+        color: COLORS.text.inverse,
+      }}
+    >
+      {icon}
+    </span>
+    <span style={{ color: COLORS.onDark.strong, fontSize: FONT_SIZES.xs, fontWeight: 600 }}>{label}</span>
+  </button>
+)
 
 export const ControlBar = ({
   isMuted,
@@ -28,48 +51,41 @@ export const ControlBar = ({
 }: ControlBarProps): JSX.Element => {
   return (
     <div
+      className="call-control-bar"
       style={{
-        position: 'absolute',
-        bottom: 20,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexWrap: 'wrap',
-        gap: 16,
-        maxWidth: 'calc(100vw - 32px)',
-        zIndex: 2,
+        background: COLORS.video.overlay,
+        borderRadius: RADII.xl,
+        boxShadow: SHADOWS.lg,
       }}
     >
-      <IconButton
-        icon={isMuted ? <MicOff size={20} /> : <Mic size={20} />}
-        active={isMuted}
+      <Control
+        icon={isMuted ? <MicOff size={19} /> : <Mic size={19} />}
+        label={isMuted ? 'Unmute' : 'Mute'}
+        danger={isMuted}
         onClick={onToggleAudio}
-        aria-label="Toggle microphone"
       />
-      <IconButton
-        icon={isCameraOff ? <VideoOff size={20} /> : <Video size={20} />}
-        active={isCameraOff}
+      <Control
+        icon={isCameraOff ? <VideoOff size={19} /> : <Video size={19} />}
+        label={isCameraOff ? 'Start Video' : 'Stop Video'}
+        danger={isCameraOff}
         onClick={onToggleCamera}
-        aria-label="Toggle camera"
       />
-      <IconButton
-        icon={<LayoutGrid size={20} />}
+      <Control
+        icon={<LayoutGrid size={19} />}
+        label={isSplitView ? 'Speaker' : 'Split View'}
         active={isSplitView}
-        activeColor={COLORS.primaryLight}
         onClick={onToggleSplitView}
-        aria-label={isSplitView ? 'Switch to speaker view' : 'Switch to split view'}
       />
-      <IconButton
-        icon={isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+      <Control
+        icon={isFullscreen ? <Minimize size={19} /> : <Maximize size={19} />}
+        label={isFullscreen ? 'Exit Full' : 'Fullscreen'}
         onClick={onToggleFullscreen}
-        aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
       />
-      <Button variant="danger" shape="pill" onClick={onEndCall} aria-label="End call">
+
+      <button type="button" onClick={onEndCall} aria-label="End call" className="call-end-button">
         <PhoneOff size={18} />
         End Call
-      </Button>
+      </button>
     </div>
   )
 }

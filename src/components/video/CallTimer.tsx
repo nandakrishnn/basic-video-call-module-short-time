@@ -1,4 +1,4 @@
-import { COLORS } from '@/constants/colors'
+import { COLORS, FONT_SIZES } from '@/constants/colors'
 
 interface CallTimerProps {
   formattedTime: string
@@ -6,7 +6,14 @@ interface CallTimerProps {
 
 export const CallTimer = ({ formattedTime }: CallTimerProps): JSX.Element => {
   return (
-    <span style={{ color: COLORS.text.inverse, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
+    <span
+      style={{
+        color: COLORS.text.primary,
+        fontSize: FONT_SIZES.md,
+        fontWeight: 700,
+        fontVariantNumeric: 'tabular-nums',
+      }}
+    >
       {formattedTime}
     </span>
   )

@@ -1,4 +1,4 @@
-import { COLORS, RADII } from '@/constants/colors'
+import { COLORS, RADII, SHADOWS } from '@/constants/colors'
 
 interface ToggleProps {
   checked: boolean
@@ -45,7 +45,7 @@ export const Toggle = ({ checked, onChange, label, disabled = false }: TogglePro
             height: 20,
             borderRadius: '50%',
             background: COLORS.text.inverse,
-            boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
+            boxShadow: SHADOWS.sm,
           }}
         />
       </button>

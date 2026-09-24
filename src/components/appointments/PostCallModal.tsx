@@ -1,7 +1,8 @@
+import { Check } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/shared/Button'
 import { Modal } from '@/components/shared/Modal'
-import { COLORS } from '@/constants/colors'
+import { COLORS, FONT_SIZES, RADII } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
 import type { Appointment, AppointmentType } from '@/types/appointment.types'
 import { parseUtc } from '@/utils/date'
@@ -52,40 +53,61 @@ export const PostCallModal = ({
   const mailtoHref =
     created && patientEmail ? buildMailtoHref(created, patientEmail, patientName, physioName) : undefined
 
+  // No onClose passed to Modal on purpose — this dialog has no dismiss affordance
+  // so the physio makes an explicit Skip / Done choice after a call.
   return (
-    <Modal maxWidth={420}>
-      {!created ? (
-        <>
-          <h2 style={{ color: COLORS.text.primary, fontSize: '1.15rem', fontWeight: 800, margin: '0 0 6px' }}>
-            Schedule next session
-          </h2>
-          <p style={{ color: COLORS.text.secondary, fontSize: '0.85rem', margin: '0 0 20px' }}>
-            Optional — you can also do this later from the patient profile.
-          </p>
-          <AppointmentForm onSubmit={(d) => void handleSubmit(d)} isSubmitting={isSubmitting} />
-          {error && <p style={{ color: COLORS.status.error, fontSize: '0.82rem', marginTop: 10 }}>{error}</p>}
-          <Button variant="ghost" fullWidth onClick={onClose} style={{ marginTop: 12 }}>
+    <Modal
+      title={created ? 'Session scheduled' : 'Schedule next session'}
+      subtitle={created ? undefined : 'Optional — you can also do this later from the patient profile.'}
+      maxWidth={440}
+      footer={
+        created ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {mailtoHref && (
+              <Button
+                variant="primary"
+                fullWidth
+                onClick={() => window.open(mailtoHref, '_blank', 'noopener,noreferrer')}
+              >
+                {MESSAGES.appointments.shareEmailButton}
+              </Button>
+            )}
+            <Button variant="secondary" fullWidth onClick={onClose}>
+              {MESSAGES.newCall.doneButton}
+            </Button>
+          </div>
+        ) : (
+          <Button variant="ghost" fullWidth onClick={onClose}>
             Skip for now
           </Button>
-        </>
+        )
+      }
+    >
+      {created ? (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 9,
+            padding: '13px 15px',
+            borderRadius: RADII.sm,
+            background: COLORS.statusSoft.success,
+            color: COLORS.status.success,
+            fontSize: FONT_SIZES.base,
+            fontWeight: 600,
+          }}
+        >
+          <Check size={17} />
+          {MESSAGES.appointments.createSuccess}
+        </div>
       ) : (
         <>
-          <p style={{ color: COLORS.status.success, fontWeight: 700, margin: '0 0 20px' }}>
-            {MESSAGES.appointments.createSuccess}
-          </p>
-          {mailtoHref && (
-            <Button
-              variant="primary"
-              fullWidth
-              style={{ marginBottom: 12 }}
-              onClick={() => window.open(mailtoHref, '_blank', 'noopener,noreferrer')}
-            >
-              {MESSAGES.appointments.shareEmailButton}
-            </Button>
+          <AppointmentForm onSubmit={(d) => void handleSubmit(d)} isSubmitting={isSubmitting} />
+          {error && (
+            <p role="alert" style={{ color: COLORS.status.error, fontSize: FONT_SIZES.sm, margin: '10px 0 0' }}>
+              {error}
+            </p>
           )}
-          <Button variant="secondary" fullWidth onClick={onClose}>
-            Done
-          </Button>
         </>
       )}
     </Modal>

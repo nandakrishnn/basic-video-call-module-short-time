@@ -5,7 +5,7 @@ interface AvatarProps {
   size?: number
 }
 
-const PALETTE = ['#1A1C6B', '#0071E3', '#8E44AD', '#16A085', '#D35400']
+const PALETTE = COLORS.avatarPalette
 
 const getInitials = (name: string): string => {
   const parts = name.trim().split(/\s+/)

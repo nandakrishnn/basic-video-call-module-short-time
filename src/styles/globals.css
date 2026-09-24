@@ -1,4 +1,104 @@
-/* Resets only — all component styling stays inline, driven by src/constants/colors.ts */
+/* ============================================================================
+   YorPhysio theme tokens — the single source of truth for every color, radius,
+   shadow and spacing value in the app.
+
+   src/constants/colors.ts maps these to var(--…) strings for inline styles,
+   so a value is never written twice and CSS/TS cannot drift apart.
+   Never write a raw hex, rgb() or named color outside this block.
+   ========================================================================== */
+
+:root {
+  /* Brand — sampled from the YorPhysio mark in public/yorphysio-logo.png ----
+     --color-primary is the true brand terracotta. At 3.33:1 on white it clears
+     the 3:1 bar for graphics (chart bars, decorative fills) but cannot carry
+     text at AA in either direction, so anything bearing or being text uses
+     --color-primary-strong instead. Both are the same hue. */
+  --color-primary: #D86F4E;
+  --color-primary-strong: #B55D42;
+  --color-primary-hover: #9A4E37;
+  --color-primary-soft: #F9EBE6;
+  --color-primary-softer: #FDF6F4;
+  --color-accent: #473521;
+
+  /* Surfaces --------------------------------------------------------------- */
+  --color-bg: #FBF7F4;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F8F0EC;
+  --color-border: #F0E2DB;
+  --color-border-strong: #E3CDC2;
+
+  /* Text ------------------------------------------------------------------- */
+  --color-text: #3D2B1E;
+  --color-text-secondary: #7A6354;
+  --color-text-muted: #7E6F64;
+  --color-text-inverse: #FFFFFF;
+
+  /* Status — foregrounds darkened so each clears AA on its own soft tint ---- */
+  --color-success: #3B7851;
+  --color-success-soft: #E4F1E9;
+  --color-error: #B54542;
+  --color-error-soft: #FBE7E6;
+  --color-warning: #8F6633;
+  --color-warning-soft: #FBEFE0;
+  --color-info: #945E47;
+  --color-info-soft: #F7EAE4;
+
+  /* Overlays --------------------------------------------------------------- */
+  --color-overlay: rgba(45, 33, 21, 0.72);
+  --color-scrim: rgba(45, 33, 21, 0.45);
+  --color-glass-light: rgba(255, 255, 255, 0.72);
+  --color-glass-dark: rgba(71, 53, 33, 0.72);
+  --color-on-dark-strong: rgba(255, 255, 255, 0.88);
+  --color-on-dark-muted: rgba(255, 255, 255, 0.58);
+  --color-on-dark-fill: rgba(255, 255, 255, 0.14);
+  --color-on-dark-border: rgba(255, 255, 255, 0.24);
+
+  /* Avatar rotation — warm tones only -------------------------------------- */
+  --color-avatar-1: #D86F4E;
+  --color-avatar-2: #473521;
+  --color-avatar-3: #B5794B;
+  --color-avatar-4: #9C5F45;
+  --color-avatar-5: #7A6354;
+
+  /* Radii ------------------------------------------------------------------ */
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+
+  /* Shadows — warm-tinted, never neutral black ----------------------------- */
+  --shadow-sm: 0 2px 10px rgba(71, 53, 33, 0.06);
+  --shadow-md: 0 8px 28px rgba(71, 53, 33, 0.09);
+  --shadow-lg: 0 16px 48px rgba(71, 53, 33, 0.13);
+  --shadow-rail: 0 0 40px rgba(71, 53, 33, 0.16);
+
+  /* Spacing scale ---------------------------------------------------------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  /* Type scale ------------------------------------------------------------- */
+  --text-xs: 0.7rem;
+  --text-sm: 0.78rem;
+  --text-base: 0.88rem;
+  --text-md: 0.95rem;
+  --text-lg: 1.05rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 1.9rem;
+
+  /* Layout ----------------------------------------------------------------- */
+  --rail-width: 252px;
+
+  color-scheme: light;
+}
+
+/* Resets ------------------------------------------------------------------- */
 
 *,
 *::before,
@@ -10,6 +110,8 @@ html,
 body {
   margin: 0;
   padding: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
 button,
@@ -26,10 +128,40 @@ a {
     transform 200ms ease;
 }
 
-/* Accent must match COLORS.primaryLight in src/constants/colors.ts */
 :focus-visible {
-  outline: 2px solid #0071e3;
+  outline: 2px solid var(--color-primary-strong);
   outline-offset: 2px;
+}
+
+::selection {
+  background: var(--color-primary-soft);
+  color: var(--color-text);
+}
+
+/* Scrollbars --------------------------------------------------------------- */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-strong) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border: 3px solid var(--color-bg);
+  border-radius: var(--radius-pill);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary-strong);
 }
 
 @keyframes spin {
@@ -38,16 +170,50 @@ a {
   }
 }
 
-/* Structural responsive classes — the one exception alongside the resets above.
-   Colors below mirror COLORS.surface / COLORS.border in src/constants/colors.ts;
-   CSS can't import that token file, so keep them in sync manually. */
+@keyframes modal-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-overlay {
+  animation: modal-fade-in 160ms ease-out;
+}
+
+.modal-panel {
+  animation: modal-rise 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Form field label */
+.field-label {
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+
+/* Dashboard shell ---------------------------------------------------------- */
 
 .dashboard-mobile-topbar {
   display: none;
 }
 
 .dashboard-content {
-  margin-left: 240px;
+  margin-left: var(--rail-width);
 }
 
 .dashboard-sidebar {
@@ -59,39 +225,489 @@ a {
   display: none;
 }
 
+/* Sidebar nav item — hover/active live here so inline styles stay static */
+.rail-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: 13px 16px;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--color-text-secondary);
+  background: transparent;
+  font-size: var(--text-md);
+  font-weight: 600;
+  line-height: 1.2;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease;
+}
+
+.rail-item:hover {
+  background: var(--color-surface-alt);
+  color: var(--color-text);
+}
+
+.rail-item.active {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-strong);
+  font-weight: 700;
+}
+
+.rail-item.active svg {
+  color: var(--color-primary-strong);
+}
+
+/* Interactive card rows */
+.hover-card {
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+.hover-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-strong);
+}
+
+/* Dashboard grids ---------------------------------------------------------- */
+
+.dashboard-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-5);
+}
+
+.dashboard-main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Dashboard topbar ---------------------------------------------------------- */
+
+.dash-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.dash-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex: 1 1 320px;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+/* Hero banner --------------------------------------------------------------- */
+
+.dash-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  padding: 40px 36px;
+  min-height: 176px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(105deg, var(--color-primary-soft) 0%, var(--color-primary-softer) 58%, var(--color-primary-soft) 100%);
+}
+
+.dash-hero-circle {
+  position: absolute;
+  background: var(--color-primary);
+  opacity: 0.16;
+  pointer-events: none;
+}
+
+.dash-hero-circle-lg {
+  width: 300px;
+  height: 300px;
+  right: -60px;
+  top: -70px;
+}
+
+.dash-hero-circle-sm {
+  width: 170px;
+  height: 170px;
+  right: 190px;
+  bottom: -80px;
+  opacity: 0.1;
+}
+
+/* Next session -------------------------------------------------------------- */
+
+.next-session-divider {
+  width: 1px;
+  align-self: stretch;
+  min-height: 56px;
+  background: var(--color-border);
+}
+
+/* Dashboard tabs ------------------------------------------------------------ */
+
+.dash-tabs {
+  display: flex;
+  gap: var(--space-5);
+}
+
+.dash-tab {
+  position: relative;
+  padding: 6px 0 12px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: inherit;
+  font-size: var(--text-md);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 180ms ease;
+}
+
+.dash-tab:hover {
+  color: var(--color-text);
+}
+
+.dash-tab.active {
+  color: var(--color-primary-strong);
+  font-weight: 700;
+}
+
+.dash-tab.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary-strong);
+}
+
+.dash-table-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.dash-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding-bottom: var(--space-3);
+}
+
+@media (max-width: 768px) {
+  .dash-topbar-actions {
+    justify-content: flex-start;
+  }
+
+  .dash-hero {
+    padding: 28px 24px;
+    min-height: 140px;
+  }
+
+  .next-session-divider {
+    display: none;
+  }
+}
+
+.patient-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-3);
+}
+
+/* Filter tabs -------------------------------------------------------------- */
+
+.filter-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.filter-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 9px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-family: inherit;
+  font-size: var(--text-base);
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+.filter-tab:hover {
+  background: var(--color-surface-alt);
+  color: var(--color-text);
+}
+
+.filter-tab.active {
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary-strong);
+  color: var(--color-accent);
+}
+
+/* Appointment row: time block | patient identity | status + action --------- */
+
+.appointment-row {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  transition:
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+.appointment-row:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-strong);
+}
+
+.appointment-row-time {
+  padding-right: var(--space-4);
+  border-right: 1px solid var(--color-border);
+}
+
+.appointment-row-patient {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.appointment-row-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .appointment-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+
+  .appointment-row-time {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    padding-right: 0;
+    border-right: none;
+  }
+
+  .appointment-row-time p:last-child {
+    margin-top: 0;
+  }
+
+  .appointment-row-actions {
+    justify-content: space-between;
+  }
+}
+
+/* Call chrome --------------------------------------------------------------- */
+
+.video-header-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  flex-shrink: 0;
+}
+
+.call-control-bar {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 10px 14px;
+  max-width: calc(100% - 32px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 2;
+}
+
+.call-control {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+}
+
+.call-control-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-pill);
+  transition: background-color 180ms ease;
+}
+
+.call-control:hover .call-control-icon {
+  background: var(--color-on-dark-border) !important;
+}
+
+.call-end-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: var(--space-2);
+  padding: 14px 22px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-error);
+  color: var(--color-text-inverse);
+  font-family: inherit;
+  font-size: var(--text-base);
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* Floating status pills over the video */
+.call-pill {
+  position: absolute;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 13px;
+  border-radius: var(--radius-pill);
+  background: var(--color-overlay);
+  color: var(--color-text-inverse);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+@media (max-width: 640px) {
+  .video-header-meta {
+    gap: var(--space-3);
+  }
+
+  .call-control-bar {
+    flex-wrap: wrap;
+    justify-content: center;
+    bottom: 12px;
+    padding: 8px 10px;
+  }
+
+  .call-control-icon {
+    width: 38px;
+    height: 38px;
+  }
+
+  .call-end-button {
+    padding: 11px 16px;
+  }
+}
+
+/* Session/video layout (structurally unchanged) ---------------------------- */
+
+/* The video stage sizes itself with height:100%, which only resolves against a
+   DEFINITE parent height. Every ancestor below therefore sets an explicit
+   height — never height:auto with a min-height, which iOS Safari refuses to
+   treat as definite, collapsing the stage and stacking its absolutely
+   positioned overlays on top of each other.
+   dvh follows vh so browsers without dvh keep the vh value. */
 .session-layout {
   display: flex;
-  gap: 16px;
+  gap: var(--space-4);
   height: 100vh;
+  height: 100dvh;
 }
 
 .session-video-area {
+  flex: 1;
   min-height: 0;
 }
 
+/* Jitsi injects its own iframe and sets width/height inline. An iframe whose
+   percentage height fails to resolve falls back to the intrinsic 150px, which
+   is what collapses the stage — pin it so that can't happen. */
+.session-video-area iframe {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  border: 0;
+}
+
 .session-side-panel {
-  width: 280px;
+  width: 296px;
   flex-shrink: 0;
+  overflow-y: auto;
 }
 
 .notes-columns {
   display: flex;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .form-row-2up {
   display: flex;
-  gap: 12px;
+  gap: var(--space-3);
 }
+
+/* Tablet ------------------------------------------------------------------- */
+
+@media (max-width: 1024px) {
+  .dashboard-main-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Mobile ------------------------------------------------------------------- */
 
 @media (max-width: 768px) {
   .dashboard-mobile-topbar {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    background: #FFFFFF;
-    border-bottom: 1px solid rgba(26, 28, 107, 0.08);
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
     position: sticky;
     top: 0;
     z-index: 50;
@@ -108,29 +724,41 @@ a {
 
   .dashboard-sidebar.open {
     transform: translateX(0);
-    box-shadow: 0 0 32px rgba(0, 0, 0, 0.28);
+    box-shadow: var(--shadow-rail);
   }
 
   .dashboard-sidebar-backdrop.open {
     display: block;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.4);
+    background: var(--color-scrim);
     z-index: 150;
+  }
+
+  .dashboard-stat-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .session-layout {
     flex-direction: column;
     height: auto;
     min-height: 100vh;
+    min-height: 100dvh;
   }
 
+  /* An explicit height, not min-height: the stage's height:100% has to have
+     something definite to resolve against once the column stops stretching
+     its items. The px floor keeps it usable on very short screens. */
   .session-video-area {
-    min-height: 55vh;
+    flex: none;
+    height: 62vh;
+    height: 62dvh;
+    min-height: 340px;
   }
 
   .session-side-panel {
     width: 100%;
+    overflow-y: visible;
   }
 
   .notes-columns {
@@ -145,5 +773,15 @@ a {
 
   .powered-by-badge {
     display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

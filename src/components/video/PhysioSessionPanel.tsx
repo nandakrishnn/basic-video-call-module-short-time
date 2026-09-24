@@ -1,6 +1,9 @@
-import { Card } from '@/components/shared/Card'
+import { NotebookPen, PhoneOff } from 'lucide-react'
+import { Avatar } from '@/components/shared/Avatar'
 import { Button } from '@/components/shared/Button'
-import { COLORS } from '@/constants/colors'
+import { Card } from '@/components/shared/Card'
+import { COLORS, FONT_SIZES, RADII } from '@/constants/colors'
+import { parseUtc } from '@/utils/date'
 
 interface PhysioSessionPanelProps {
   patientName: string
@@ -10,6 +13,25 @@ interface PhysioSessionPanelProps {
   actualStartAt: string | null
   onQuickNote: () => void
   onEndCallAndWriteNotes: () => void
+}
+
+// The API returns timestamps as raw ISO strings; they were previously rendered
+// verbatim ("2026-09-24T16:03:06.994"), which is not a time a physio can read.
+const formatStamp = (isoLike: string): string =>
+  parseUtc(isoLike).toLocaleString([], {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+
+const labelStyle = {
+  color: COLORS.text.muted,
+  fontSize: FONT_SIZES.xs,
+  fontWeight: 700,
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.09em',
 }
 
 export const PhysioSessionPanel = ({
@@ -23,47 +45,72 @@ export const PhysioSessionPanel = ({
 }: PhysioSessionPanelProps): JSX.Element => {
   return (
     <Card
-      elevation="md"
+      elevation="sm"
+      padding={22}
       className="session-side-panel"
-      style={{ display: 'flex', flexDirection: 'column', gap: 20 }}
+      style={{ display: 'flex', flexDirection: 'column', gap: 22 }}
     >
-      <div>
-        <h3 style={{ color: COLORS.text.primary, fontSize: '1.05rem', fontWeight: 800, margin: 0 }}>
-          {patientName}
-        </h3>
-        {patientAge !== null && (
-          <p style={{ color: COLORS.text.secondary, fontSize: '0.85rem', margin: '4px 0 0' }}>
-            Age {patientAge}
-          </p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+        <Avatar name={patientName} size={46} />
+        <div style={{ minWidth: 0 }}>
+          <h3 style={{ color: COLORS.text.primary, fontSize: FONT_SIZES.lg, fontWeight: 800, margin: 0 }}>
+            {patientName}
+          </h3>
+          {patientAge !== null && (
+            <p style={{ color: COLORS.text.secondary, fontSize: FONT_SIZES.sm, margin: '2px 0 0' }}>
+              Age {patientAge}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 14,
+          padding: 16,
+          borderRadius: RADII.md,
+          background: COLORS.primarySofter,
+          border: `1px solid ${COLORS.border}`,
+        }}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <span style={labelStyle}>Session</span>
+          <span style={{ color: COLORS.text.primary, fontSize: FONT_SIZES.md, fontWeight: 700 }}>
+            Follow-up #{sessionNumber}
+          </span>
+        </div>
+
+        {scheduledAt && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <span style={labelStyle}>Scheduled</span>
+            <span style={{ color: COLORS.text.secondary, fontSize: FONT_SIZES.base }}>
+              {formatStamp(scheduledAt)}
+            </span>
+          </div>
         )}
-      </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <span style={{ color: COLORS.text.muted, fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.4 }}>
-          Session
-        </span>
-        <span style={{ color: COLORS.text.primary, fontSize: '0.9rem', fontWeight: 600 }}>
-          Follow-up #{sessionNumber}
-        </span>
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <span style={{ color: COLORS.text.muted, fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.4 }}>
-          Scheduled
-        </span>
-        <span style={{ color: COLORS.text.secondary, fontSize: '0.85rem' }}>{scheduledAt}</span>
         {actualStartAt && (
-          <span style={{ color: COLORS.text.secondary, fontSize: '0.85rem' }}>Started: {actualStartAt}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <span style={labelStyle}>Started</span>
+            <span style={{ color: COLORS.text.secondary, fontSize: FONT_SIZES.base }}>
+              {formatStamp(actualStartAt)}
+            </span>
+          </div>
         )}
       </div>
 
-      <Button variant="secondary" onClick={onQuickNote} fullWidth>
-        Quick Note
-      </Button>
-
-      <Button variant="primary" onClick={onEndCallAndWriteNotes} fullWidth>
-        End Call &amp; Write Notes
-      </Button>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 'auto' }}>
+        <Button variant="secondary" onClick={onQuickNote} fullWidth>
+          <NotebookPen size={16} />
+          Quick Note
+        </Button>
+        <Button variant="primary" onClick={onEndCallAndWriteNotes} fullWidth>
+          <PhoneOff size={16} />
+          End Call &amp; Write Notes
+        </Button>
+      </div>
     </Card>
   )
 }

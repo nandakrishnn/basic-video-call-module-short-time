@@ -1,80 +1,93 @@
-import { Calendar, CalendarDays, TrendingUp } from 'lucide-react'
 import { useRouter } from 'next/router'
-import { useCallback, useEffect, useState } from 'react'
-import { AppointmentList } from '@/components/appointments/AppointmentList'
-import { TodayAppointmentRow } from '@/components/appointments/TodayAppointmentRow'
-import { SessionsTrendChart } from '@/components/dashboard/SessionsTrendChart'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { RescheduleModal } from '@/components/appointments/RescheduleModal'
+import { AppointmentsTable } from '@/components/dashboard/AppointmentsTable'
+import { DashboardTopbar } from '@/components/dashboard/DashboardTopbar'
+import { HeroBanner } from '@/components/dashboard/HeroBanner'
+import { NextSessionCard } from '@/components/dashboard/NextSessionCard'
 import { AddPatientPanel } from '@/components/patients/AddPatientPanel'
 import { NewCallPanel } from '@/components/session/NewCallPanel'
-import { Avatar } from '@/components/shared/Avatar'
-import { BrandLinks } from '@/components/shared/BrandLinks'
 import { Card } from '@/components/shared/Card'
 import { DashboardSidebar } from '@/components/shared/DashboardSidebar'
-import { EmptyState } from '@/components/shared/EmptyState'
 import { PageState } from '@/components/shared/PageState'
-import { StatCard } from '@/components/shared/StatCard'
-import { COLORS } from '@/constants/colors'
+import { COLORS, FONT_SIZES, RADII } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
 import { ROUTES } from '@/constants/routes'
 import { useAuth } from '@/hooks/useAuth'
-import { getPhysioDashboardRequest } from '@/services/dashboard.service'
+import { getAppointmentsByPhysioRequest } from '@/services/appointment.service'
 import { listPatientsRequest } from '@/services/patient.service'
 import { createSessionRequest } from '@/services/session.service'
 import type { Appointment } from '@/types/appointment.types'
-import type { PhysioDashboardData } from '@/types/dashboard.types'
-import type { User } from '@/types/user.types'
-import { isPast, parseUtc } from '@/utils/date'
+import type { PatientSummary, User } from '@/types/user.types'
+import { isUpcoming, sortByScheduledAt } from '@/utils/appointment'
+import { parseUtc } from '@/utils/date'
 import { getToken } from '@/utils/storage'
 
-const sectionTitleStyle = { color: COLORS.text.primary, fontSize: '1.05rem', fontWeight: 700, marginBottom: 14 }
-const statIconStyle = { width: 20, height: 20 }
-const groupLabelStyle = {
-  color: COLORS.text.muted,
-  fontSize: '0.72rem',
-  fontWeight: 700,
-  textTransform: 'uppercase' as const,
-  letterSpacing: 0.4,
+type RangeTab = 'today' | 'week' | 'month'
+
+const TABS: { key: RangeTab; label: string }[] = [
+  { key: 'today', label: MESSAGES.dashboard.tabToday },
+  { key: 'week', label: MESSAGES.dashboard.tabThisWeek },
+  { key: 'month', label: MESSAGES.dashboard.tabThisMonth },
+]
+
+const toDateInput = (date: Date): string => {
+  const pad = (n: number): string => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
 }
 
-type TimePeriod = 'Morning' | 'Afternoon' | 'Evening'
-const TIME_PERIODS: TimePeriod[] = ['Morning', 'Afternoon', 'Evening']
+/** Inclusive local-time bounds for the chosen tab, anchored on `anchor`. */
+const rangeFor = (tab: RangeTab, anchor: Date): { start: Date; end: Date } => {
+  const start = new Date(anchor)
+  start.setHours(0, 0, 0, 0)
+  const end = new Date(anchor)
+  end.setHours(23, 59, 59, 999)
 
-const periodOf = (appointment: Appointment): TimePeriod => {
-  const hour = parseUtc(appointment.scheduledAt).getHours()
-  if (hour < 12) return 'Morning'
-  if (hour < 17) return 'Afternoon'
-  return 'Evening'
+  if (tab === 'week') {
+    start.setDate(start.getDate() - start.getDay())
+    end.setTime(start.getTime())
+    end.setDate(end.getDate() + 6)
+    end.setHours(23, 59, 59, 999)
+  }
+
+  if (tab === 'month') {
+    start.setDate(1)
+    end.setMonth(start.getMonth() + 1, 0)
+    end.setHours(23, 59, 59, 999)
+  }
+
+  return { start, end }
 }
-
-const isUpcoming = (appointment: Appointment): boolean =>
-  appointment.status === 'scheduled' && !isPast(parseUtc(appointment.scheduledAt))
 
 const PhysioDashboardPage = (): JSX.Element => {
   const router = useRouter()
   const { user, isLoading: isAuthLoading } = useAuth()
 
-  const [data, setData] = useState<PhysioDashboardData | null>(null)
+  const [appointments, setAppointments] = useState<Appointment[]>([])
+  const [patients, setPatients] = useState<User[]>([])
+  const [tab, setTab] = useState<RangeTab>('today')
+  const [anchorDate, setAnchorDate] = useState(() => toDateInput(new Date()))
+  const [query, setQuery] = useState('')
+  const [startingId, setStartingId] = useState<string | null>(null)
+  const [reschedulingAppointment, setReschedulingAppointment] = useState<Appointment | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [startingSessionFor, setStartingSessionFor] = useState<string | null>(null)
-  const [startCallError, setStartCallError] = useState<string | null>(null)
-  const [patients, setPatients] = useState<User[]>([])
   const token = getToken()
 
-  const fetchDashboard = useCallback((): void => {
+  const loadAppointments = useCallback((): void => {
     const token = getToken()
-    if (!token) return
-    getPhysioDashboardRequest(token)
+    if (!token || !user) return
+    getAppointmentsByPhysioRequest(token, user.id)
       .then((res) => {
-        if (res.success) setData(res.data)
+        if (res.success) setAppointments(res.data)
         else setError(res.message)
       })
       .finally(() => setIsLoading(false))
-  }, [])
+  }, [user])
 
   useEffect(() => {
-    fetchDashboard()
-  }, [fetchDashboard])
+    loadAppointments()
+  }, [loadAppointments])
 
   useEffect(() => {
     const token = getToken()
@@ -88,28 +101,58 @@ const PhysioDashboardPage = (): JSX.Element => {
     setPatients((prev) => [...prev, patient])
   }
 
-  const handleStartCall = async (patientId: string, appointmentId: string): Promise<void> => {
+  // Appointments carry only patientId, so names, phone and issue are joined here.
+  const patientsById = useMemo(() => {
+    const map: Record<string, PatientSummary> = {}
+    for (const patient of patients) map[patient.id] = patient
+    return map
+  }, [patients])
+
+  const sessionTypeLabel = useCallback(
+    (appointment: Appointment): string =>
+      appointment.sessionType === 'initial' ? MESSAGES.dashboard.typeNewPatient : MESSAGES.dashboard.typeFollowUp,
+    [],
+  )
+
+  const handleStartCall = async (appointment: Appointment): Promise<void> => {
     const token = getToken()
     if (!token) return
 
-    setStartCallError(null)
-    setStartingSessionFor(appointmentId)
-    const res = await createSessionRequest(token, patientId, appointmentId)
-    setStartingSessionFor(null)
+    setError(null)
+    setStartingId(appointment.id)
+    const res = await createSessionRequest(token, appointment.patientId, appointment.id)
+    setStartingId(null)
 
-    if (res.success) {
-      void router.push(ROUTES.session(res.data.id))
-    } else {
-      setStartCallError(res.message)
-    }
+    if (res.success) void router.push(ROUTES.session(res.data.id))
+    else setError(res.message)
   }
+
+  // The next session is the soonest still-upcoming booking, regardless of the
+  // range tab below — it must not disappear when browsing another week.
+  const nextSession = useMemo(
+    () => sortByScheduledAt(appointments.filter(isUpcoming), 'asc')[0],
+    [appointments],
+  )
+
+  const visibleRows = useMemo(() => {
+    const { start, end } = rangeFor(tab, new Date(`${anchorDate}T00:00:00`))
+    const normalized = query.trim().toLowerCase()
+
+    return sortByScheduledAt(
+      appointments.filter((appointment) => {
+        const at = parseUtc(appointment.scheduledAt).getTime()
+        if (at < start.getTime() || at > end.getTime()) return false
+        if (!normalized) return true
+        const patient = patientsById[appointment.patientId]
+        const haystack = [patient?.fullName, patient?.phone, patient?.issue].filter(Boolean).join(' ').toLowerCase()
+        return haystack.includes(normalized)
+      }),
+      'asc',
+    ).map((appointment) => ({ appointment, patient: patientsById[appointment.patientId] }))
+  }, [appointments, patientsById, tab, anchorDate, query])
 
   if (isLoading || isAuthLoading) {
     return <PageState tone="loading" message="Loading…" />
-  }
-
-  if (error || !data) {
-    return <PageState tone="error" message={error ?? MESSAGES.errors.generic} />
   }
 
   return (
@@ -119,163 +162,103 @@ const PhysioDashboardPage = (): JSX.Element => {
       <div
         className="dashboard-content"
         style={{
-          maxWidth: 1080,
-          padding: '32px 40px 60px',
+          maxWidth: 1320,
+          padding: '28px 36px 56px',
           display: 'flex',
           flexDirection: 'column',
-          gap: 32,
+          gap: 22,
         }}
       >
-        <div>
-          <h1 style={{ color: COLORS.text.primary, fontSize: '1.6rem', fontWeight: 800, margin: 0 }}>
-            Welcome, {user?.fullName ?? 'Doctor'}
-          </h1>
-          <p style={{ color: COLORS.text.secondary, fontSize: '0.9rem', margin: '6px 0 0' }}>
-            Here&apos;s what&apos;s happening with your patients today.
-          </p>
-        </div>
+        <DashboardTopbar fullName={user?.fullName ?? 'Doctor'} query={query} onQueryChange={setQuery} />
 
-        {token && (
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-            <NewCallPanel
-              token={token}
-              patients={patients}
-              onPatientAdded={handlePatientAdded}
-              onScheduled={fetchDashboard}
-            />
-            <AddPatientPanel token={token} onPatientAdded={handlePatientAdded} />
-          </div>
+        <HeroBanner />
+
+        {nextSession && (
+          <NextSessionCard
+            appointment={nextSession}
+            patient={patientsById[nextSession.patientId]}
+            sessionTypeLabel={sessionTypeLabel(nextSession)}
+            isStarting={startingId === nextSession.id}
+            onStart={() => void handleStartCall(nextSession)}
+          />
         )}
 
-        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-          <StatCard
-            label="Sessions today"
-            value={data.stats.sessionsToday}
-            icon={<Calendar style={statIconStyle} />}
-          />
-          <StatCard
-            label="This week"
-            value={data.stats.sessionsThisWeek}
-            icon={<CalendarDays style={statIconStyle} />}
-          />
-          <StatCard
-            label="This month"
-            value={data.stats.sessionsThisMonth}
-            icon={<TrendingUp style={statIconStyle} />}
-          />
-        </div>
-
-        <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-          <div style={{ flex: '2 1 480px', display: 'flex', flexDirection: 'column', gap: 32, minWidth: 0 }}>
-            <section>
-              <h2 style={sectionTitleStyle}>Sessions — last 14 days</h2>
-              <Card elevation="sm">
-                <SessionsTrendChart data={data.sessionsTrend} />
-              </Card>
-            </section>
-
-            <section>
-              <h2 style={sectionTitleStyle}>Today&apos;s appointments</h2>
-              {startCallError && (
-                <p style={{ color: COLORS.status.error, fontSize: '0.85rem', margin: '0 0 12px' }}>
-                  {startCallError}
-                </p>
-              )}
-              {data.todayAppointments.length === 0 ? (
-                <EmptyState message={MESSAGES.dashboard.emptyToday} />
-              ) : (
-                (() => {
-                  const upcoming = data.todayAppointments.filter(isUpcoming)
-                  const past = data.todayAppointments.filter((a) => !isUpcoming(a))
-
-                  const renderRow = (appointment: Appointment) => (
-                    <TodayAppointmentRow
-                      key={appointment.id}
-                      appointment={appointment}
-                      isStarting={startingSessionFor === appointment.id}
-                      onStartCall={() => void handleStartCall(appointment.patientId, appointment.id)}
-                    />
-                  )
-
-                  return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                      {upcoming.length === 0 ? (
-                        <EmptyState message={MESSAGES.dashboard.allCaughtUpToday} />
-                      ) : (
-                        TIME_PERIODS.map((period) => {
-                          const items = upcoming.filter((a) => periodOf(a) === period)
-                          if (items.length === 0) return null
-                          return (
-                            <div key={period} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                              <span style={groupLabelStyle}>{period}</span>
-                              {items.map(renderRow)}
-                            </div>
-                          )
-                        })
-                      )}
-                      {past.length > 0 && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                          <span style={groupLabelStyle}>Past</span>
-                          {past.map(renderRow)}
-                        </div>
-                      )}
-                    </div>
-                  )
-                })()
-              )}
-            </section>
-
-            <section>
-              <h2 style={sectionTitleStyle}>This week</h2>
-              {data.upcomingThisWeek.length === 0 ? (
-                <EmptyState message={MESSAGES.dashboard.emptyUpcoming} />
-              ) : (
-                <AppointmentList appointments={data.upcomingThisWeek} />
-              )}
-            </section>
-          </div>
-
-          <div style={{ flex: '1 1 260px', display: 'flex', flexDirection: 'column', gap: 32, minWidth: 0 }}>
-            <section>
-              <h2 style={sectionTitleStyle}>Recent patients</h2>
-              {data.recentPatients.length === 0 ? (
-                <EmptyState message={MESSAGES.dashboard.emptyPatients} />
-              ) : (
-                <ul
-                  style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}
+        <Card padding={0} elevation="sm">
+          <div className="dash-table-toolbar" style={{ padding: '14px 18px 0' }}>
+            <div className="dash-tabs" role="tablist" aria-label={MESSAGES.dashboard.colTime}>
+              {TABS.map(({ key, label }) => (
+                <button
+                  key={key}
+                  type="button"
+                  role="tab"
+                  aria-selected={tab === key}
+                  onClick={() => setTab(key)}
+                  className={`dash-tab${tab === key ? ' active' : ''}`}
                 >
-                  {data.recentPatients.map((patient) => (
-                    <li key={patient.id}>
-                      <Card padding={16} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <Avatar name={patient.fullName} />
-                        <div style={{ minWidth: 0 }}>
-                          <p style={{ color: COLORS.text.primary, fontWeight: 700, fontSize: '0.9rem', margin: 0 }}>
-                            {patient.fullName}
-                          </p>
-                          <p
-                            style={{
-                              color: COLORS.text.secondary,
-                              fontSize: '0.78rem',
-                              margin: '2px 0 0',
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                            }}
-                          >
-                            {[patient.email, patient.phone].filter(Boolean).join(' · ') || 'No contact info'}
-                          </p>
-                        </div>
-                      </Card>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-          </div>
-        </div>
+                  {label}
+                </button>
+              ))}
+            </div>
 
-        <BrandLinks />
+            <div className="dash-toolbar-actions">
+              <input
+                type="date"
+                value={anchorDate}
+                onChange={(e) => setAnchorDate(e.target.value)}
+                aria-label={MESSAGES.newCall.fieldDate}
+                style={{
+                  padding: '10px 14px',
+                  borderRadius: RADII.sm,
+                  border: `1px solid ${COLORS.border}`,
+                  background: COLORS.surface,
+                  color: COLORS.text.primary,
+                  fontSize: FONT_SIZES.base,
+                  fontFamily: 'inherit',
+                }}
+              />
+              {token && (
+                <>
+                  <AddPatientPanel token={token} onPatientAdded={handlePatientAdded} />
+                  <NewCallPanel
+                    token={token}
+                    patients={patients}
+                    onPatientAdded={handlePatientAdded}
+                    onScheduled={loadAppointments}
+                    label={MESSAGES.dashboard.newAppointment}
+                  />
+                </>
+              )}
+            </div>
+          </div>
+
+          {error && (
+            <p
+              role="alert"
+              style={{ color: COLORS.status.error, fontSize: FONT_SIZES.base, margin: 0, padding: '12px 18px 0' }}
+            >
+              {error}
+            </p>
+          )}
+
+          <AppointmentsTable
+            rows={visibleRows}
+            sessionTypeLabel={sessionTypeLabel}
+            startingId={startingId}
+            onJoinCall={(appointment) => void handleStartCall(appointment)}
+            onReschedule={setReschedulingAppointment}
+          />
+        </Card>
       </div>
+
+      {reschedulingAppointment && token && (
+        <RescheduleModal
+          appointment={reschedulingAppointment}
+          patientName={patientsById[reschedulingAppointment.patientId]?.fullName ?? ''}
+          token={token}
+          onClose={() => setReschedulingAppointment(null)}
+          onRescheduled={loadAppointments}
+        />
+      )}
     </div>
   )
 }

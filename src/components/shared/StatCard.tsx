@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Card } from '@/components/shared/Card'
-import { COLORS, RADII } from '@/constants/colors'
+import { COLORS, FONT_SIZES, RADII } from '@/constants/colors'
 
 interface StatCardProps {
   label: string
@@ -10,15 +10,15 @@ interface StatCardProps {
 
 export const StatCard = ({ label, value, icon }: StatCardProps): JSX.Element => {
   return (
-    <Card style={{ flex: '1 1 150px', display: 'flex', alignItems: 'center', gap: 14 }}>
+    <Card padding={22} style={{ display: 'flex', alignItems: 'center', gap: 16, minWidth: 0 }}>
       {icon && (
         <div
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: RADII.sm,
-            background: 'rgba(0,113,227,0.1)',
-            color: COLORS.primaryLight,
+            width: 46,
+            height: 46,
+            borderRadius: RADII.md,
+            background: COLORS.primarySoft,
+            color: COLORS.primaryStrong,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -28,20 +28,33 @@ export const StatCard = ({ label, value, icon }: StatCardProps): JSX.Element => 
           {icon}
         </div>
       )}
-      <div>
+      <div style={{ minWidth: 0 }}>
         <p
           style={{
             color: COLORS.text.muted,
-            fontSize: '0.72rem',
-            fontWeight: 600,
+            fontSize: FONT_SIZES.xs,
+            fontWeight: 700,
             textTransform: 'uppercase',
-            letterSpacing: 0.4,
+            letterSpacing: '0.08em',
             margin: 0,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
           }}
         >
           {label}
         </p>
-        <p style={{ color: COLORS.text.primary, fontSize: '1.7rem', fontWeight: 800, margin: '2px 0 0' }}>{value}</p>
+        <p
+          style={{
+            color: COLORS.text.primary,
+            fontSize: FONT_SIZES['2xl'],
+            fontWeight: 800,
+            margin: '2px 0 0',
+            lineHeight: 1.1,
+          }}
+        >
+          {value}
+        </p>
       </div>
     </Card>
   )

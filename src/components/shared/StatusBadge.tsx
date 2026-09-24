@@ -1,21 +1,25 @@
-import { COLORS, RADII } from '@/constants/colors'
+import { COLORS, FONT_SIZES, RADII } from '@/constants/colors'
 
 type Status = 'scheduled' | 'completed' | 'cancelled' | 'active' | 'missed'
 
-const STATUS_COLOR: Record<Status, string> = {
-  scheduled: COLORS.status.info,
-  active: COLORS.status.success,
-  completed: COLORS.text.muted,
-  cancelled: COLORS.status.error,
-  missed: COLORS.status.warning,
+// Foreground and its matching tint are paired explicitly — a CSS variable can't
+// be concatenated with an alpha suffix the way a raw hex could.
+const STATUS_TONE: Record<Status, { fg: string; bg: string }> = {
+  scheduled: { fg: COLORS.status.info, bg: COLORS.statusSoft.info },
+  active: { fg: COLORS.status.success, bg: COLORS.statusSoft.success },
+  completed: { fg: COLORS.text.secondary, bg: COLORS.surfaceAlt },
+  cancelled: { fg: COLORS.status.error, bg: COLORS.statusSoft.error },
+  missed: { fg: COLORS.status.warning, bg: COLORS.statusSoft.warning },
 }
+
+const FALLBACK_TONE = { fg: COLORS.text.secondary, bg: COLORS.surfaceAlt }
 
 interface StatusBadgeProps {
   status: string
 }
 
 export const StatusBadge = ({ status }: StatusBadgeProps): JSX.Element => {
-  const color = STATUS_COLOR[status as Status] ?? COLORS.text.muted
+  const tone = STATUS_TONE[status as Status] ?? FALLBACK_TONE
 
   return (
     <span
@@ -23,16 +27,16 @@ export const StatusBadge = ({ status }: StatusBadgeProps): JSX.Element => {
         display: 'inline-flex',
         alignItems: 'center',
         gap: 5,
-        padding: '2px 10px',
+        padding: '3px 10px',
         borderRadius: RADII.pill,
-        background: `${color}1A`,
-        color,
-        fontSize: '0.7rem',
+        background: tone.bg,
+        color: tone.fg,
+        fontSize: FONT_SIZES.xs,
         fontWeight: 700,
         textTransform: 'capitalize',
       }}
     >
-      <span style={{ width: 5, height: 5, borderRadius: '50%', background: color }} />
+      <span style={{ width: 5, height: 5, borderRadius: '50%', background: tone.fg }} />
       {status}
     </span>
   )

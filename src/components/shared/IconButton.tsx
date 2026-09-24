@@ -1,5 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
-import { COLORS } from '@/constants/colors'
+import { COLORS, SHADOWS } from '@/constants/colors'
 
 interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   icon: ReactNode
@@ -27,10 +27,10 @@ export const IconButton = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: active ? activeColor : 'rgba(255,255,255,0.16)',
+        background: active ? activeColor : COLORS.onDark.fill,
         color: COLORS.video.controlsText,
         cursor: 'pointer',
-        boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
+        boxShadow: SHADOWS.md,
         ...style,
       }}
       {...rest}

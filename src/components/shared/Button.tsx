@@ -15,9 +15,9 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const VARIANT_STYLE: Record<ButtonVariant, CSSProperties> = {
-  primary: { background: COLORS.primary, color: COLORS.text.inverse, border: 'none' },
+  primary: { background: COLORS.primaryStrong, color: COLORS.text.inverse, border: 'none' },
   secondary: {
-    background: COLORS.background,
+    background: COLORS.surface,
     color: COLORS.text.primary,
     border: `1px solid ${COLORS.border}`,
   },
@@ -35,8 +35,8 @@ const spinnerStyle: CSSProperties = {
   width: 14,
   height: 14,
   borderRadius: '50%',
-  border: '2px solid rgba(255,255,255,0.4)',
-  borderTopColor: '#FFFFFF',
+  border: `2px solid ${COLORS.onDark.border}`,
+  borderTopColor: COLORS.text.inverse,
   animation: 'spin 700ms linear infinite',
 }
 

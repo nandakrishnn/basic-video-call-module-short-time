@@ -130,8 +130,8 @@ const SessionPage = (): JSX.Element => {
   }
 
   return (
-    <div className="session-layout" style={{ padding: 16, background: COLORS.background }}>
-      <div className="session-video-area" style={{ flex: 1 }}>
+    <div className="session-layout" style={{ padding: 18, background: COLORS.background }}>
+      <div className="session-video-area">
         {callEndedForPatient ? (
           <PostCallPatientPrompt onGoToDashboard={() => void router.push(ROUTES.dashboardPatient)} />
         ) : isEndingCall ? (

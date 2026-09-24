@@ -1,5 +1,6 @@
-import { COLORS, RADII } from '@/constants/colors'
+import { ArrowRight, Clock, SignalHigh } from 'lucide-react'
 import { Logo } from '@/components/shared/Logo'
+import { COLORS, FONT_SIZES, RADII } from '@/constants/colors'
 import type { CallState } from '@/hooks/useJitsiCall'
 import { CallTimer } from './CallTimer'
 
@@ -8,11 +9,13 @@ interface VideoHeaderProps {
   sessionType: string
   formattedTime: string
   callState: CallState
+  /** Same hangup the control bar uses — surfaced here to match the reference. */
+  onEndCall?: () => void
 }
 
 const STATE_LABEL: Record<CallState, string> = {
   connecting: 'Connecting…',
-  connected: 'Live',
+  connected: 'Good Connection',
   ended: 'Ended',
 }
 
@@ -22,30 +25,36 @@ const STATE_COLOR: Record<CallState, string> = {
   ended: COLORS.status.error,
 }
 
-export const VideoHeader = ({ patientName, sessionType, formattedTime, callState }: VideoHeaderProps): JSX.Element => {
+export const VideoHeader = ({
+  patientName,
+  sessionType,
+  formattedTime,
+  callState,
+  onEndCall,
+}: VideoHeaderProps): JSX.Element => {
   return (
     <div
       style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '14px 20px',
-        background: COLORS.glass.dark,
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
+        gap: 16,
+        padding: '14px 22px',
+        background: COLORS.surface,
+        borderBottom: `1px solid ${COLORS.border}`,
         flexShrink: 0,
         zIndex: 2,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0, overflow: 'hidden' }}>
-        <Logo surface="dark" size="sm" />
-        <div style={{ width: 1, height: 24, background: 'rgba(255,255,255,0.2)', flexShrink: 0 }} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, minWidth: 0, overflow: 'hidden' }}>
+        <Logo surface="light" size="sm" showWordmark />
+        <div style={{ width: 1, height: 30, background: COLORS.border, flexShrink: 0 }} />
         <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
           <span
             style={{
-              color: COLORS.text.inverse,
+              color: COLORS.text.primary,
               fontWeight: 700,
-              fontSize: '0.9rem',
+              fontSize: FONT_SIZES.md,
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
@@ -55,9 +64,8 @@ export const VideoHeader = ({ patientName, sessionType, formattedTime, callState
           </span>
           <span
             style={{
-              color: COLORS.text.inverse,
-              opacity: 0.7,
-              fontSize: '0.78rem',
+              color: COLORS.text.secondary,
+              fontSize: FONT_SIZES.sm,
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
@@ -68,30 +76,46 @@ export const VideoHeader = ({ patientName, sessionType, formattedTime, callState
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: '4px 10px',
-            borderRadius: RADII.pill,
-            background: 'rgba(255,255,255,0.12)',
-          }}
-        >
-          <span
-            style={{
-              width: 6,
-              height: 6,
-              borderRadius: '50%',
-              background: STATE_COLOR[callState],
-            }}
-          />
-          <span style={{ color: COLORS.text.inverse, fontSize: '0.75rem', fontWeight: 600 }}>
+      <div className="video-header-meta">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
+          <Clock size={16} color={COLORS.text.secondary} />
+          <CallTimer formattedTime={formattedTime} />
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
+          <SignalHigh size={17} color={STATE_COLOR[callState]} />
+          <span style={{ color: COLORS.text.secondary, fontSize: FONT_SIZES.base, fontWeight: 600 }}>
             {STATE_LABEL[callState]}
           </span>
         </div>
-        <CallTimer formattedTime={formattedTime} />
+
+        {onEndCall && (
+          <>
+            <div style={{ width: 1, height: 26, background: COLORS.border, flexShrink: 0 }} />
+            <button
+              type="button"
+              onClick={onEndCall}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 9,
+                padding: '11px 20px',
+                border: 'none',
+                borderRadius: RADII.md,
+                background: COLORS.primarySoft,
+                color: COLORS.primaryStrong,
+                fontFamily: 'inherit',
+                fontSize: FONT_SIZES.base,
+                fontWeight: 700,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              End Session
+              <ArrowRight size={16} />
+            </button>
+          </>
+        )}
       </div>
     </div>
   )

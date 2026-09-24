@@ -1,4 +1,4 @@
-import { PhoneOff } from 'lucide-react'
+import { PhoneOff, SignalHigh } from 'lucide-react'
 import { useRef } from 'react'
 import { Button } from '@/components/shared/Button'
 import { COLORS, RADII, SHADOWS } from '@/constants/colors'
@@ -68,8 +68,12 @@ export const VideoStage = ({
         flexDirection: 'column',
         width: '100%',
         height: '100%',
-        background: COLORS.primary,
-        borderRadius: RADII.md,
+        // Floor so the stage can never collapse to its content height and
+        // stack the absolutely positioned overlays below on top of each other.
+        minHeight: 320,
+        background: COLORS.accent,
+        border: `1px solid ${COLORS.border}`,
+        borderRadius: RADII.lg,
         boxShadow: SHADOWS.md,
         overflow: 'hidden',
       }}
@@ -83,13 +87,35 @@ export const VideoStage = ({
           sessionType={sessionType}
           formattedTime={formattedTime}
           callState={callState}
+          onEndCall={endCall}
         />
       )}
       {/* Video sits below the header (not underneath it) so Jitsi's own
           overlays — like its participant thumbnail near the top edge —
           never end up hidden behind our header bar. */}
-      <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
-        <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
+      <div style={{ position: 'relative', flex: 1, minHeight: 240 }}>
+        <div ref={containerRef} style={{ width: '100%', height: '100%', overflow: 'hidden' }} />
+
+        {!isChatOpen && (
+          <>
+            <span className="call-pill" style={{ top: 16, left: 16 }}>
+              <span
+                style={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: '50%',
+                  background: callState === 'connected' ? COLORS.status.success : COLORS.status.warning,
+                }}
+              />
+              {counterpartName}
+            </span>
+
+            <span className="call-pill" style={{ bottom: 20, left: 16 }}>
+              <SignalHigh size={15} />
+              {callState === 'connected' ? 'Good Connection' : 'Connecting…'}
+            </span>
+          </>
+        )}
         <TroubleshootButton counterpartName={counterpartName} isChatOpen={isChatOpen} onToggleChat={toggleChat} />
         {isModerator && (
           <LobbyRequests

@@ -5,11 +5,13 @@ export const ROUTES = {
 
   login: '/login',
   patientLogin: '/patient-login',
-  contact: '/contact',
   patientJoin: (token: string) => `/session/join/${token}`,
 
   session: (sessionId: string) => `/session/${sessionId}`,
   sessionNotes: (sessionId: string) => `/session/notes/${sessionId}`,
+
+  patients: '/patients',
+  bookings: '/bookings',
 
   appointments: '/appointments',
   appointmentDetail: (appointmentId: string) => `/appointments/${appointmentId}`,

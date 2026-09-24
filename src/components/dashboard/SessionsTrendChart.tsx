@@ -1,16 +1,17 @@
 import { useState } from 'react'
-import { COLORS } from '@/constants/colors'
+import { COLORS, FONT_SIZES, RADII, SHADOWS } from '@/constants/colors'
 
 interface SessionsTrendChartProps {
   data: { date: string; count: number }[]
 }
 
 const CHART_WIDTH = 400
-const CHART_HEIGHT = 120
+const CHART_HEIGHT = 140
 const BASELINE_Y = CHART_HEIGHT - 1
 const BAR_GAP = 3
 const MAX_BAR_WIDTH = 20
 const BAR_RADIUS = 4
+const GRIDLINE_COUNT = 3
 
 const roundedTopBarPath = (x: number, y: number, width: number, height: number): string => {
   const r = Math.min(BAR_RADIUS, height, width / 2)
@@ -51,7 +52,24 @@ export const SessionsTrendChart = ({ data }: SessionsTrendChartProps): JSX.Eleme
         role="img"
         aria-label="Sessions over the last 14 days"
       >
-        <line x1={0} y1={BASELINE_Y} x2={CHART_WIDTH} y2={BASELINE_Y} stroke={COLORS.border} strokeWidth={1} />
+        {Array.from({ length: GRIDLINE_COUNT }, (_, i) => {
+          const y = BASELINE_Y - ((i + 1) / GRIDLINE_COUNT) * plotHeight
+          return (
+            <line
+              key={y}
+              x1={0}
+              y1={y}
+              x2={CHART_WIDTH}
+              y2={y}
+              stroke={COLORS.border}
+              strokeWidth={1}
+              strokeDasharray="3 5"
+            />
+          )
+        })}
+
+        <line x1={0} y1={BASELINE_Y} x2={CHART_WIDTH} y2={BASELINE_Y} stroke={COLORS.borderStrong} strokeWidth={1} />
+
         {data.map((d, i) => {
           const barHeight = d.count === 0 ? 0 : Math.max(4, (d.count / maxCount) * plotHeight)
           const x = startX + i * (barWidth + BAR_GAP)
@@ -63,7 +81,7 @@ export const SessionsTrendChart = ({ data }: SessionsTrendChartProps): JSX.Eleme
               {barHeight > 0 && (
                 <path
                   d={roundedTopBarPath(x, y, barWidth, barHeight)}
-                  fill={isHovered ? COLORS.primary : COLORS.primaryLight}
+                  fill={isHovered ? COLORS.accent : COLORS.primary}
                 />
               )}
               <rect
@@ -90,25 +108,26 @@ export const SessionsTrendChart = ({ data }: SessionsTrendChartProps): JSX.Eleme
             left: `${((startX + hoverIndex * (barWidth + BAR_GAP) + barWidth / 2) / CHART_WIDTH) * 100}%`,
             top: 0,
             transform: 'translate(-50%, -100%)',
-            background: COLORS.primary,
+            background: COLORS.accent,
             color: COLORS.text.inverse,
-            borderRadius: 8,
-            padding: '6px 10px',
-            fontSize: '0.75rem',
+            borderRadius: RADII.sm,
+            boxShadow: SHADOWS.md,
+            padding: '7px 11px',
+            fontSize: FONT_SIZES.sm,
             whiteSpace: 'nowrap',
             pointerEvents: 'none',
             zIndex: 1,
           }}
         >
           <strong>{hoveredPoint.count}</strong> {hoveredPoint.count === 1 ? 'session' : 'sessions'}
-          <div style={{ opacity: 0.75, fontSize: '0.68rem' }}>{formatDate(hoveredPoint.date)}</div>
+          <div style={{ color: COLORS.onDark.muted, fontSize: FONT_SIZES.xs }}>{formatDate(hoveredPoint.date)}</div>
         </div>
       )}
 
       {firstPoint && lastPoint && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
-          <span style={{ color: COLORS.text.muted, fontSize: '0.7rem' }}>{formatDate(firstPoint.date)}</span>
-          <span style={{ color: COLORS.text.muted, fontSize: '0.7rem' }}>{formatDate(lastPoint.date)}</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
+          <span style={{ color: COLORS.text.muted, fontSize: FONT_SIZES.xs }}>{formatDate(firstPoint.date)}</span>
+          <span style={{ color: COLORS.text.muted, fontSize: FONT_SIZES.xs }}>{formatDate(lastPoint.date)}</span>
         </div>
       )}
     </div>

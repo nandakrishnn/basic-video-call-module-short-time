@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Button } from '@/components/shared/Button'
 import { Textarea } from '@/components/shared/Input'
 import { Modal } from '@/components/shared/Modal'
-import { COLORS } from '@/constants/colors'
+import { MESSAGES } from '@/constants/messages'
 
 interface QuickNoteModalProps {
   initialValue: string
@@ -14,13 +14,29 @@ export const QuickNoteModal = ({ initialValue, onSave, onClose }: QuickNoteModal
   const [value, setValue] = useState(initialValue)
 
   return (
-    <Modal onOverlayClick={onClose} maxWidth={420}>
-      <h3 style={{ color: COLORS.text.primary, fontSize: '1.1rem', fontWeight: 700, margin: '0 0 4px' }}>
-        Quick note
-      </h3>
-      <p style={{ color: COLORS.text.secondary, fontSize: '0.85rem', margin: '0 0 16px' }}>
-        Jot something down without leaving the call — it'll be waiting for you when you write up the full notes.
-      </p>
+    <Modal
+      title="Quick note"
+      subtitle="Jot something down without leaving the call — it'll be waiting for you when you write up the full notes."
+      maxWidth={440}
+      onClose={onClose}
+      footer={
+        <div style={{ display: 'flex', gap: 10 }}>
+          <Button variant="secondary" onClick={onClose} style={{ flex: 1 }}>
+            {MESSAGES.common.cancel}
+          </Button>
+          <Button
+            variant="primary"
+            style={{ flex: 2 }}
+            onClick={() => {
+              onSave(value)
+              onClose()
+            }}
+          >
+            Save
+          </Button>
+        </div>
+      }
+    >
       <Textarea
         autoFocus
         value={value}
@@ -28,20 +44,6 @@ export const QuickNoteModal = ({ initialValue, onSave, onClose }: QuickNoteModal
         placeholder="e.g. Reduced pain on left knee flexion, check ROM next session…"
         rows={6}
       />
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 16 }}>
-        <Button variant="secondary" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button
-          variant="primary"
-          onClick={() => {
-            onSave(value)
-            onClose()
-          }}
-        >
-          Save
-        </Button>
-      </div>
     </Modal>
   )
 }

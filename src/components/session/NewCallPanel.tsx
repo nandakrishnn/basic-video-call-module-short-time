@@ -1,15 +1,13 @@
-import { X } from 'lucide-react'
-import { useRouter } from 'next/router'
+import { Check, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/shared/Button'
-import { Card } from '@/components/shared/Card'
+import { Field } from '@/components/shared/Field'
 import { Input, Select } from '@/components/shared/Input'
-import { COLORS, RADII } from '@/constants/colors'
+import { Modal } from '@/components/shared/Modal'
+import { COLORS, FONT_SIZES, RADII } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
-import { ROUTES } from '@/constants/routes'
 import { createAppointmentRequest } from '@/services/appointment.service'
 import { createPatientRequest } from '@/services/patient.service'
-import { createSessionRequest } from '@/services/session.service'
 import type { User } from '@/types/user.types'
 
 interface NewCallPanelProps {
@@ -17,15 +15,17 @@ interface NewCallPanelProps {
   patients: User[]
   onPatientAdded: (patient: User) => void
   onScheduled?: () => void
+  /** Trigger label — the dashboard calls this "New Appointment". */
+  label?: string
 }
 
-type ScheduleMode = 'now' | 'later'
-
-const labelStyle = { fontSize: '0.78rem', fontWeight: 600, color: COLORS.text.primary }
-
-export const NewCallPanel = ({ token, patients, onPatientAdded, onScheduled }: NewCallPanelProps): JSX.Element => {
-  const router = useRouter()
-
+export const NewCallPanel = ({
+  token,
+  patients,
+  onPatientAdded,
+  onScheduled,
+  label,
+}: NewCallPanelProps): JSX.Element => {
   const [isOpen, setIsOpen] = useState(false)
   const [selectedPatientId, setSelectedPatientId] = useState('')
 
@@ -33,8 +33,8 @@ export const NewCallPanel = ({ token, patients, onPatientAdded, onScheduled }: N
   const [newName, setNewName] = useState('')
   const [newEmail, setNewEmail] = useState('')
   const [newPhone, setNewPhone] = useState('')
+  const [newIssue, setNewIssue] = useState('')
 
-  const [scheduleMode, setScheduleMode] = useState<ScheduleMode>('now')
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
   const [scheduled, setScheduled] = useState(false)
@@ -45,10 +45,10 @@ export const NewCallPanel = ({ token, patients, onPatientAdded, onScheduled }: N
   const resetAndClose = (): void => {
     setIsOpen(false)
     setSelectedPatientId('')
-    setScheduleMode('now')
     setDate('')
     setTime('')
     setScheduled(false)
+    setIsAddingPatient(false)
     setError(null)
   }
 
@@ -60,11 +60,16 @@ export const NewCallPanel = ({ token, patients, onPatientAdded, onScheduled }: N
 
     setIsSubmitting(true)
     setError(null)
-    const res = await createPatientRequest(token, { fullName: newName, email: newEmail, phone: newPhone })
+    const res = await createPatientRequest(token, {
+      fullName: newName,
+      email: newEmail,
+      phone: newPhone,
+      ...(newIssue.trim() ? { issue: newIssue.trim() } : {}),
+    })
     setIsSubmitting(false)
 
     if (!res.success) {
-      setError(MESSAGES.newCall.createPatientFailed)
+      setError(res.message || MESSAGES.newCall.createPatientFailed)
       return
     }
 
@@ -74,19 +79,12 @@ export const NewCallPanel = ({ token, patients, onPatientAdded, onScheduled }: N
     setNewName('')
     setNewEmail('')
     setNewPhone('')
+    setNewIssue('')
   }
 
-  const handleStartNow = async (): Promise<void> => {
-    setIsSubmitting(true)
-    setError(null)
-    const res = await createSessionRequest(token, selectedPatientId)
-    setIsSubmitting(false)
+  const handleSubmit = async (): Promise<void> => {
+    if (!selectedPatientId) return
 
-    if (res.success) void router.push(ROUTES.session(res.data.id))
-    else setError(res.message)
-  }
-
-  const handleScheduleLater = async (): Promise<void> => {
     if (!date || !time) {
       setError(MESSAGES.newCall.missingSchedule)
       return
@@ -109,167 +107,155 @@ export const NewCallPanel = ({ token, patients, onPatientAdded, onScheduled }: N
     }
   }
 
-  const handleSubmit = (): void => {
-    if (!selectedPatientId) return
-    void (scheduleMode === 'now' ? handleStartNow() : handleScheduleLater())
-  }
-
-  if (!isOpen) {
-    return (
-      <Button variant="primary" onClick={() => setIsOpen(true)} style={{ alignSelf: 'flex-start' }}>
-        {MESSAGES.newCall.button}
-      </Button>
-    )
-  }
-
   return (
-    <Card style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2 style={{ color: COLORS.text.primary, fontSize: '1rem', fontWeight: 700, margin: 0 }}>
-          {MESSAGES.newCall.button}
-        </h2>
-        <button
-          type="button"
-          onClick={resetAndClose}
-          aria-label="Close"
-          style={{
-            border: 'none',
-            background: 'none',
-            color: COLORS.text.muted,
-            cursor: 'pointer',
-            display: 'flex',
-            padding: 12,
-          }}
+    <>
+      <Button variant="primary" onClick={() => setIsOpen(true)}>
+        <Plus size={16} />
+        {label ?? MESSAGES.newCall.button}
+      </Button>
+
+      {isOpen && (
+        <Modal
+          title={MESSAGES.newCall.button}
+          subtitle={scheduled ? undefined : MESSAGES.newCall.subtitle}
+          maxWidth={500}
+          onClose={resetAndClose}
+          footer={
+            scheduled ? (
+              <Button variant="primary" fullWidth onClick={resetAndClose}>
+                {MESSAGES.newCall.doneButton}
+              </Button>
+            ) : (
+              <div style={{ display: 'flex', gap: 10 }}>
+                <Button variant="secondary" onClick={resetAndClose} style={{ flex: 1 }}>
+                  {MESSAGES.common.cancel}
+                </Button>
+                <Button
+                  variant="primary"
+                  disabled={!selectedPatientId}
+                  isLoading={isSubmitting}
+                  onClick={() => void handleSubmit()}
+                  style={{ flex: 2 }}
+                >
+                  {isSubmitting ? MESSAGES.newCall.scheduling : MESSAGES.newCall.scheduleCallButton}
+                </Button>
+              </div>
+            )
+          }
         >
-          <X size={16} />
-        </button>
-      </div>
-
-      {scheduled ? (
-        <>
-          <p style={{ color: COLORS.status.success, fontSize: '0.9rem', margin: 0 }}>
-            {MESSAGES.newCall.scheduleSuccess}
-          </p>
-          <Button variant="secondary" onClick={resetAndClose}>
-            {MESSAGES.newCall.doneButton}
-          </Button>
-        </>
-      ) : (
-        <>
-          <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <span style={labelStyle}>{MESSAGES.newCall.selectPatient}</span>
-            <Select value={selectedPatientId} onChange={(e) => setSelectedPatientId(e.target.value)}>
-              <option value="">— Select —</option>
-              {patients.map((patient) => (
-                <option key={patient.id} value={patient.id}>
-                  {patient.fullName} ({patient.email ?? patient.phone})
-                </option>
-              ))}
-            </Select>
-          </label>
-
-          {isAddingPatient ? (
+          {scheduled ? (
             <div
               style={{
                 display: 'flex',
-                flexDirection: 'column',
-                gap: 10,
-                padding: 14,
+                alignItems: 'center',
+                gap: 9,
+                padding: '13px 15px',
                 borderRadius: RADII.sm,
-                background: COLORS.background,
+                background: COLORS.statusSoft.success,
+                color: COLORS.status.success,
+                fontSize: FONT_SIZES.base,
+                fontWeight: 600,
               }}
             >
-              <span style={labelStyle}>{MESSAGES.newCall.addPatientTitle}</span>
-              <Input
-                type="text"
-                placeholder="Full name"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                required
-              />
-              <Input
-                type="email"
-                placeholder="Email"
-                value={newEmail}
-                onChange={(e) => setNewEmail(e.target.value)}
-                required
-              />
-              <Input
-                type="tel"
-                placeholder="Phone"
-                value={newPhone}
-                onChange={(e) => setNewPhone(e.target.value)}
-                required
-              />
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                <Button variant="primary" size="sm" isLoading={isSubmitting} onClick={() => void handleAddPatient()}>
-                  Save patient
-                </Button>
-                <Button variant="secondary" size="sm" onClick={() => setIsAddingPatient(false)}>
-                  Cancel
-                </Button>
-              </div>
+              <Check size={17} />
+              {MESSAGES.newCall.scheduleSuccess}
             </div>
           ) : (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setIsAddingPatient(true)}
-              style={{ alignSelf: 'flex-start' }}
-            >
-              {MESSAGES.newCall.addPatientButton}
-            </Button>
-          )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+              <Field label={MESSAGES.newCall.selectPatient}>
+                <Select value={selectedPatientId} onChange={(e) => setSelectedPatientId(e.target.value)}>
+                  <option value="">{MESSAGES.newCall.selectPlaceholder}</option>
+                  {patients.map((patient) => (
+                    <option key={patient.id} value={patient.id}>
+                      {patient.fullName} ({patient.email ?? patient.phone})
+                    </option>
+                  ))}
+                </Select>
+              </Field>
 
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <Button
-              variant={scheduleMode === 'now' ? 'primary' : 'secondary'}
-              size="sm"
-              onClick={() => setScheduleMode('now')}
-            >
-              {MESSAGES.newCall.whenNow}
-            </Button>
-            <Button
-              variant={scheduleMode === 'later' ? 'primary' : 'secondary'}
-              size="sm"
-              onClick={() => setScheduleMode('later')}
-            >
-              {MESSAGES.newCall.whenLater}
-            </Button>
-          </div>
+              {isAddingPatient ? (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 11,
+                    padding: 16,
+                    borderRadius: RADII.md,
+                    background: COLORS.primarySofter,
+                    border: `1px solid ${COLORS.border}`,
+                  }}
+                >
+                  <span className="field-label">{MESSAGES.newCall.addPatientTitle}</span>
+                  <Input
+                    type="text"
+                    placeholder={MESSAGES.patients.fieldName}
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    required
+                  />
+                  <Input
+                    type="email"
+                    placeholder={MESSAGES.patients.fieldEmail}
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    required
+                  />
+                  <Input
+                    type="tel"
+                    placeholder={MESSAGES.patients.fieldPhone}
+                    value={newPhone}
+                    onChange={(e) => setNewPhone(e.target.value)}
+                    required
+                  />
+                  <Input
+                    type="text"
+                    placeholder={MESSAGES.patients.fieldIssuePlaceholder}
+                    value={newIssue}
+                    onChange={(e) => setNewIssue(e.target.value)}
+                    maxLength={255}
+                  />
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <Button variant="primary" size="sm" isLoading={isSubmitting} onClick={() => void handleAddPatient()}>
+                      {MESSAGES.patients.saveButton}
+                    </Button>
+                    <Button variant="secondary" size="sm" onClick={() => setIsAddingPatient(false)}>
+                      {MESSAGES.common.cancel}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setIsAddingPatient(true)}
+                  style={{ alignSelf: 'flex-start' }}
+                >
+                  {MESSAGES.newCall.addPatientButton}
+                </Button>
+              )}
 
-          {scheduleMode === 'later' && (
-            <div className="form-row-2up">
-              <label style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <span style={labelStyle}>Date</span>
-                <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-              </label>
-              <label style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <span style={labelStyle}>Time</span>
-                <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
-              </label>
+              <div className="form-row-2up">
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <Field label={MESSAGES.newCall.fieldDate}>
+                    <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                  </Field>
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <Field label={MESSAGES.newCall.fieldTime}>
+                    <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+                  </Field>
+                </div>
+              </div>
+
+              {error && (
+                <p role="alert" style={{ color: COLORS.status.error, fontSize: FONT_SIZES.base, margin: 0 }}>
+                  {error}
+                </p>
+              )}
             </div>
           )}
-
-          {error && <p style={{ color: COLORS.status.error, fontSize: '0.85rem', margin: 0 }}>{error}</p>}
-
-          <Button
-            variant="primary"
-            fullWidth
-            disabled={!selectedPatientId}
-            isLoading={isSubmitting}
-            onClick={handleSubmit}
-          >
-            {scheduleMode === 'now'
-              ? isSubmitting
-                ? 'Starting…'
-                : MESSAGES.newCall.startCallButton
-              : isSubmitting
-                ? 'Scheduling…'
-                : MESSAGES.newCall.scheduleCallButton}
-          </Button>
-        </>
+        </Modal>
       )}
-    </Card>
+    </>
   )
 }

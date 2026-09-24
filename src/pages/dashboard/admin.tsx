@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Card } from '@/components/shared/Card'
 import { DashboardHeader } from '@/components/shared/DashboardHeader'
 import { EmptyState } from '@/components/shared/EmptyState'
-import { Footer } from '@/components/shared/Footer'
 import { PageState } from '@/components/shared/PageState'
 import { StatCard } from '@/components/shared/StatCard'
 import { COLORS } from '@/constants/colors'
@@ -116,7 +115,6 @@ const AdminDashboardPage = (): JSX.Element => {
         )}
       </section>
 
-      <Footer />
       </div>
     </div>
   )
