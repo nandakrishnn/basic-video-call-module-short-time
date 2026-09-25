@@ -39,6 +39,7 @@ export const MESSAGES = {
     createSuccess: 'Notes draft saved.',
     enhanceSuccess: 'Notes enhanced successfully.',
     enhanceFailed: 'Failed to enhance notes.',
+    enhanceBusy: 'The AI is busy right now. Your notes are saved — try enhancing again in a moment.',
     approveSuccess: 'Notes approved successfully.',
     pdfGenerated: 'Report PDF generated successfully.',
     sendSuccess: 'Report sent to patient successfully.',

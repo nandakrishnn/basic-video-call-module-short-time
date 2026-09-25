@@ -52,13 +52,60 @@ const SAFETY_SETTINGS = [
   HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
 ].map((category) => ({ category, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH }))
 
+/**
+ * Google returns 503 "This model is currently experiencing high demand" under
+ * load, and 429 when rate limited. Both are explicitly temporary, so they are
+ * retried rather than surfaced — a physio writing up notes should not have to
+ * care that the model was briefly busy.
+ */
+const TRANSIENT_STATUSES = new Set([429, 500, 502, 503, 504])
+
+export class TransientAiError extends Error {}
+
+const statusOf = (err: unknown): number | undefined =>
+  typeof err === 'object' && err !== null && 'status' in err
+    ? (err as { status?: number }).status
+    : undefined
+
+const isTransient = (err: unknown): boolean => {
+  const status = statusOf(err)
+  return status !== undefined && TRANSIENT_STATUSES.has(status)
+}
+
+const wait = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
+
 export const enhanceNotesWithAI = async (rawNotes: string): Promise<string> => {
   if (!process.env.GEMINI_API_KEY) {
     throw new Error('GEMINI_API_KEY is not set — note enhancement cannot run.')
   }
 
+  const models = [CONFIG.gemini.model, ...(CONFIG.gemini.fallbackModel ? [CONFIG.gemini.fallbackModel] : [])]
+  let lastError: unknown
+
+  for (let attempt = 0; attempt < CONFIG.gemini.maxAttempts; attempt++) {
+    // Later attempts fall back to the lighter model — when the primary is
+    // saturated, a different one usually is not.
+    const modelName = models[Math.min(attempt, models.length - 1)] as string
+
+    try {
+      return await generateOnce(modelName, rawNotes)
+    } catch (err) {
+      lastError = err
+      if (!isTransient(err) || attempt === CONFIG.gemini.maxAttempts - 1) break
+      // Backoff with jitter, so concurrent retries don't align on the same tick.
+      await wait(CONFIG.gemini.retryBaseMs * 2 ** attempt + Math.random() * 250)
+    }
+  }
+
+  if (isTransient(lastError)) {
+    throw new TransientAiError(`Gemini is busy (HTTP ${statusOf(lastError)}) after ${CONFIG.gemini.maxAttempts} attempts.`)
+  }
+  throw lastError
+}
+
+const generateOnce = async (modelName: string, rawNotes: string): Promise<string> => {
   const model = genAI.getGenerativeModel({
-    model: CONFIG.gemini.model,
+    model: modelName,
     // Passed as a real system instruction rather than a leading user turn, so
     // the "invent nothing" rule is weighted as instruction, not as content the
     // model may treat as part of the notes.

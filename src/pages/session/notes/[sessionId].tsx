@@ -75,6 +75,33 @@ const NotesPage = (): JSX.Element => {
     }
   }
 
+  // Bypasses the AI entirely: the raw notes become the draft the physio edits
+  // and approves. Still creates the notes record, so the rest of the flow —
+  // approve, PDF, send — is identical.
+  const handleSkipAi = async (): Promise<void> => {
+    const token = getToken()
+    if (!token || !sessionId) return
+
+    setIsSubmitting(true)
+    setError(null)
+
+    let currentNotesId = notesId
+    if (!currentNotesId) {
+      const createRes = await createNotesRequest(token, sessionId, rawNotes)
+      if (!createRes.success) {
+        setIsSubmitting(false)
+        setError(createRes.message)
+        return
+      }
+      currentNotesId = createRes.data.id
+      setNotesId(currentNotesId)
+    }
+
+    setIsSubmitting(false)
+    setEnhancedNotes(rawNotes)
+    setStep('enhance')
+  }
+
   const handleApprove = async (): Promise<void> => {
     const token = getToken()
     if (!token || !notesId) return
@@ -151,6 +178,7 @@ const NotesPage = (): JSX.Element => {
           onChange={setRawNotes}
           onAutoSave={(value) => void handleAutoSave(value)}
           onSubmit={() => void handleEnhance()}
+          onSkip={() => void handleSkipAi()}
           isSubmitting={isSubmitting}
         />
       )}

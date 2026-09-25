@@ -42,6 +42,11 @@ export const CONFIG = {
     // for this reformatting job, gemini-3.8-flash more capable. Do NOT drop to
     // the 2.5 line, which is now limited-access.
     model: process.env.GEMINI_MODEL ?? 'gemini-3.5-flash',
+    // Tried once the primary has failed a transient error — when one model is
+    // saturated a lighter one usually is not. Set empty to disable.
+    fallbackModel: process.env.GEMINI_FALLBACK_MODEL ?? 'gemini-3.5-flash-lite',
+    maxAttempts: 3,
+    retryBaseMs: 900,
     // Clinical notes must be reformatted, not creatively rewritten.
     temperature: 0.2,
     maxOutputTokens: 2048,

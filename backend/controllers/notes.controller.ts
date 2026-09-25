@@ -7,7 +7,7 @@ import { findSessionById } from '../models/session.model'
 import { findUserById } from '../models/user.model'
 import { logAudit } from '../services/audit.service'
 import { sendReportEmail } from '../services/email.service'
-import { enhanceNotesWithAI } from '../services/gemini.service'
+import { enhanceNotesWithAI, TransientAiError } from '../services/gemini.service'
 import { generateReportPdf } from '../services/pdf.service'
 import { uploadPdf } from '../services/storage.service'
 import type { ApproveNotesInput, CreateNotesInput, SendNotesInput } from '../types/notes.types'
@@ -40,6 +40,12 @@ export const enhanceNotes = async (req: Request, res: Response): Promise<void> =
     // Without this the underlying cause — bad model name, missing key, safety
     // block — is swallowed and every failure looks identical from the client.
     console.error('Gemini note enhancement failed:', err)
+
+    // A busy model is worth retrying, so say so — the generic message reads as
+    // "this is broken" and the physio abandons the draft.
+    if (err instanceof TransientAiError) {
+      throw new AppError(MESSAGES.notes.enhanceBusy, 503, 'AI_ENHANCE_BUSY')
+    }
     throw new AppError(MESSAGES.notes.enhanceFailed, 502, 'AI_ENHANCE_FAILED')
   }
 

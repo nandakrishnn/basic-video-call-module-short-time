@@ -52,7 +52,9 @@ export const MESSAGES = {
 
   notes: {
     rawPlaceholder: "Write your session notes freely, don't worry about grammar or structure...",
-    enhancing: 'Enhancing your notes with AI…',
+    enhanceAction: 'Enhance with AI',
+    enhancing: 'Enhancing…',
+    skipAi: 'Skip AI',
     enhanceFailed: 'Could not enhance notes. Please try again.',
     draftSaved: 'Draft saved',
     approved: 'Notes approved and saved.',
