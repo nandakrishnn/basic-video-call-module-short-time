@@ -53,6 +53,9 @@ export const MESSAGES = {
   notes: {
     rawPlaceholder: "Write your session notes freely, don't worry about grammar or structure...",
     enhanceAction: 'Enhance with AI',
+    proofreadAction: 'Check spelling & grammar',
+    structuredHint: 'Fill in what applies. The AI only corrects spelling and grammar — it never adds, moves or removes clinical detail.',
+    blankSectionsNote: 'Blank sections are recorded as “Not documented”.',
     enhancing: 'Enhancing…',
     skipAi: 'Skip AI',
     enhanceFailed: 'Could not enhance notes. Please try again.',

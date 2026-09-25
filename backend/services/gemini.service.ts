@@ -2,44 +2,39 @@ import { HarmBlockThreshold, HarmCategory } from '@google/generative-ai'
 import { CONFIG } from '../constants/config'
 import { genAI } from '../lib/gemini'
 
-const SYSTEM_PROMPT = `You are a clinical documentation assistant helping a
-physiotherapist tidy up their session notes for a patient's medical record.
-
-You must use ONLY the information explicitly present in the raw notes below.
-Do not invent, assume, infer, or add any clinical detail, symptom,
-measurement, treatment, diagnosis, or patient statement that is not
-explicitly stated in the raw notes. This is a real medical record — adding
-fabricated clinical content is a patient-safety violation, not a helpful
-embellishment.
+const SYSTEM_PROMPT = `You are proofreading a physiotherapist's session notes
+for a patient's medical record. The physiotherapist has already written each
+section themselves. You are NOT organising, summarising or interpreting their
+notes — they have done that. You are correcting the writing.
 
 Your job is limited to:
-1. Fixing grammar and spelling
-2. Organizing what was actually written into the structure below
-3. Light rephrasing into clear clinical language, without changing meaning or adding facts
+1. Fixing spelling and grammar
+2. Fixing punctuation and capitalisation
+3. Tidying obvious shorthand into clear clinical language WITHOUT changing meaning
 
-Format the output exactly as:
+You must not:
+- Add any clinical detail, symptom, measurement, treatment, diagnosis or
+  patient statement that is not already written. This is a real medical
+  record; inventing clinical content is a patient-safety violation.
+- Move content between sections. Each section stays exactly where the
+  physiotherapist put it.
+- Expand, elaborate on, or draw conclusions from what is written.
+- Remove clinical detail, even if it reads awkwardly.
+- Replace a section's content with "Not documented".
+
+The input uses these headings, in this order:
 
 PRESENTING COMPLAINT:
-[complaint]
-
 TREATMENT PROVIDED:
-[treatment]
-
 PATIENT RESPONSE:
-[response]
-
 RECOMMENDATIONS:
-[recommendations]
-
 NEXT STEPS:
-[next steps]
 
-For any section the raw notes do not cover, write exactly: Not documented.
-If the raw notes are too sparse, garbled, or unclear to confidently extract
-meaning for a section, write "Not documented" for that section rather than
-guessing or filling in plausible-sounding clinical content.
+Return the same headings in the same order with the same content, corrected.
+Where a section reads exactly "Not documented." leave it exactly as it is —
+the physiotherapist left it blank on purpose.
 
-Return only the formatted notes. Nothing else.`
+Return only the notes. No preamble, no commentary.`
 
 // Physiotherapy notes describe injury, pain and physical manipulation, which
 // the default medium thresholds can score as harmful and block outright. These

@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { EnhancedNotesPanel } from '@/components/notes/EnhancedNotesPanel'
-import { RawNotesEditor } from '@/components/notes/RawNotesEditor'
+import { StructuredNotesEditor } from '@/components/notes/StructuredNotesEditor'
 import { SendToggle } from '@/components/notes/SendToggle'
 import { Button } from '@/components/shared/Button'
 import { COLORS } from '@/constants/colors'
@@ -13,6 +13,7 @@ import {
   generatePdfRequest,
   sendNotesRequest,
 } from '@/services/notes.service'
+import { EMPTY_NOTE_FIELDS, composeNotes, parseNotes, type NoteSectionKey } from '@/utils/notes'
 import { clearQuickNote, getQuickNote, getToken } from '@/utils/storage'
 
 type Step = 'raw' | 'enhance' | 'send' | 'done'
@@ -22,7 +23,7 @@ const NotesPage = (): JSX.Element => {
   const { sessionId } = router.query as { sessionId?: string }
 
   const [step, setStep] = useState<Step>('raw')
-  const [rawNotes, setRawNotes] = useState('')
+  const [fields, setFields] = useState(EMPTY_NOTE_FIELDS)
   const [enhancedNotes, setEnhancedNotes] = useState('')
   const [notesId, setNotesId] = useState<string | null>(null)
   const [sendEnabled, setSendEnabled] = useState(false)
@@ -33,12 +34,13 @@ const NotesPage = (): JSX.Element => {
     if (!sessionId) return
     const draft = getQuickNote(sessionId)
     if (draft) {
-      setRawNotes(draft)
+      setFields(parseNotes(draft))
       clearQuickNote(sessionId)
     }
   }, [sessionId])
 
-  const handleAutoSave = async (value: string): Promise<void> => {
+  const handleAutoSave = async (): Promise<void> => {
+    const value = composeNotes(fields)
     const token = getToken()
     if (!token || !sessionId || notesId) return
     const res = await createNotesRequest(token, sessionId, value)
@@ -54,7 +56,7 @@ const NotesPage = (): JSX.Element => {
 
     let currentNotesId = notesId
     if (!currentNotesId) {
-      const createRes = await createNotesRequest(token, sessionId, rawNotes)
+      const createRes = await createNotesRequest(token, sessionId, composeNotes(fields))
       if (!createRes.success) {
         setIsSubmitting(false)
         setError(createRes.message)
@@ -87,7 +89,7 @@ const NotesPage = (): JSX.Element => {
 
     let currentNotesId = notesId
     if (!currentNotesId) {
-      const createRes = await createNotesRequest(token, sessionId, rawNotes)
+      const createRes = await createNotesRequest(token, sessionId, composeNotes(fields))
       if (!createRes.success) {
         setIsSubmitting(false)
         setError(createRes.message)
@@ -98,7 +100,7 @@ const NotesPage = (): JSX.Element => {
     }
 
     setIsSubmitting(false)
-    setEnhancedNotes(rawNotes)
+    setEnhancedNotes(composeNotes(fields))
     setStep('enhance')
   }
 
@@ -173,10 +175,12 @@ const NotesPage = (): JSX.Element => {
       <h1 style={{ color: COLORS.text.primary, fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>Session notes</h1>
 
       {step === 'raw' && (
-        <RawNotesEditor
-          value={rawNotes}
-          onChange={setRawNotes}
-          onAutoSave={(value) => void handleAutoSave(value)}
+        <StructuredNotesEditor
+          fields={fields}
+          onChange={(key: NoteSectionKey, value: string) =>
+            setFields((prev) => ({ ...prev, [key]: value }))
+          }
+          onAutoSave={() => void handleAutoSave()}
           onSubmit={() => void handleEnhance()}
           onSkip={() => void handleSkipAi()}
           isSubmitting={isSubmitting}
@@ -185,7 +189,7 @@ const NotesPage = (): JSX.Element => {
 
       {step === 'enhance' && (
         <EnhancedNotesPanel
-          rawNotes={rawNotes}
+          rawNotes={composeNotes(fields)}
           enhancedNotes={enhancedNotes}
           onEnhancedChange={setEnhancedNotes}
           onApprove={() => void handleApprove()}
