@@ -1,7 +1,8 @@
 import type { Request, Response } from 'express'
-import { AuditAction, SessionStatus, UserRole } from '../constants/enums'
+import { AppointmentStatus, AuditAction, SessionStatus, UserRole } from '../constants/enums'
 import { MESSAGES } from '../constants/messages'
 import { AppError } from '../middleware/error.middleware'
+import { updateAppointmentRecord } from '../models/appointment.model'
 import { findSessionById, updateSessionStatus } from '../models/session.model'
 import { findUserById } from '../models/user.model'
 import { logAudit } from '../services/audit.service'
@@ -66,6 +67,20 @@ export const startSession = async (req: Request, res: Response): Promise<void> =
 export const endSession = async (req: Request, res: Response): Promise<void> => {
   const session = await updateSessionStatus(req.params.id, SessionStatus.COMPLETED, 'ended_at')
   if (!session) throw new AppError(MESSAGES.session.notFound, 404, 'SESSION_NOT_FOUND')
+
+  // Close the booking too. Ending the call only completed the session record,
+  // leaving its appointment "scheduled" for good — so the dashboard kept
+  // offering Join Call for a consultation that had already happened.
+  if (session.appointmentId) {
+    const closed = await updateAppointmentRecord(session.appointmentId, {
+      status: AppointmentStatus.COMPLETED,
+    })
+    if (!closed) {
+      // The call really has ended; failing the request here would tell the
+      // physio otherwise and strand them on the call screen.
+      console.error(`Ended session ${session.id} but could not complete appointment ${session.appointmentId}`)
+    }
+  }
 
   await logAudit({
     userId: req.user?.userId ?? null,
