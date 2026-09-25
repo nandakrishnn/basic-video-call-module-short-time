@@ -11,7 +11,7 @@ import { NewCallPanel } from '@/components/session/NewCallPanel'
 import { Card } from '@/components/shared/Card'
 import { DashboardSidebar } from '@/components/shared/DashboardSidebar'
 import { DatePicker } from '@/components/shared/DatePicker'
-import { Select } from '@/components/shared/Input'
+import { SelectMenu } from '@/components/shared/SelectMenu'
 import { COLORS, FONT_SIZES } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
 import { ROUTES } from '@/constants/routes'
@@ -243,25 +243,18 @@ const PhysioDashboardPage = (): JSX.Element => {
 
               {/* Counts describe the chosen date range, not the current
                   selection, so you can see what switching would reveal. */}
-              <Select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as BookingFilter)}
-                aria-label={MESSAGES.dashboard.colStatus}
-                style={{
-                  width: 'auto',
-                  minWidth: 168,
-                  padding: '9px 12px',
-                  marginBottom: 10,
-                  fontSize: FONT_SIZES.base,
-                  fontWeight: 600,
-                }}
-              >
-                {STATUS_FILTERS.map(({ key, label }) => (
-                  <option key={key} value={key}>
-                    {label} ({statusCounts[key] ?? 0})
-                  </option>
-                ))}
-              </Select>
+              <div style={{ marginBottom: 10 }}>
+                <SelectMenu
+                  value={statusFilter}
+                  onChange={setStatusFilter}
+                  ariaLabel={MESSAGES.dashboard.colStatus}
+                  options={STATUS_FILTERS.map(({ key, label }) => ({
+                    value: key,
+                    label,
+                    count: statusCounts[key] ?? 0,
+                  }))}
+                />
+              </div>
             </div>
 
             <div className="dash-toolbar-actions">
