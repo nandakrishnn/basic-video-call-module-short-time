@@ -22,12 +22,16 @@ export const deriveStatus = (appointment: Appointment): DerivedStatus => {
 export const isUpcoming = (appointment: Appointment): boolean => deriveStatus(appointment) === 'scheduled'
 
 /**
- * A call can still be started once its slot has passed — a late session is a
- * real thing — but not one that was completed or cancelled outright.
+ * A call can still be started shortly after its slot — running late is normal —
+ * but the window closes after CONFIG.session.joinGraceMinutesAfterStart. Past
+ * that the booking should be rescheduled rather than joined, and a completed or
+ * cancelled one is never joinable.
  */
 export const canStartCall = (appointment: Appointment): boolean => {
-  const status = deriveStatus(appointment)
-  return status === 'scheduled' || status === 'missed'
+  if (appointment.status !== 'scheduled') return false
+  const graceEnd =
+    parseUtc(appointment.scheduledAt).getTime() + CONFIG.session.joinGraceMinutesAfterStart * MINUTE_MS
+  return Date.now() <= graceEnd
 }
 
 /**

@@ -15,6 +15,9 @@ export const CONFIG = {
     // Rescheduling locks this many minutes ahead of the slot — too late to move
     // it without the patient already being on their way.
     rescheduleLockMinutesBeforeStart: 30,
+    // How long after the slot a call can still be joined. A late start is
+    // normal; a booking from yesterday should be rescheduled, not joined.
+    joinGraceMinutesAfterStart: 60,
   },
 
   jitsi: {
