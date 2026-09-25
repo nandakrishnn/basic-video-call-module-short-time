@@ -2,6 +2,7 @@ import { LifeBuoy, MessageCircle, Phone, X } from 'lucide-react'
 import { useState } from 'react'
 import { COLORS, FONT_SIZES, RADII, SHADOWS } from '@/constants/colors'
 import { CONFIG } from '@/constants/config'
+import { MESSAGES } from '@/constants/messages'
 
 interface TroubleshootButtonProps {
   counterpartName: string
@@ -25,7 +26,7 @@ export const TroubleshootButton = ({
         <button
           type="button"
           onClick={onToggleChat}
-          aria-label="Close chat"
+          aria-label={MESSAGES.support.closeChat}
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -42,7 +43,7 @@ export const TroubleshootButton = ({
           }}
         >
           <X size={19} />
-          Close chat
+          {MESSAGES.support.closeChat}
         </button>
       </div>
     )
@@ -56,7 +57,7 @@ export const TroubleshootButton = ({
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        aria-label="Chat with us"
+        aria-label={MESSAGES.support.trigger}
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -73,7 +74,7 @@ export const TroubleshootButton = ({
         }}
       >
         <LifeBuoy size={19} />
-        Chat with us
+        {MESSAGES.support.trigger}
       </button>
 
       {isOpen && (
@@ -96,7 +97,7 @@ export const TroubleshootButton = ({
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: COLORS.text.primary }}>Need help?</span>
+            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: COLORS.text.primary }}>{MESSAGES.support.title}</span>
             <button
               type="button"
               onClick={() => setIsOpen(false)}
@@ -129,27 +130,33 @@ export const TroubleshootButton = ({
             }}
           >
             <MessageCircle size={16} color={COLORS.primaryLight} />
-            Chat with {counterpartName}
+            {MESSAGES.support.chatWith(counterpartName)}
           </button>
 
           <a
-            href={`tel:${CONFIG.support.phoneNumber}`}
+            href={`tel:${CONFIG.support.phoneNumber.replace(/\s/g, '')}`}
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 8,
+              gap: 10,
               padding: '10px 12px',
               borderRadius: RADII.sm,
               border: `1px solid ${COLORS.border}`,
-              background: COLORS.background,
+              background: COLORS.surfaceAlt,
               color: COLORS.text.primary,
-              fontSize: '0.82rem',
+              fontSize: FONT_SIZES.sm,
               fontWeight: 600,
               textDecoration: 'none',
             }}
           >
-            <Phone size={16} color={COLORS.status.success} />
-            Call support: {CONFIG.support.phoneNumber}
+            <Phone size={16} color={COLORS.status.success} style={{ flexShrink: 0 }} />
+            {/* Label above number: inline, the number wrapped mid-digits. */}
+            <span style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+              <span>{MESSAGES.support.callSupport}</span>
+              <span style={{ color: COLORS.text.secondary, fontWeight: 500, whiteSpace: 'nowrap' }}>
+                {CONFIG.support.phoneNumber}
+              </span>
+            </span>
           </a>
         </div>
       )}

@@ -1,6 +1,14 @@
 // Every user-facing string and error message. Never hardcode copy elsewhere.
 
 export const MESSAGES = {
+  support: {
+    trigger: 'Chat with us',
+    closeChat: 'Close chat',
+    title: 'Need help?',
+    chatWith: (name: string) => `Chat with ${name}`,
+    callSupport: 'Call YorPhysio support',
+  },
+
   app: {
     title: 'YorPhysio',
     description: 'Video physiotherapy sessions, appointments and session reports.',
