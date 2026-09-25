@@ -1,6 +1,6 @@
 import { API } from '@/constants/api'
 import { apiRequest } from '@/lib/apiClient'
-import type { Appointment, AppointmentType } from '@/types/appointment.types'
+import type { Appointment, AppointmentStatus, AppointmentType } from '@/types/appointment.types'
 
 interface CreateAppointmentBody {
   patientId: string
@@ -22,8 +22,12 @@ export const getAppointmentsByPatientRequest = (token: string, patientId: string
 export const updateAppointmentRequest = (
   token: string,
   id: string,
-  body: Partial<CreateAppointmentBody>,
+  body: Partial<CreateAppointmentBody> & { status?: AppointmentStatus },
 ) => apiRequest<Appointment>(API.appointments.update(id), { method: 'PATCH', token, body })
+
+/** Closes a booking once the physio confirms the consultation happened. */
+export const completeAppointmentRequest = (token: string, id: string) =>
+  updateAppointmentRequest(token, id, { status: 'completed' })
 
 export const cancelAppointmentRequest = (token: string, id: string) =>
   apiRequest<Appointment>(API.appointments.cancel(id), { method: 'DELETE', token })

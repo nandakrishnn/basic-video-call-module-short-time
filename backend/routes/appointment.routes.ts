@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { z } from 'zod'
-import { AppointmentType, UserRole } from '../constants/enums'
+import { AppointmentStatus, AppointmentType, UserRole } from '../constants/enums'
 import {
   cancelAppointment,
   createAppointment,
@@ -27,6 +27,9 @@ const updateAppointmentSchema = z.object({
   scheduledAt: z.string().datetime().optional(),
   durationMinutes: z.number().int().positive().optional(),
   sessionType: sessionTypeSchema.optional(),
+  // Zod strips unknown keys rather than rejecting them, so without this the
+  // physio's "mark complete" would return 200 and change nothing.
+  status: z.nativeEnum(AppointmentStatus).optional(),
   internalNote: z.string().optional(),
 })
 

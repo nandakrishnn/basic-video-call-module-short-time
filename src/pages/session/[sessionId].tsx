@@ -231,6 +231,8 @@ const SessionPage = (): JSX.Element => {
         <PostCallModal
           patientEmail={patient?.email ?? null}
           patientName={counterpartLabel}
+          appointmentId={session.appointmentId}
+          token={getToken()}
           physioName={user?.fullName ?? ''}
           onSchedule={handleSchedule}
           onClose={handleClosePostCallModal}
