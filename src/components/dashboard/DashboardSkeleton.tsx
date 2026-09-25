@@ -71,7 +71,7 @@ export const DashboardSkeleton = (): JSX.Element => (
             key={i}
             style={{
               display: 'grid',
-              gridTemplateColumns: '90px minmax(0, 1fr) minmax(0, 1fr) 180px',
+              gridTemplateColumns: '90px minmax(0, 1fr) minmax(0, 1fr) 110px 180px',
               alignItems: 'center',
               gap: 18,
               padding: '16px 18px',
@@ -90,6 +90,7 @@ export const DashboardSkeleton = (): JSX.Element => (
               <Skeleton width="65%" height={14} />
               <Skeleton width="40%" height={12} />
             </div>
+            <Skeleton width={86} height={24} radius="pill" />
             <Skeleton height={34} radius="md" style={{ borderRadius: RADII.md, justifySelf: 'end', width: 150 }} />
           </div>
         ))}

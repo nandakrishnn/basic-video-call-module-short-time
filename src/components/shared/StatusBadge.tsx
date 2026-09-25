@@ -14,6 +14,17 @@ const STATUS_TONE: Record<Status, { fg: string; bg: string }> = {
 
 const FALLBACK_TONE = { fg: COLORS.text.secondary, bg: COLORS.surfaceAlt }
 
+// "scheduled" is the stored value; to a physio reading a list it means the
+// session is still ahead. Labelled to match the Bookings filters so the two
+// describe the same thing with the same word.
+const STATUS_LABEL: Record<Status, string> = {
+  scheduled: 'Upcoming',
+  active: 'In progress',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+  missed: 'Missed',
+}
+
 interface StatusBadgeProps {
   status: string
 }
@@ -37,7 +48,7 @@ export const StatusBadge = ({ status }: StatusBadgeProps): JSX.Element => {
       }}
     >
       <span style={{ width: 5, height: 5, borderRadius: '50%', background: tone.fg }} />
-      {status}
+      {STATUS_LABEL[status as Status] ?? status}
     </span>
   )
 }

@@ -2,6 +2,7 @@ import { CalendarClock, Video } from 'lucide-react'
 import { Avatar } from '@/components/shared/Avatar'
 import { Button } from '@/components/shared/Button'
 import { EmptyState } from '@/components/shared/EmptyState'
+import { StatusBadge } from '@/components/shared/StatusBadge'
 import { COLORS, FONT_SIZES } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
 import type { Appointment } from '@/types/appointment.types'
@@ -45,12 +46,13 @@ export const AppointmentsTable = ({
 
   return (
     <div className="table-scroll">
-      <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 720 }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 860 }}>
         <thead>
           <tr style={{ background: COLORS.surfaceAlt }}>
             <th style={headerCellStyle}>{MESSAGES.dashboard.colTime}</th>
             <th style={headerCellStyle}>{MESSAGES.dashboard.colPatient}</th>
             <th style={headerCellStyle}>{MESSAGES.dashboard.colIssue}</th>
+            <th style={headerCellStyle}>{MESSAGES.dashboard.colStatus}</th>
             <th style={{ ...headerCellStyle, textAlign: 'right' }}>{MESSAGES.dashboard.colAction}</th>
           </tr>
         </thead>
@@ -94,6 +96,10 @@ export const AppointmentsTable = ({
                   <p style={{ color: COLORS.text.secondary, fontSize: FONT_SIZES.sm, margin: '2px 0 0' }}>
                     {sessionTypeLabel(appointment)}
                   </p>
+                </td>
+
+                <td style={cellStyle}>
+                  <StatusBadge status={deriveStatus(appointment)} />
                 </td>
 
                 <td style={{ ...cellStyle, textAlign: 'right' }}>

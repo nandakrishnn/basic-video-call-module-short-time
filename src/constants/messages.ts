@@ -131,6 +131,7 @@ export const MESSAGES = {
     colTime: 'Time',
     colPatient: 'Patient',
     colIssue: 'Issue / Service',
+    colStatus: 'Status',
     colAction: 'Action',
 
     joinCall: 'Join Call',
