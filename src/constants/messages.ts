@@ -132,6 +132,7 @@ export const MESSAGES = {
     colPatient: 'Patient',
     colIssue: 'Issue / Service',
     colStatus: 'Status',
+    filterAllStatuses: 'All statuses',
     colAction: 'Action',
 
     joinCall: 'Join Call',

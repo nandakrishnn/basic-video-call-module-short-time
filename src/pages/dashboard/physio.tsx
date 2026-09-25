@@ -11,6 +11,7 @@ import { NewCallPanel } from '@/components/session/NewCallPanel'
 import { Card } from '@/components/shared/Card'
 import { DashboardSidebar } from '@/components/shared/DashboardSidebar'
 import { DatePicker } from '@/components/shared/DatePicker'
+import { Select } from '@/components/shared/Input'
 import { COLORS, FONT_SIZES } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
 import { ROUTES } from '@/constants/routes'
@@ -20,7 +21,8 @@ import { listPatientsRequest } from '@/services/patient.service'
 import { createSessionRequest } from '@/services/session.service'
 import type { Appointment } from '@/types/appointment.types'
 import type { PatientSummary, User } from '@/types/user.types'
-import { isUpcoming, sortByScheduledAt } from '@/utils/appointment'
+import { isUpcoming, matchesFilter, sortByScheduledAt } from '@/utils/appointment'
+import type { BookingFilter } from '@/utils/appointment'
 import { parseUtc } from '@/utils/date'
 import { getToken } from '@/utils/storage'
 
@@ -30,6 +32,16 @@ const TABS: { key: RangeTab; label: string }[] = [
   { key: 'today', label: MESSAGES.dashboard.tabToday },
   { key: 'week', label: MESSAGES.dashboard.tabThisWeek },
   { key: 'month', label: MESSAGES.dashboard.tabThisMonth },
+]
+
+// Same set and wording as the Bookings page, so a status means one thing
+// wherever it is filtered.
+const STATUS_FILTERS: { key: BookingFilter; label: string }[] = [
+  { key: 'all', label: MESSAGES.dashboard.filterAllStatuses },
+  { key: 'upcoming', label: MESSAGES.appointments.filterUpcoming },
+  { key: 'missed', label: MESSAGES.appointments.filterMissed },
+  { key: 'completed', label: MESSAGES.appointments.filterCompleted },
+  { key: 'cancelled', label: MESSAGES.appointments.filterCancelled },
 ]
 
 const toDateInput = (date: Date): string => {
@@ -67,6 +79,7 @@ const PhysioDashboardPage = (): JSX.Element => {
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [patients, setPatients] = useState<User[]>([])
   const [tab, setTab] = useState<RangeTab>('today')
+  const [statusFilter, setStatusFilter] = useState<BookingFilter>('all')
   const [anchorDate, setAnchorDate] = useState(() => toDateInput(new Date()))
   const [query, setQuery] = useState('')
   const [startingId, setStartingId] = useState<string | null>(null)
@@ -147,22 +160,36 @@ const PhysioDashboardPage = (): JSX.Element => {
     [appointments],
   )
 
-  const visibleRows = useMemo(() => {
+  // Everything in the chosen date range, before the status filter — so the
+  // status counts below describe this range rather than the current selection.
+  const inRange = useMemo(() => {
     const { start, end } = rangeFor(tab, new Date(`${anchorDate}T00:00:00`))
     const normalized = query.trim().toLowerCase()
 
-    return sortByScheduledAt(
-      appointments.filter((appointment) => {
-        const at = parseUtc(appointment.scheduledAt).getTime()
-        if (at < start.getTime() || at > end.getTime()) return false
-        if (!normalized) return true
-        const patient = patientsById[appointment.patientId]
-        const haystack = [patient?.fullName, patient?.phone, patient?.issue].filter(Boolean).join(' ').toLowerCase()
-        return haystack.includes(normalized)
-      }),
-      'asc',
-    ).map((appointment) => ({ appointment, patient: patientsById[appointment.patientId] }))
+    return appointments.filter((appointment) => {
+      const at = parseUtc(appointment.scheduledAt).getTime()
+      if (at < start.getTime() || at > end.getTime()) return false
+      if (!normalized) return true
+      const patient = patientsById[appointment.patientId]
+      const haystack = [patient?.fullName, patient?.phone, patient?.issue].filter(Boolean).join(' ').toLowerCase()
+      return haystack.includes(normalized)
+    })
   }, [appointments, patientsById, tab, anchorDate, query])
+
+  const statusCounts = useMemo(() => {
+    const counts = {} as Record<BookingFilter, number>
+    for (const { key } of STATUS_FILTERS) counts[key] = inRange.filter((a) => matchesFilter(a, key)).length
+    return counts
+  }, [inRange])
+
+  const visibleRows = useMemo(
+    () =>
+      sortByScheduledAt(
+        inRange.filter((appointment) => matchesFilter(appointment, statusFilter)),
+        'asc',
+      ).map((appointment) => ({ appointment, patient: patientsById[appointment.patientId] })),
+    [inRange, statusFilter, patientsById],
+  )
 
   if (isLoading || isAuthLoading) {
     return <DashboardSkeleton />
@@ -198,19 +225,43 @@ const PhysioDashboardPage = (): JSX.Element => {
 
         <Card padding={0} elevation="sm">
           <div className="dash-table-toolbar" style={{ padding: '14px 18px 0' }}>
-            <div className="dash-tabs" role="tablist" aria-label={MESSAGES.dashboard.colTime}>
-              {TABS.map(({ key, label }) => (
-                <button
-                  key={key}
-                  type="button"
-                  role="tab"
-                  aria-selected={tab === key}
-                  onClick={() => setTab(key)}
-                  className={`dash-tab${tab === key ? ' active' : ''}`}
-                >
-                  {label}
-                </button>
-              ))}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' }}>
+              <div className="dash-tabs" role="tablist" aria-label={MESSAGES.dashboard.colTime}>
+                {TABS.map(({ key, label }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    role="tab"
+                    aria-selected={tab === key}
+                    onClick={() => setTab(key)}
+                    className={`dash-tab${tab === key ? ' active' : ''}`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Counts describe the chosen date range, not the current
+                  selection, so you can see what switching would reveal. */}
+              <Select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as BookingFilter)}
+                aria-label={MESSAGES.dashboard.colStatus}
+                style={{
+                  width: 'auto',
+                  minWidth: 168,
+                  padding: '9px 12px',
+                  marginBottom: 10,
+                  fontSize: FONT_SIZES.base,
+                  fontWeight: 600,
+                }}
+              >
+                {STATUS_FILTERS.map(({ key, label }) => (
+                  <option key={key} value={key}>
+                    {label} ({statusCounts[key] ?? 0})
+                  </option>
+                ))}
+              </Select>
             </div>
 
             <div className="dash-toolbar-actions">
