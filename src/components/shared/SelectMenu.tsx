@@ -15,6 +15,10 @@ interface SelectMenuProps<T extends string> {
   onChange: (value: T) => void
   ariaLabel: string
   minWidth?: number
+  /** Fill the container — for form fields, which sit in a labelled column. */
+  fullWidth?: boolean
+  /** Shown when the selected option has an empty label, e.g. an unset field. */
+  placeholder?: string
 }
 
 const MENU_MAX_HEIGHT = 300
@@ -33,6 +37,8 @@ export const SelectMenu = <T extends string>({
   onChange,
   ariaLabel,
   minWidth = 176,
+  fullWidth = false,
+  placeholder,
 }: SelectMenuProps<T>): JSX.Element => {
   const [isOpen, setIsOpen] = useState(false)
   const [coords, setCoords] = useState({ top: 0, left: 0, width: minWidth })
@@ -78,10 +84,23 @@ export const SelectMenu = <T extends string>({
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         className="select-trigger"
-        style={{ minWidth, borderColor: isOpen ? COLORS.primaryStrong : COLORS.border }}
+        style={{
+          ...(fullWidth ? { width: '100%', padding: '12px 16px', fontWeight: 600 } : { minWidth }),
+          borderColor: isOpen ? COLORS.primaryStrong : COLORS.border,
+        }}
       >
-        <span style={{ flex: 1, textAlign: 'left' }}>
-          {selected?.label ?? ''}
+        <span
+          style={{
+            flex: 1,
+            textAlign: 'left',
+            minWidth: 0,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            color: selected?.label ? COLORS.text.primary : COLORS.text.muted,
+          }}
+        >
+          {selected?.label || placeholder || ''}
           {selected?.count !== undefined && (
             <span style={{ color: COLORS.text.muted, fontWeight: 600 }}> ({selected.count})</span>
           )}

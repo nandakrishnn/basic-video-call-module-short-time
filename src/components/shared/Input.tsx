@@ -1,4 +1,4 @@
-import type { CSSProperties, InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react'
+import type { CSSProperties, InputHTMLAttributes, TextareaHTMLAttributes } from 'react'
 import { COLORS, RADII } from '@/constants/colors'
 
 const fieldStyle: CSSProperties = {
@@ -19,8 +19,6 @@ export const Textarea = ({ style, ...rest }: TextareaHTMLAttributes<HTMLTextArea
   <textarea style={{ ...fieldStyle, resize: 'vertical', fontFamily: 'inherit', ...style }} {...rest} />
 )
 
-export const Select = ({ style, children, ...rest }: SelectHTMLAttributes<HTMLSelectElement>): JSX.Element => (
-  <select style={{ ...fieldStyle, cursor: 'pointer', ...style }} {...rest}>
-    {children}
-  </select>
-)
+// A native <select> is deliberately not exported: its option list is drawn by
+// the OS and keeps the system font and highlight whatever the page styles.
+// Use SelectMenu instead, which renders the list itself.

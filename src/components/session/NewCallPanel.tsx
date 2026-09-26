@@ -3,8 +3,9 @@ import { useState } from 'react'
 import { Button } from '@/components/shared/Button'
 import { DatePicker } from '@/components/shared/DatePicker'
 import { Field } from '@/components/shared/Field'
-import { Input, Select } from '@/components/shared/Input'
+import { Input } from '@/components/shared/Input'
 import { Modal } from '@/components/shared/Modal'
+import { SelectMenu } from '@/components/shared/SelectMenu'
 import { COLORS, FONT_SIZES, RADII } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
 import { createAppointmentRequest } from '@/services/appointment.service'
@@ -168,14 +169,17 @@ export const NewCallPanel = ({
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
               <Field label={MESSAGES.newCall.selectPatient}>
-                <Select value={selectedPatientId} onChange={(e) => setSelectedPatientId(e.target.value)}>
-                  <option value="">{MESSAGES.newCall.selectPlaceholder}</option>
-                  {patients.map((patient) => (
-                    <option key={patient.id} value={patient.id}>
-                      {patient.fullName} ({patient.email ?? patient.phone})
-                    </option>
-                  ))}
-                </Select>
+                <SelectMenu
+                  value={selectedPatientId}
+                  onChange={setSelectedPatientId}
+                  ariaLabel={MESSAGES.newCall.selectPatient}
+                  placeholder={MESSAGES.newCall.selectPlaceholder}
+                  fullWidth
+                  options={patients.map((patient) => ({
+                    value: patient.id,
+                    label: `${patient.fullName} · ${patient.email ?? patient.phone ?? ''}`,
+                  }))}
+                />
               </Field>
 
               {isAddingPatient ? (

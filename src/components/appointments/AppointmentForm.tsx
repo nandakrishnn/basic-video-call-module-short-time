@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Button } from '@/components/shared/Button'
 import { DatePicker } from '@/components/shared/DatePicker'
-import { Input, Select, Textarea } from '@/components/shared/Input'
+import { Input, Textarea } from '@/components/shared/Input'
+import { SelectMenu } from '@/components/shared/SelectMenu'
 import { COLORS } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
 import type { AppointmentType } from '@/types/appointment.types'
@@ -47,13 +48,16 @@ export const AppointmentForm = ({ onSubmit, isSubmitting }: AppointmentFormProps
 
       <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         <span style={labelStyle}>Session type</span>
-        <Select value={sessionType} onChange={(e) => setSessionType(e.target.value as AppointmentType)}>
-          {SESSION_TYPES.map((type) => (
-            <option key={type} value={type}>
-              {type.charAt(0).toUpperCase() + type.slice(1)}
-            </option>
-          ))}
-        </Select>
+        <SelectMenu
+          value={sessionType}
+          onChange={setSessionType}
+          ariaLabel="Session type"
+          fullWidth
+          options={SESSION_TYPES.map((type) => ({
+            value: type,
+            label: type.charAt(0).toUpperCase() + type.slice(1),
+          }))}
+        />
       </label>
 
       <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
