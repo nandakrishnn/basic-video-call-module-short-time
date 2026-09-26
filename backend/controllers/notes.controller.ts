@@ -34,9 +34,16 @@ export const enhanceNotes = async (req: Request, res: Response): Promise<void> =
   const notes = await findNotesById(req.params.id)
   if (!notes) throw new AppError(MESSAGES.notes.notFound, 404, 'NOTES_NOT_FOUND')
 
+  // The proofread result is written straight back into the physio's fields, so
+  // it has to be based on what they have in front of them right now. The stored
+  // rawNotes is only the first autosaved snapshot — proofreading that would
+  // return stale text and silently undo everything typed since.
+  const { rawNotes: submittedRaw } = (req.body ?? {}) as { rawNotes?: string }
+  const sourceNotes = submittedRaw?.trim() ? submittedRaw : notes.rawNotes
+
   let enhancedNotes: string
   try {
-    enhancedNotes = await enhanceNotesWithAI(notes.rawNotes)
+    enhancedNotes = await enhanceNotesWithAI(sourceNotes)
   } catch (err) {
     // Without this the underlying cause — bad model name, missing key, safety
     // block — is swallowed and every failure looks identical from the client.
@@ -50,7 +57,12 @@ export const enhanceNotes = async (req: Request, res: Response): Promise<void> =
     throw new AppError(MESSAGES.notes.enhanceFailed, 502, 'AI_ENHANCE_FAILED')
   }
 
-  const updated = await updateNotesRecord(notes.id, { enhancedNotes })
+  const updated = await updateNotesRecord(notes.id, {
+    enhancedNotes,
+    // Keep the record in step with what was actually proofread, so the stored
+    // raw notes stay a truthful "before" of the enhanced text.
+    ...(sourceNotes !== notes.rawNotes ? { rawNotes: sourceNotes } : {}),
+  })
   if (!updated) throw new AppError(MESSAGES.notes.notFound, 404, 'NOTES_NOT_FOUND')
 
   await logAudit({

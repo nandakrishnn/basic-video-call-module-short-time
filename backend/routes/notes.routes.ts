@@ -18,6 +18,11 @@ const createNotesSchema = z.object({
   rawNotes: z.string().min(1),
 })
 
+// Optional: the physio's current text, which supersedes the stored snapshot.
+const enhanceNotesSchema = z.object({
+  rawNotes: z.string().min(1).optional(),
+})
+
 const approveNotesSchema = z.object({
   enhancedNotes: z.string().min(1),
 })
@@ -35,7 +40,13 @@ router.post(
   validateBody(createNotesSchema),
   asyncHandler(createNotes),
 )
-router.post('/:id/enhance', authenticate, requireRole(UserRole.PHYSIO), asyncHandler(enhanceNotes))
+router.post(
+  '/:id/enhance',
+  authenticate,
+  requireRole(UserRole.PHYSIO),
+  validateBody(enhanceNotesSchema),
+  asyncHandler(enhanceNotes),
+)
 router.patch(
   '/:id/approve',
   authenticate,

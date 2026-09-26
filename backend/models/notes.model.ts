@@ -89,6 +89,7 @@ export const findSentNotesByPatient = async (
 export const updateNotesRecord = async (
   id: string,
   updates: Partial<{
+    rawNotes: string
     enhancedNotes: string
     isSentToPatient: boolean
     sentAt: string
@@ -96,6 +97,7 @@ export const updateNotesRecord = async (
   }>,
 ): Promise<SessionNotes | null> => {
   const payload: Record<string, unknown> = { updated_at: new Date().toISOString() }
+  if (updates.rawNotes !== undefined) payload.raw_notes = updates.rawNotes
   if (updates.enhancedNotes !== undefined) payload.enhanced_notes = updates.enhancedNotes
   if (updates.isSentToPatient !== undefined) payload.is_sent_to_patient = updates.isSentToPatient
   if (updates.sentAt !== undefined) payload.sent_at = updates.sentAt

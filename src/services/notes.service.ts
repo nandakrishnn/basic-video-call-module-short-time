@@ -5,8 +5,9 @@ import type { SessionNotes } from '@/types/notes.types'
 export const createNotesRequest = (token: string, sessionId: string, rawNotes: string) =>
   apiRequest<SessionNotes>(API.notes.create, { method: 'POST', token, body: { sessionId, rawNotes } })
 
-export const enhanceNotesRequest = (token: string, notesId: string) =>
-  apiRequest<SessionNotes>(API.notes.enhance(notesId), { method: 'POST', token })
+/** rawNotes carries the physio's current text, which the stored copy may predate. */
+export const enhanceNotesRequest = (token: string, notesId: string, rawNotes: string) =>
+  apiRequest<SessionNotes>(API.notes.enhance(notesId), { method: 'POST', token, body: { rawNotes } })
 
 export const approveNotesRequest = (token: string, notesId: string, enhancedNotes: string) =>
   apiRequest<SessionNotes>(API.notes.approve(notesId), { method: 'PATCH', token, body: { enhancedNotes } })

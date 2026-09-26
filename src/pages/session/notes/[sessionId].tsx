@@ -1,6 +1,5 @@
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
-import { EnhancedNotesPanel } from '@/components/notes/EnhancedNotesPanel'
 import { StructuredNotesEditor } from '@/components/notes/StructuredNotesEditor'
 import { SendToggle } from '@/components/notes/SendToggle'
 import { Button } from '@/components/shared/Button'
@@ -17,7 +16,7 @@ import {
 import { EMPTY_NOTE_FIELDS, composeNotes, parseNotes, type NoteSectionKey } from '@/utils/notes'
 import { clearQuickNote, getQuickNote, getToken } from '@/utils/storage'
 
-type Step = 'raw' | 'enhance' | 'send' | 'done'
+type Step = 'raw' | 'send' | 'done'
 
 const NotesPage = (): JSX.Element => {
   const router = useRouter()
@@ -25,12 +24,12 @@ const NotesPage = (): JSX.Element => {
 
   const [step, setStep] = useState<Step>('raw')
   const [fields, setFields] = useState(EMPTY_NOTE_FIELDS)
-  const [enhancedNotes, setEnhancedNotes] = useState('')
   const [notesId, setNotesId] = useState<string | null>(null)
   const [sendEnabled, setSendEnabled] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   /** Which raw-step action is in flight, so only that button shows a spinner. */
-  const [pendingAction, setPendingAction] = useState<'enhance' | 'skip' | null>(null)
+  const [pendingAction, setPendingAction] = useState<'proofread' | 'save' | null>(null)
+  const [hasProofread, setHasProofread] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -50,71 +49,71 @@ const NotesPage = (): JSX.Element => {
     if (res.success) setNotesId(res.data.id)
   }
 
-  const handleEnhance = async (): Promise<void> => {
+  /** The record is created lazily, so both actions may have to make it first. */
+  const ensureNotesId = async (token: string, id: string): Promise<string | null> => {
+    if (notesId) return notesId
+    const res = await createNotesRequest(token, id, composeNotes(fields))
+    if (!res.success) {
+      setError(res.message)
+      return null
+    }
+    setNotesId(res.data.id)
+    return res.data.id
+  }
+
+  // Proofreads in place: the corrected text is parsed straight back into the
+  // fields the physio is already looking at, so there is no second screen to
+  // compare against. Their current text is sent along rather than relying on
+  // the stored copy, which may be an older autosave.
+  const handleProofread = async (): Promise<void> => {
     const token = getToken()
     if (!token || !sessionId) return
 
-    setPendingAction('enhance')
+    setPendingAction('proofread')
     setError(null)
+    setHasProofread(false)
 
-    let currentNotesId = notesId
+    const currentNotesId = await ensureNotesId(token, sessionId)
     if (!currentNotesId) {
-      const createRes = await createNotesRequest(token, sessionId, composeNotes(fields))
-      if (!createRes.success) {
-        setPendingAction(null)
-        setError(createRes.message)
-        return
-      }
-      currentNotesId = createRes.data.id
-      setNotesId(currentNotesId)
+      setPendingAction(null)
+      return
     }
 
-    const enhanceRes = await enhanceNotesRequest(token, currentNotesId)
+    const res = await enhanceNotesRequest(token, currentNotesId, composeNotes(fields))
     setPendingAction(null)
 
-    if (enhanceRes.success) {
-      setEnhancedNotes(enhanceRes.data.enhancedNotes ?? '')
-      setStep('enhance')
-    } else {
-      setError(enhanceRes.message)
+    if (!res.success) {
+      setError(res.message)
+      return
     }
+
+    // Only overwrite when there is something to overwrite with — a blank reply
+    // would silently wipe the physio's notes.
+    const enhanced = res.data.enhancedNotes
+    if (!enhanced?.trim()) {
+      setError(MESSAGES.notes.enhanceFailed)
+      return
+    }
+
+    setFields(parseNotes(enhanced))
+    setHasProofread(true)
   }
 
-  // Bypasses the AI entirely: the raw notes become the draft the physio edits
-  // and approves. Still creates the notes record, so the rest of the flow —
-  // approve, PDF, send — is identical.
-  const handleSkipAi = async (): Promise<void> => {
+  const handleContinue = async (): Promise<void> => {
     const token = getToken()
     if (!token || !sessionId) return
 
-    setPendingAction('skip')
+    setPendingAction('save')
     setError(null)
 
-    let currentNotesId = notesId
+    const currentNotesId = await ensureNotesId(token, sessionId)
     if (!currentNotesId) {
-      const createRes = await createNotesRequest(token, sessionId, composeNotes(fields))
-      if (!createRes.success) {
-        setPendingAction(null)
-        setError(createRes.message)
-        return
-      }
-      currentNotesId = createRes.data.id
-      setNotesId(currentNotesId)
+      setPendingAction(null)
+      return
     }
 
+    const res = await approveNotesRequest(token, currentNotesId, composeNotes(fields))
     setPendingAction(null)
-    setEnhancedNotes(composeNotes(fields))
-    setStep('enhance')
-  }
-
-  const handleApprove = async (): Promise<void> => {
-    const token = getToken()
-    if (!token || !notesId) return
-
-    setIsSubmitting(true)
-    setError(null)
-    const res = await approveNotesRequest(token, notesId, enhancedNotes)
-    setIsSubmitting(false)
 
     if (res.success) setStep('send')
     else setError(res.message)
@@ -192,20 +191,11 @@ const NotesPage = (): JSX.Element => {
             setFields((prev) => ({ ...prev, [key]: value }))
           }
           onAutoSave={() => void handleAutoSave()}
-          onSubmit={() => void handleEnhance()}
-          onSkip={() => void handleSkipAi()}
-          isEnhancing={pendingAction === 'enhance'}
-          isSkipping={pendingAction === 'skip'}
-        />
-      )}
-
-      {step === 'enhance' && (
-        <EnhancedNotesPanel
-          rawNotes={composeNotes(fields)}
-          enhancedNotes={enhancedNotes}
-          onEnhancedChange={setEnhancedNotes}
-          onApprove={() => void handleApprove()}
-          isSaving={isSubmitting}
+          onProofread={() => void handleProofread()}
+          onContinue={() => void handleContinue()}
+          isProofreading={pendingAction === 'proofread'}
+          isSaving={pendingAction === 'save'}
+          hasProofread={hasProofread}
         />
       )}
 
