@@ -4,12 +4,13 @@ import { CONFIG } from '../constants/config'
 import { MESSAGES } from '../constants/messages'
 import { AppError } from '../middleware/error.middleware'
 import { createNotesRecord, findNotesById, updateNotesRecord } from '../models/notes.model'
-import { findSessionById } from '../models/session.model'
+import { findSessionById, findSessionsByPatient } from '../models/session.model'
 import { findUserById } from '../models/user.model'
 import { logAudit } from '../services/audit.service'
 import { sendReportEmail } from '../services/email.service'
 import { enhanceNotesWithAI, TransientAiError } from '../services/gemini.service'
 import { generateReportPdf } from '../services/pdf.service'
+import { getSessionNumber } from '../services/session.service'
 import { getSignedPdfUrl, uploadPdf } from '../services/storage.service'
 import type { ApproveNotesInput, CreateNotesInput, SendNotesInput } from '../types/notes.types'
 import { successResponse } from '../utils/response'
@@ -97,14 +98,20 @@ export const generatePdf = async (req: Request, res: Response): Promise<void> =>
   const session = await findSessionById(notes.sessionId)
   if (!session) throw new AppError(MESSAGES.session.notFound, 404, 'SESSION_NOT_FOUND')
 
-  const [patient, physio] = await Promise.all([findUserById(session.patientId), findUserById(session.physioId)])
+  const [patient, physio, patientSessions] = await Promise.all([
+    findUserById(session.patientId),
+    findUserById(session.physioId),
+    findSessionsByPatient(session.patientId),
+  ])
   if (!patient || !physio) throw new AppError(MESSAGES.auth.userNotFound, 404, 'USER_NOT_FOUND')
 
   const pdfBuffer = await generateReportPdf({
     patientName: patient.fullName,
     patientDob: patient.dateOfBirth,
     sessionDate: new Date(session.startedAt ?? notes.createdAt).toLocaleDateString(),
-    sessionNumber: 1,
+    // Was hardcoded to 1, so every report a patient received called itself
+    // their first session. Numbered from their actual history instead.
+    sessionNumber: getSessionNumber(patientSessions, session.id),
     physioName: physio.fullName,
     physioSpecialization: physio.specialization,
     enhancedNotes: notes.enhancedNotes,

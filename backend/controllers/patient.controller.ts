@@ -7,6 +7,7 @@ import { findNotesBySessionIds } from '../models/notes.model'
 import { findSessionsByPatient } from '../models/session.model'
 import { createPatient, findUserById, findUsersByRole } from '../models/user.model'
 import { syncPatientToPhysioPlatform } from '../services/physioPlatformSync.service'
+import { sortSessionsOldestFirst } from '../services/session.service'
 import { getSignedPdfUrl } from '../services/storage.service'
 import type { CreatePatientInput } from '../types/user.types'
 import { successResponse } from '../utils/response'
@@ -38,7 +39,8 @@ export const getPatientHistory = async (req: Request, res: Response): Promise<vo
 
   // Numbered oldest-first so a patient's first session is always 1, then
   // returned newest-first because that is the order a physio reads them in.
-  const oldestFirst = [...sessions].sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+  // The ordering is shared with the report's numbering so the two agree.
+  const oldestFirst = sortSessionsOldestFirst(sessions)
   const numbered = await Promise.all(
     oldestFirst.map(async (session, index) => {
       const appointment = session.appointmentId ? appointmentById.get(session.appointmentId) : undefined

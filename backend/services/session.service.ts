@@ -8,6 +8,23 @@ import { logAudit } from './audit.service'
 import { sendCallStartingEmail } from './email.service'
 import { generateRoomLink, generateRoomName } from './jitsi.service'
 
+/**
+ * A patient's sessions in the order they happened.
+ *
+ * Session numbers are positions in this list, and they appear in two places —
+ * the patient's history and the report sent to them. Both order by the same
+ * rule from here so "session 3" cannot mean one thing on screen and another
+ * on the PDF.
+ */
+export const sortSessionsOldestFirst = (sessions: Session[]): Session[] =>
+  [...sessions].sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+
+/** Where a session falls in that history, counting the patient's first as 1. */
+export const getSessionNumber = (sessions: Session[], sessionId: string): number => {
+  const index = sortSessionsOldestFirst(sessions).findIndex((session) => session.id === sessionId)
+  return index >= 0 ? index + 1 : 1
+}
+
 export const createSessionForCall = async (params: {
   patientId: string
   physioId: string
