@@ -19,21 +19,36 @@ export const uploadPdf = async (fileName: string, buffer: Buffer): Promise<strin
   return fileName
 }
 
+const PUBLIC_URL_MARKER = `/storage/v1/object/public/${BUCKET}/`
+
 /**
- * A time-limited link to a stored report.
+ * The object's path in the bucket, recovered from either form stored in pdf_url.
  *
- * Rows written before the bucket was made private hold a full public URL rather
- * than a path; those are returned unchanged so existing reports keep working.
+ * Rows written before the bucket was made private hold a full public URL. Making
+ * the bucket private is what breaks those URLs, so they cannot simply be handed
+ * back — but the file itself is untouched, and its path is the tail of the URL.
+ * Recovering it lets an existing report be signed like any other.
  */
+const toObjectPath = (pathOrUrl: string): string => {
+  if (!/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl
+
+  const markerAt = pathOrUrl.indexOf(PUBLIC_URL_MARKER)
+  if (markerAt === -1) return pathOrUrl
+
+  const tail = pathOrUrl.slice(markerAt + PUBLIC_URL_MARKER.length)
+  return decodeURIComponent(tail.split('?')[0] ?? tail)
+}
+
+/** A time-limited link to a stored report. */
 export const getSignedPdfUrl = async (
   pathOrUrl: string,
   expiresInSeconds: number,
 ): Promise<string | null> => {
-  if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl
+  const objectPath = toObjectPath(pathOrUrl)
 
-  const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(pathOrUrl, expiresInSeconds)
+  const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(objectPath, expiresInSeconds)
   if (error || !data) {
-    console.error(`Failed to sign report URL for ${pathOrUrl}:`, error)
+    console.error(`Failed to sign report URL for ${objectPath}:`, error)
     return null
   }
   return data.signedUrl
