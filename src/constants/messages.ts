@@ -72,10 +72,12 @@ export const MESSAGES = {
     emptyList: 'No appointments to show yet.',
     unknownPatient: 'Loading patient…',
     viewAllLink: 'View all bookings',
-    completeTitle: 'Did this session go ahead?',
-    completeSubtitle: 'Marking it complete closes the booking. Leave it open if you need to rejoin.',
+    // Phrased around the call, which is what the physio just ended — "session"
+    // reads as the booking, and the buttons answer the question directly.
+    completeTitle: 'Is the call completed?',
+    completeSubtitle: 'Marking it completed closes this booking. Leave it open if you need to rejoin.',
     completeEnded: 'Call ended',
-    completeAction: 'Mark session complete',
+    completeAction: 'Yes, completed',
     completeNotYet: 'Not yet',
     completeFailed: 'Could not update the booking. Please try again.',
     rescheduleAction: 'Reschedule',
