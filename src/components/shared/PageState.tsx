@@ -1,8 +1,12 @@
 import { COLORS } from '@/constants/colors'
 
+import type { ReactNode } from 'react'
+
 interface PageStateProps {
   message: string
   tone?: 'loading' | 'error' | 'neutral'
+  /** Optional escape hatch, so a stalled wait is never a dead end. */
+  action?: ReactNode
 }
 
 const TONE_COLOR: Record<NonNullable<PageStateProps['tone']>, string> = {
@@ -20,7 +24,7 @@ const spinnerStyle = {
   animation: 'spin 700ms linear infinite',
 } as const
 
-export const PageState = ({ message, tone = 'neutral' }: PageStateProps): JSX.Element => {
+export const PageState = ({ message, tone = 'neutral', action }: PageStateProps): JSX.Element => {
   return (
     <div
       style={{
@@ -36,7 +40,20 @@ export const PageState = ({ message, tone = 'neutral' }: PageStateProps): JSX.El
       }}
     >
       {tone === 'loading' && <span style={spinnerStyle} aria-hidden="true" />}
-      <p style={{ color: TONE_COLOR[tone], fontSize: '0.95rem', fontWeight: 500, margin: 0 }}>{message}</p>
+      <p
+        style={{
+          color: TONE_COLOR[tone],
+          fontSize: '0.95rem',
+          fontWeight: 500,
+          margin: 0,
+          padding: '0 24px',
+          textAlign: 'center',
+          maxWidth: 420,
+        }}
+      >
+        {message}
+      </p>
+      {action}
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { PostCallModal } from '@/components/appointments/PostCallModal'
+import { Button } from '@/components/shared/Button'
 import { PageState } from '@/components/shared/PageState'
 import { PhysioSessionPanel } from '@/components/video/PhysioSessionPanel'
 import { PostCallPatientPrompt } from '@/components/video/PostCallPatientPrompt'
@@ -47,6 +48,7 @@ const SessionPage = (): JSX.Element => {
   const [isEndingCall, setIsEndingCall] = useState(false)
   const [patient, setPatient] = useState<User | null>(null)
   const [sessionType, setSessionType] = useState(DEFAULT_SESSION_TYPE)
+  const [isCheckingAgain, setIsCheckingAgain] = useState(false)
 
   useEffect(() => {
     if (!sessionId) return
@@ -104,19 +106,56 @@ const SessionPage = (): JSX.Element => {
 
   // Patient side: keep checking until the physio has actually started the
   // session, rather than letting them straight into an empty/unattended call.
-  useEffect(() => {
-    if (isPhysio || !sessionId || session?.status !== 'scheduled') return
+  //
+  // setInterval alone is not enough. This screen is usually opened from a link
+  // in a mail or messaging app, so the patient frequently switches away while
+  // waiting — and mobile browsers throttle or suspend timers in a backgrounded
+  // tab. The interval then stops firing, and the physio starting the session
+  // goes unnoticed: the spinner keeps turning even though the call is live.
+  // Re-checking whenever the page becomes visible again (or regains focus, or
+  // the network comes back) is what actually catches that case.
+  const refreshSession = useCallback(async (): Promise<void> => {
+    if (!sessionId) return
     const token = getToken()
     if (!token) return
 
-    const interval = setInterval(() => {
-      getSessionRequest(token, sessionId).then((res) => {
-        if (res.success) setSession(res.data)
-      })
-    }, 5000)
+    try {
+      const res = await getSessionRequest(token, sessionId)
+      if (res.success) setSession(res.data)
+    } catch {
+      // A failed poll is not fatal — the next tick, or the patient's own
+      // "Check again", will pick the session up.
+    }
+  }, [sessionId])
 
-    return () => clearInterval(interval)
-  }, [isPhysio, session?.status, sessionId])
+  // Only the manual check shows a spinner; the background poll stays silent so
+  // the button isn't flickering every five seconds.
+  const handleCheckAgain = async (): Promise<void> => {
+    setIsCheckingAgain(true)
+    await refreshSession()
+    setIsCheckingAgain(false)
+  }
+
+  useEffect(() => {
+    if (isPhysio || !sessionId || session?.status !== 'scheduled') return
+
+    const check = (): void => void refreshSession()
+    const checkIfVisible = (): void => {
+      if (document.visibilityState === 'visible') check()
+    }
+
+    const interval = setInterval(check, 5000)
+    document.addEventListener('visibilitychange', checkIfVisible)
+    window.addEventListener('focus', check)
+    window.addEventListener('online', check)
+
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', checkIfVisible)
+      window.removeEventListener('focus', check)
+      window.removeEventListener('online', check)
+    }
+  }, [isPhysio, session?.status, sessionId, refreshSession])
 
   const handleCallEnded = (): void => {
     if (!sessionId) return
@@ -179,7 +218,17 @@ const SessionPage = (): JSX.Element => {
   }
 
   if (!isPhysio && session.status === 'scheduled') {
-    return <PageState tone="loading" message={MESSAGES.session.waitingForPhysio} />
+    return (
+      <PageState
+        tone="loading"
+        message={MESSAGES.session.waitingForPhysio}
+        action={
+          <Button variant="secondary" size="sm" isLoading={isCheckingAgain} onClick={() => void handleCheckAgain()}>
+            {MESSAGES.session.checkAgain}
+          </Button>
+        }
+      />
+    )
   }
 
   return (
