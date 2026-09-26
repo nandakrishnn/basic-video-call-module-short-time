@@ -11,10 +11,9 @@ import { COLORS } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
 import { ROUTES } from '@/constants/routes'
 import { useAuth } from '@/hooks/useAuth'
-import { createAppointmentRequest, getAppointmentsByPhysioRequest } from '@/services/appointment.service'
+import { getAppointmentsByPhysioRequest } from '@/services/appointment.service'
 import { listPatientsRequest } from '@/services/patient.service'
 import { endSessionRequest, getSessionRequest, startSessionRequest } from '@/services/session.service'
-import type { Appointment, AppointmentType } from '@/types/appointment.types'
 import type { Session } from '@/types/session.types'
 import type { User } from '@/types/user.types'
 import { getQuickNote, getToken, setQuickNote } from '@/utils/storage'
@@ -134,17 +133,6 @@ const SessionPage = (): JSX.Element => {
     })
   }
 
-  const handleSchedule = async (data: {
-    scheduledAt: string
-    sessionType: AppointmentType
-    internalNote?: string
-  }): Promise<Appointment | null> => {
-    const token = getToken()
-    if (!token || !session) return null
-    const res = await createAppointmentRequest(token, { patientId: session.patientId, ...data })
-    return res.success ? res.data : null
-  }
-
   // The physio sees the patient; the patient sees their physio. Falls back to a
   // role word until the join lands, rather than the literal "Patient" this
   // screen used to show both sides.
@@ -162,9 +150,9 @@ const SessionPage = (): JSX.Element => {
     else void router.push(ROUTES.dashboardPhysio)
   }
 
-  // Goes through the same post-call steps rather than jumping straight to the
+  // Goes through the same confirmation rather than jumping straight to the
   // notes page — otherwise this route skipped marking the session complete and
-  // scheduling the next one, and the booking stayed open.
+  // the booking stayed open.
   const handleEndAndWriteNotes = (): void => {
     if (!sessionId) return
     const token = getToken()
@@ -240,13 +228,10 @@ const SessionPage = (): JSX.Element => {
       )}
       {showPostCallModal && (
         <PostCallModal
-          patientEmail={patient?.email ?? null}
           patientName={counterpartLabel}
           appointmentId={session.appointmentId}
           token={getToken()}
-          physioName={user?.fullName ?? ''}
-          onSchedule={handleSchedule}
-          onClose={handleClosePostCallModal}
+          onDone={handleClosePostCallModal}
         />
       )}
     </div>
