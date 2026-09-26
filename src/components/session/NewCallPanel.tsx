@@ -5,6 +5,7 @@ import { DatePicker } from '@/components/shared/DatePicker'
 import { Field } from '@/components/shared/Field'
 import { Input } from '@/components/shared/Input'
 import { Modal } from '@/components/shared/Modal'
+import { TimePicker } from '@/components/shared/TimePicker'
 import { SelectMenu } from '@/components/shared/SelectMenu'
 import { COLORS, FONT_SIZES, RADII } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
@@ -256,7 +257,7 @@ export const NewCallPanel = ({
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <Field label={MESSAGES.newCall.fieldTime}>
-                    <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+                    <TimePicker value={time} onChange={setTime} ariaLabel="Time" />
                   </Field>
                 </div>
               </div>

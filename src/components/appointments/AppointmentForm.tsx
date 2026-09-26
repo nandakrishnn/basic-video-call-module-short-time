@@ -3,6 +3,7 @@ import { Button } from '@/components/shared/Button'
 import { DatePicker } from '@/components/shared/DatePicker'
 import { Input, Textarea } from '@/components/shared/Input'
 import { SelectMenu } from '@/components/shared/SelectMenu'
+import { TimePicker } from '@/components/shared/TimePicker'
 import { COLORS } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
 import type { AppointmentType } from '@/types/appointment.types'
@@ -42,7 +43,7 @@ export const AppointmentForm = ({ onSubmit, isSubmitting }: AppointmentFormProps
         </label>
         <label style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
           <span style={labelStyle}>Time</span>
-          <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+          <TimePicker value={time} onChange={setTime} ariaLabel="Time" />
         </label>
       </div>
 

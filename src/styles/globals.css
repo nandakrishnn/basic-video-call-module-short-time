@@ -445,6 +445,45 @@ a {
   border-color: var(--color-border-strong);
 }
 
+/* Time picker columns ------------------------------------------------------ */
+
+.time-column {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.time-column::-webkit-scrollbar {
+  display: none;
+}
+
+.time-cell {
+  flex-shrink: 0;
+  padding: 9px 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--text-base);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background-color 140ms ease;
+}
+
+.time-cell:hover {
+  background: var(--color-surface-alt);
+}
+
+.time-cell.selected {
+  background: var(--color-primary-strong);
+  color: var(--color-text-inverse);
+  font-weight: 700;
+}
+
 .date-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
