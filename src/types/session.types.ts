@@ -22,3 +22,20 @@ export interface JitsiConfig {
   domain: string
   displayName: string
 }
+
+/** A patient's session with its notes, as returned by the history endpoint. */
+export interface PatientSessionEntry extends Session {
+  /** Counted from the patient's first session, so it is stable across views. */
+  sessionNumber: number
+  sessionType: string | null
+  scheduledAt: string | null
+  notes: {
+    id: string
+    rawNotes: string
+    enhancedNotes: string | null
+    isSentToPatient: boolean
+    sentAt: string | null
+    pdfUrl: string | null
+    createdAt: string
+  } | null
+}

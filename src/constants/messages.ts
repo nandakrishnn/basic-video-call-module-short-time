@@ -190,6 +190,14 @@ export const MESSAGES = {
     countOne: '1 patient',
     countMany: (n: number) => `${n} patients`,
     loadFailed: 'Could not load patients. Please try again.',
+    backToList: 'All patients',
+    sessionHistory: 'Session history',
+    sessionLabel: 'Session',
+    sessionCountOne: '1 session recorded.',
+    sessionCountMany: (n: number) => `${n} sessions recorded.`,
+    noSessions: 'No sessions with this patient yet.',
+    noNotes: 'No notes were written for this session.',
+    reportSent: 'Report sent',
   },
 
   errors: {

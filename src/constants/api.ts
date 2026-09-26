@@ -44,5 +44,6 @@ export const API = {
   patients: {
     list: `${BASE_URL}/api/patients`,
     create: `${BASE_URL}/api/patients/create`,
+    history: (id: string) => `${BASE_URL}/api/patients/${id}/history`,
   },
 } as const

@@ -11,6 +11,7 @@ export const ROUTES = {
   sessionNotes: (sessionId: string) => `/session/notes/${sessionId}`,
 
   patients: '/patients',
+  patientDetail: (id: string) => `/patients/${id}`,
   bookings: '/bookings',
 
   appointments: '/appointments',

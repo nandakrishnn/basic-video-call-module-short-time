@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { z } from 'zod'
 import { UserRole } from '../constants/enums'
-import { createPatientHandler, listPatients } from '../controllers/patient.controller'
+import { createPatientHandler, getPatientHistory, listPatients } from '../controllers/patient.controller'
 import { authenticate } from '../middleware/auth.middleware'
 import { requireRole } from '../middleware/role.middleware'
 import { validateBody } from '../middleware/validate.middleware'
@@ -17,6 +17,12 @@ const createPatientSchema = z.object({
 const router = Router()
 
 router.get('/', authenticate, requireRole(UserRole.PHYSIO, UserRole.ADMIN), asyncHandler(listPatients))
+router.get(
+  '/:id/history',
+  authenticate,
+  requireRole(UserRole.PHYSIO, UserRole.ADMIN),
+  asyncHandler(getPatientHistory),
+)
 router.post(
   '/create',
   authenticate,

@@ -27,6 +27,17 @@ const mapRow = (row: NotesRow): SessionNotes => ({
   updatedAt: row.updated_at,
 })
 
+/**
+ * Notes for a set of sessions in one query. Fetching them per session would
+ * mean a request per row when building a patient's history.
+ */
+export const findNotesBySessionIds = async (sessionIds: string[]): Promise<SessionNotes[]> => {
+  if (sessionIds.length === 0) return []
+  const { data, error } = await db.from('session_notes').select('*').in('session_id', sessionIds)
+  if (error || !data) return []
+  return (data as NotesRow[]).map(mapRow)
+}
+
 export const createNotesRecord = async (params: {
   sessionId: string
   physioId: string

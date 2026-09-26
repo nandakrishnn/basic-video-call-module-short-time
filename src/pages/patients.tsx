@@ -121,7 +121,7 @@ const PatientsPage = (): JSX.Element => {
           >
             {filtered.map((patient) => (
               <li key={patient.id}>
-                <PatientListItem patient={patient} />
+                <PatientListItem patient={patient} onOpen={() => void router.push(ROUTES.patientDetail(patient.id))} />
               </li>
             ))}
           </ul>
