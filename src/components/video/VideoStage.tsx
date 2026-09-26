@@ -122,7 +122,12 @@ export const VideoStage = ({
             </Button>
           </div>
         )}
-        {!isChatOpen && (
+        {/* Held back until the conference is actually joined. Before that these
+            controls do nothing, and they were covering Jitsi's own connecting
+            and permission UI — including its join button — on mobile, where the
+            two land in the same corner. The header's End Session stays
+            available throughout as the way out. */}
+        {!isChatOpen && callState === 'connected' && (
           <>
             <ControlBar
               isMuted={isMuted}

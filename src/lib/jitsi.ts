@@ -28,6 +28,8 @@ export const JITSI_INTERFACE_CONFIG = {
   SHOW_POWERED_BY: false,
   DISPLAY_WELCOME_PAGE_CONTENT: false,
   DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
+  // Legacy location. Current Jitsi reads configOverwrite.toolbarButtons
+  // instead; kept for older deployments, which is why both are set.
   TOOLBAR_BUTTONS: [],
 } as const
 
@@ -43,4 +45,8 @@ export const JITSI_CONFIG_OVERWRITE = {
   // pinned, so we can't be sure which one it still reads.
   prejoinPageEnabled: false,
   prejoinConfig: { enabled: false },
+  // The same migration happened to the toolbar: TOOLBAR_BUTTONS in
+  // interfaceConfigOverwrite is ignored by current builds, so Jitsi kept
+  // drawing its own bar underneath ours. We supply every control ourselves.
+  toolbarButtons: [],
 } as const
