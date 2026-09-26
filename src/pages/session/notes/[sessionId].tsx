@@ -5,6 +5,7 @@ import { StructuredNotesEditor } from '@/components/notes/StructuredNotesEditor'
 import { SendToggle } from '@/components/notes/SendToggle'
 import { Button } from '@/components/shared/Button'
 import { COLORS } from '@/constants/colors'
+import { MESSAGES } from '@/constants/messages'
 import { ROUTES } from '@/constants/routes'
 import {
   approveNotesRequest,
@@ -28,6 +29,8 @@ const NotesPage = (): JSX.Element => {
   const [notesId, setNotesId] = useState<string | null>(null)
   const [sendEnabled, setSendEnabled] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  /** Which raw-step action is in flight, so only that button shows a spinner. */
+  const [pendingAction, setPendingAction] = useState<'enhance' | 'skip' | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -51,14 +54,14 @@ const NotesPage = (): JSX.Element => {
     const token = getToken()
     if (!token || !sessionId) return
 
-    setIsSubmitting(true)
+    setPendingAction('enhance')
     setError(null)
 
     let currentNotesId = notesId
     if (!currentNotesId) {
       const createRes = await createNotesRequest(token, sessionId, composeNotes(fields))
       if (!createRes.success) {
-        setIsSubmitting(false)
+        setPendingAction(null)
         setError(createRes.message)
         return
       }
@@ -67,7 +70,7 @@ const NotesPage = (): JSX.Element => {
     }
 
     const enhanceRes = await enhanceNotesRequest(token, currentNotesId)
-    setIsSubmitting(false)
+    setPendingAction(null)
 
     if (enhanceRes.success) {
       setEnhancedNotes(enhanceRes.data.enhancedNotes ?? '')
@@ -84,14 +87,14 @@ const NotesPage = (): JSX.Element => {
     const token = getToken()
     if (!token || !sessionId) return
 
-    setIsSubmitting(true)
+    setPendingAction('skip')
     setError(null)
 
     let currentNotesId = notesId
     if (!currentNotesId) {
       const createRes = await createNotesRequest(token, sessionId, composeNotes(fields))
       if (!createRes.success) {
-        setIsSubmitting(false)
+        setPendingAction(null)
         setError(createRes.message)
         return
       }
@@ -99,7 +102,7 @@ const NotesPage = (): JSX.Element => {
       setNotesId(currentNotesId)
     }
 
-    setIsSubmitting(false)
+    setPendingAction(null)
     setEnhancedNotes(composeNotes(fields))
     setStep('enhance')
   }
@@ -172,7 +175,15 @@ const NotesPage = (): JSX.Element => {
         gap: 24,
       }}
     >
-      <h1 style={{ color: COLORS.text.primary, fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>Session notes</h1>
+      {/* Both raw-step actions require at least one filled section, so without
+          this the page is a dead end for a physio who opened it with nothing
+          to record. */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <h1 style={{ color: COLORS.text.primary, fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>Session notes</h1>
+        <Button variant="ghost" size="sm" onClick={() => void router.push(ROUTES.dashboardPhysio)}>
+          {MESSAGES.notes.backToDashboard}
+        </Button>
+      </div>
 
       {step === 'raw' && (
         <StructuredNotesEditor
@@ -183,7 +194,8 @@ const NotesPage = (): JSX.Element => {
           onAutoSave={() => void handleAutoSave()}
           onSubmit={() => void handleEnhance()}
           onSkip={() => void handleSkipAi()}
-          isSubmitting={isSubmitting}
+          isEnhancing={pendingAction === 'enhance'}
+          isSkipping={pendingAction === 'skip'}
         />
       )}
 

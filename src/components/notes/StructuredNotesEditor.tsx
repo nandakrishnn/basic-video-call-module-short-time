@@ -13,7 +13,8 @@ interface StructuredNotesEditorProps {
   onSubmit: () => void
   /** Save without the proofreading pass. */
   onSkip: () => void
-  isSubmitting: boolean
+  isEnhancing: boolean
+  isSkipping: boolean
 }
 
 export const StructuredNotesEditor = ({
@@ -22,7 +23,8 @@ export const StructuredNotesEditor = ({
   onAutoSave,
   onSubmit,
   onSkip,
-  isSubmitting,
+  isEnhancing,
+  isSkipping,
 }: StructuredNotesEditorProps): JSX.Element => {
   const savedRef = useRef(JSON.stringify(fields))
 
@@ -38,7 +40,12 @@ export const StructuredNotesEditor = ({
     return () => clearInterval(interval)
   }, [fields, onAutoSave])
 
-  const isDisabled = !hasAnyContent(fields) || isSubmitting
+  // An entirely blank note is not a clinical record, so both actions stay shut
+  // until something is written. The caption below says so — silently dead
+  // buttons beside a caption promising blanks are fine just read as broken.
+  const isEmpty = !hasAnyContent(fields)
+  const isBusy = isEnhancing || isSkipping
+  const isDisabled = isEmpty || isBusy
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
@@ -62,15 +69,21 @@ export const StructuredNotesEditor = ({
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         {/* Blank sections are recorded as "Not documented" — a deliberate
             omission by the physio, not the model failing to find something. */}
-        <span style={{ color: COLORS.text.muted, fontSize: FONT_SIZES.sm }}>
-          {MESSAGES.notes.blankSectionsNote}
+        <span
+          style={{
+            color: isEmpty ? COLORS.status.warning : COLORS.text.muted,
+            fontSize: FONT_SIZES.sm,
+            fontWeight: isEmpty ? 600 : 400,
+          }}
+        >
+          {isEmpty ? MESSAGES.notes.needsOneSection : MESSAGES.notes.blankSectionsNote}
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <Button variant="secondary" disabled={isDisabled} onClick={onSkip}>
-            {MESSAGES.notes.skipAi}
+          <Button variant="secondary" disabled={isDisabled} isLoading={isSkipping} onClick={onSkip}>
+            {isSkipping ? MESSAGES.notes.skipping : MESSAGES.notes.skipAi}
           </Button>
-          <Button variant="primary" disabled={isDisabled} isLoading={isSubmitting} onClick={onSubmit}>
-            {isSubmitting ? MESSAGES.notes.enhancing : MESSAGES.notes.proofreadAction}
+          <Button variant="primary" disabled={isDisabled} isLoading={isEnhancing} onClick={onSubmit}>
+            {isEnhancing ? MESSAGES.notes.enhancing : MESSAGES.notes.proofreadAction}
           </Button>
         </div>
       </div>
