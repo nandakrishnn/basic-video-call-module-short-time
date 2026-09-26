@@ -200,6 +200,7 @@ export const MESSAGES = {
     noSessions: 'No sessions with this patient yet.',
     noNotes: 'No notes were written for this session.',
     reportSent: 'Report sent',
+    downloadReport: 'Download report',
   },
 
   errors: {

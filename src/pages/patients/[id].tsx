@@ -1,4 +1,4 @@
-import { ArrowLeft, FileText, Mail, Phone } from 'lucide-react'
+import { ArrowLeft, Download, FileText, Mail, Phone } from 'lucide-react'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { Avatar } from '@/components/shared/Avatar'
@@ -20,6 +20,16 @@ const labelStyle = {
   fontWeight: 700,
   textTransform: 'uppercase' as const,
   letterSpacing: '0.09em',
+}
+
+/**
+ * Supabase serves storage objects inline unless asked otherwise, so the report
+ * would open in the browser's PDF viewer rather than save. `download` sets the
+ * Content-Disposition and names the file.
+ */
+const downloadHref = (pdfUrl: string, patientName: string, sessionNumber: number): string => {
+  const fileName = `${patientName.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-session-${sessionNumber}.pdf`
+  return `${pdfUrl}${pdfUrl.includes('?') ? '&' : '?'}download=${encodeURIComponent(fileName)}`
 }
 
 const stamp = (iso: string | null): string =>
@@ -233,6 +243,33 @@ const PatientDetailPage = (): JSX.Element => {
                             {MESSAGES.patients.reportSent}
                           </span>
                         )}
+
+                        {/* Shown whenever a PDF exists, not only once it has been
+                            sent — a generated report is worth having either way. */}
+                        {session.notes?.pdfUrl && (
+                          <a
+                            href={downloadHref(session.notes.pdfUrl, patient.fullName, session.sessionNumber)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 7,
+                              padding: '8px 14px',
+                              borderRadius: RADII.md,
+                              border: `1px solid ${COLORS.border}`,
+                              background: COLORS.surface,
+                              color: COLORS.primaryStrong,
+                              fontSize: FONT_SIZES.sm,
+                              fontWeight: 700,
+                              textDecoration: 'none',
+                            }}
+                          >
+                            <Download size={15} />
+                            {MESSAGES.patients.downloadReport}
+                          </a>
+                        )}
+
                         <StatusBadge status={session.status} />
                       </div>
                     </div>
