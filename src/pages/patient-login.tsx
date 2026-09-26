@@ -31,6 +31,15 @@ const PatientLoginPage = (): JSX.Element => {
     else setError(res.message)
   }
 
+  // Reuses the identifier already captured, so the patient never re-enters it.
+  // Kept off isSubmitting so the resend spinner doesn't appear on Verify & Join.
+  const handleResendOtp = async (): Promise<void> => {
+    if (!identifier) return
+    setError(null)
+    const res = await requestPatientOtpRequest(identifier)
+    if (!res.success) setError(res.message)
+  }
+
   const handleVerifyOtp = async (): Promise<void> => {
     setIsSubmitting(true)
     setError(null)
@@ -77,6 +86,7 @@ const PatientLoginPage = (): JSX.Element => {
             onOtpChange={setOtp}
             onSubmit={() => void handleVerifyOtp()}
             isSubmitting={isSubmitting}
+            onResend={handleResendOtp}
           />
         )}
 

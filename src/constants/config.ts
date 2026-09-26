@@ -6,6 +6,10 @@ export const CONFIG = {
     expiryMinutes: 10,
     maxAttempts: 3,
     lockMinutes: 30,
+    // How long before the patient can ask for a second code. Long enough that
+    // a slow email doesn't get resent on top of itself, short enough not to
+    // strand someone whose first code never arrived.
+    resendCooldownSeconds: 20,
   },
 
   session: {
