@@ -74,11 +74,17 @@ export const AppointmentList = ({
                 </div>
               </div>
 
-              <div className="appointment-row-actions">
+              {/* Type and status sit apart from the action so that on a phone
+                  the status can ride up beside the date while the button drops
+                  to its own full-width row. */}
+              <div className="appointment-row-meta">
                 <span style={{ color: COLORS.text.muted, fontSize: FONT_SIZES.sm, textTransform: 'capitalize' }}>
                   {appointment.sessionType}
                 </span>
                 <StatusBadge status={deriveStatus(appointment)} />
+              </div>
+
+              <div className="appointment-row-actions">
                 {onReschedule && appointment.status === 'scheduled' && (
                   <Button
                     variant="secondary"

@@ -82,7 +82,7 @@ export const DashboardSidebar = (): JSX.Element => {
         >
           <Menu size={22} />
         </button>
-        <Logo surface="light" size="sm" showWordmark />
+        <Logo surface="light" size="md" showWordmark />
       </div>
 
       <aside

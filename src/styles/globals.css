@@ -698,7 +698,8 @@ a {
 
 .appointment-row {
   display: grid;
-  grid-template-columns: 84px minmax(0, 1fr) auto;
+  grid-template-areas: "time patient meta actions";
+  grid-template-columns: 96px minmax(0, 1fr) auto auto;
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-3) var(--space-4);
@@ -716,18 +717,29 @@ a {
 }
 
 .appointment-row-time {
+  grid-area: time;
   padding-right: var(--space-4);
   border-right: 1px solid var(--color-border);
 }
 
 .appointment-row-patient {
+  grid-area: patient;
   display: flex;
   align-items: center;
   gap: var(--space-3);
   min-width: 0;
 }
 
+.appointment-row-meta {
+  grid-area: meta;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
 .appointment-row-actions {
+  grid-area: actions;
   display: flex;
   align-items: center;
   gap: var(--space-3);
@@ -736,15 +748,25 @@ a {
 }
 
 @media (max-width: 640px) {
+  /* Stacked as a card: when and what state on the first line, who on the
+     second, and the action on its own full-width row rather than three
+     things fighting over one line. */
   .appointment-row {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--space-3);
+    grid-template-areas:
+      "time meta"
+      "patient patient"
+      "actions actions";
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: var(--space-3) var(--space-2);
+    padding: var(--space-4);
   }
 
   .appointment-row-time {
     display: flex;
     align-items: baseline;
-    gap: var(--space-2);
+    flex-wrap: wrap;
+    gap: 6px;
     padding-right: 0;
     border-right: none;
   }
@@ -753,8 +775,24 @@ a {
     margin-top: 0;
   }
 
-  .appointment-row-actions {
-    justify-content: space-between;
+  .appointment-row-meta {
+    justify-content: flex-end;
+  }
+
+  /* Type reads as part of the patient block, not the status — it duplicates
+     what the badge already conveys at a glance. */
+  .appointment-row-meta span:first-child {
+    display: none;
+  }
+
+  .appointment-row-actions:not(:empty) {
+    padding-top: var(--space-1);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .appointment-row-actions button {
+    width: 100%;
+    justify-content: center;
   }
 }
 
@@ -840,7 +878,9 @@ a {
     gap: var(--space-3);
   }
 
-  .logo-wordmark,
+  /* Scoped to the call header: there the wordmark competes with the timer and
+     connection state for a very narrow bar. Elsewhere it should still show. */
+  .video-header .logo-wordmark,
   .vh-conn-label,
   .vh-end-long {
     display: none;
