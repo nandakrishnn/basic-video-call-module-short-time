@@ -219,6 +219,7 @@ export const MESSAGES = {
 
   nav: {
     dashboard: 'Dashboard',
+    account: 'Account',
     logout: 'Log out',
     logoutConfirmTitle: 'Log out?',
     logoutConfirmBody: "You'll need to sign in again to get back to your dashboard.",

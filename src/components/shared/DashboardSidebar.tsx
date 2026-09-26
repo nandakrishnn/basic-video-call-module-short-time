@@ -4,6 +4,7 @@ import { useRouter } from 'next/router'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { Avatar } from '@/components/shared/Avatar'
+import { MobileNavBar } from '@/components/shared/MobileNavBar'
 import { Button } from '@/components/shared/Button'
 import { Logo } from '@/components/shared/Logo'
 import { Modal } from '@/components/shared/Modal'
@@ -65,6 +66,7 @@ export const DashboardSidebar = (): JSX.Element => {
           type="button"
           onClick={() => setIsOpen(true)}
           aria-label="Open navigation"
+          className="dashboard-menu-button"
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -208,6 +210,8 @@ export const DashboardSidebar = (): JSX.Element => {
       </aside>
 
       {isOpen && <div className="dashboard-sidebar-backdrop open" onClick={closeDrawer} />}
+
+      <MobileNavBar />
 
       {isConfirmingLogout && (
         <Modal
