@@ -1,6 +1,7 @@
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { COLORS, FONT_SIZES, RADII, SHADOWS } from '@/constants/colors'
+import { useDismissOnOutside } from '@/hooks/useDismissOnOutside'
 
 interface DatePickerProps {
   /** ISO calendar date, "YYYY-MM-DD" — the same shape a native date input emits. */
@@ -45,6 +46,7 @@ export const DatePicker = ({ value, onChange, placeholder = 'Pick a date', min, 
   const [month, setMonth] = useState(() => selected ?? new Date())
   const [coords, setCoords] = useState({ top: 0, left: 0 })
   const triggerRef = useRef<HTMLButtonElement>(null)
+  const popoverRef = useRef<HTMLDivElement>(null)
 
   // Reopening should land on the selected month, not wherever it was left.
   useEffect(() => {
@@ -65,22 +67,8 @@ export const DatePicker = ({ value, onChange, placeholder = 'Pick a date', min, 
     })
   }, [isOpen])
 
-  useEffect(() => {
-    if (!isOpen) return
-    const onKeyDown = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') setIsOpen(false)
-    }
-    // Scrolling would leave the popover stranded from its trigger.
-    const close = (): void => setIsOpen(false)
-    window.addEventListener('keydown', onKeyDown)
-    window.addEventListener('resize', close)
-    window.addEventListener('scroll', close, true)
-    return () => {
-      window.removeEventListener('keydown', onKeyDown)
-      window.removeEventListener('resize', close)
-      window.removeEventListener('scroll', close, true)
-    }
-  }, [isOpen])
+  // Scrolling would leave the popover stranded from its trigger.
+  useDismissOnOutside(isOpen, () => setIsOpen(false), popoverRef, triggerRef)
 
   const todayKey = toKey(new Date())
   const minDate = min ? fromKey(min) : null
@@ -122,8 +110,8 @@ export const DatePicker = ({ value, onChange, placeholder = 'Pick a date', min, 
 
       {isOpen && (
         <>
-          <div onClick={() => setIsOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 400 }} />
           <div
+            ref={popoverRef}
             role="dialog"
             aria-label={ariaLabel ?? placeholder}
             style={{

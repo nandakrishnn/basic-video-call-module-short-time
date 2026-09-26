@@ -1,6 +1,7 @@
 import { Check, ChevronDown } from 'lucide-react'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { COLORS, FONT_SIZES, RADII, SHADOWS } from '@/constants/colors'
+import { useDismissOnOutside } from '@/hooks/useDismissOnOutside'
 
 export interface SelectMenuOption<T extends string> {
   value: T
@@ -43,6 +44,7 @@ export const SelectMenu = <T extends string>({
   const [isOpen, setIsOpen] = useState(false)
   const [coords, setCoords] = useState({ top: 0, left: 0, width: minWidth })
   const triggerRef = useRef<HTMLButtonElement>(null)
+  const popoverRef = useRef<HTMLDivElement>(null)
 
   const selected = options.find((option) => option.value === value)
 
@@ -57,22 +59,8 @@ export const SelectMenu = <T extends string>({
     })
   }, [isOpen])
 
-  useEffect(() => {
-    if (!isOpen) return
-    const onKeyDown = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') setIsOpen(false)
-    }
-    // Scrolling would strand the menu away from its trigger.
-    const close = (): void => setIsOpen(false)
-    window.addEventListener('keydown', onKeyDown)
-    window.addEventListener('resize', close)
-    window.addEventListener('scroll', close, true)
-    return () => {
-      window.removeEventListener('keydown', onKeyDown)
-      window.removeEventListener('resize', close)
-      window.removeEventListener('scroll', close, true)
-    }
-  }, [isOpen])
+  // Scrolling would strand the menu away from its trigger.
+  useDismissOnOutside(isOpen, () => setIsOpen(false), popoverRef, triggerRef)
 
   return (
     <>
@@ -114,8 +102,8 @@ export const SelectMenu = <T extends string>({
 
       {isOpen && (
         <>
-          <div onClick={() => setIsOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 400 }} />
           <div
+            ref={popoverRef}
             role="listbox"
             aria-label={ariaLabel}
             style={{

@@ -97,11 +97,20 @@ export const NewCallPanel = ({
       return
     }
 
+    // Nothing downstream rejects a past slot, so without this a mistyped time
+    // books an appointment that is already over: it cannot be joined, and the
+    // reschedule window has closed too, leaving a row with nothing to do.
+    const scheduledAt = new Date(`${date}T${time}`)
+    if (scheduledAt.getTime() <= Date.now()) {
+      setError(MESSAGES.newCall.scheduleInPast)
+      return
+    }
+
     setIsSubmitting(true)
     setError(null)
     const res = await createAppointmentRequest(token, {
       patientId: selectedPatientId,
-      scheduledAt: new Date(`${date}T${time}`).toISOString(),
+      scheduledAt: scheduledAt.toISOString(),
       sessionType: 'followup',
     })
     setIsSubmitting(false)

@@ -1,6 +1,7 @@
 import { Clock } from 'lucide-react'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { COLORS, RADII, SHADOWS } from '@/constants/colors'
+import { useDismissOnOutside } from '@/hooks/useDismissOnOutside'
 
 interface TimePickerProps {
   /** 24-hour "HH:MM", the same shape a native time input emits. */
@@ -38,6 +39,7 @@ export const TimePicker = ({ value, onChange, placeholder = 'Pick a time', ariaL
   const [coords, setCoords] = useState({ top: 0, left: 0 })
   const triggerRef = useRef<HTMLButtonElement>(null)
   const columnsRef = useRef<HTMLDivElement>(null)
+  const popoverRef = useRef<HTMLDivElement>(null)
 
   useLayoutEffect(() => {
     if (!isOpen || !triggerRef.current) return
@@ -58,19 +60,7 @@ export const TimePicker = ({ value, onChange, placeholder = 'Pick a time', ariaL
     }
   }, [isOpen])
 
-  useEffect(() => {
-    if (!isOpen) return
-    const onKeyDown = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') setIsOpen(false)
-    }
-    const close = (): void => setIsOpen(false)
-    window.addEventListener('keydown', onKeyDown)
-    window.addEventListener('resize', close)
-    return () => {
-      window.removeEventListener('keydown', onKeyDown)
-      window.removeEventListener('resize', close)
-    }
-  }, [isOpen])
+  useDismissOnOutside(isOpen, () => setIsOpen(false), popoverRef, triggerRef)
 
   const commit = (next: Partial<{ hour: number; minute: number; period: 'AM' | 'PM' }>): void => {
     const base = parts ?? { hour: 9, minute: 0, period: 'AM' as const }
@@ -108,8 +98,8 @@ export const TimePicker = ({ value, onChange, placeholder = 'Pick a time', ariaL
 
       {isOpen && (
         <>
-          <div onClick={() => setIsOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 400 }} />
           <div
+            ref={popoverRef}
             role="dialog"
             aria-label={ariaLabel ?? placeholder}
             style={{

@@ -176,6 +176,7 @@ export const MESSAGES = {
     fieldDate: 'Date',
     fieldTime: 'Time',
     missingSchedule: 'Pick a date and time.',
+    scheduleInPast: 'Pick a time in the future.',
     scheduleCallButton: 'Schedule Call',
     scheduling: 'Scheduling…',
     scheduleSuccess: "Call scheduled — it'll show up in your upcoming appointments.",
