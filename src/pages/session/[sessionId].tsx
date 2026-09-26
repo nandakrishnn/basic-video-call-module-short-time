@@ -153,17 +153,28 @@ const SessionPage = (): JSX.Element => {
     : MESSAGES.session.rolePhysio
   const sessionSubtitle = isPhysio && patient?.issue?.trim() ? patient.issue.trim() : sessionType
 
+  // Writing up the session is the end of this flow, not an alternative to it.
+  // This used to return to the dashboard, so ending a call through the post-call
+  // steps meant the notes page was never offered at all.
   const handleClosePostCallModal = (): void => {
     setShowPostCallModal(false)
-    void router.push(ROUTES.dashboardPhysio)
+    if (sessionId) void router.push(ROUTES.sessionNotes(sessionId))
+    else void router.push(ROUTES.dashboardPhysio)
   }
 
+  // Goes through the same post-call steps rather than jumping straight to the
+  // notes page — otherwise this route skipped marking the session complete and
+  // scheduling the next one, and the booking stayed open.
   const handleEndAndWriteNotes = (): void => {
     if (!sessionId) return
     const token = getToken()
     if (!token) return
-    endSessionRequest(token, sessionId).then(() => {
-      void router.push(ROUTES.sessionNotes(sessionId))
+    // Left set on purpose: clearing it would re-mount VideoStage, which would
+    // rebuild the Jitsi iframe and rejoin the call that was just ended.
+    setIsEndingCall(true)
+    endSessionRequest(token, sessionId).then((res) => {
+      if (res.success) setShowPostCallModal(true)
+      else void router.push(ROUTES.sessionNotes(sessionId))
     })
   }
 
