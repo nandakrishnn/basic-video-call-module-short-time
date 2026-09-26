@@ -97,7 +97,7 @@ const BookingsPage = (): JSX.Element => {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: COLORS.background }}>
+    <div className="app-shell" style={{ minHeight: '100vh', background: COLORS.background }}>
       <DashboardSidebar />
 
       <div

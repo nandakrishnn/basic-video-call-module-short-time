@@ -12,7 +12,7 @@ const ROWS = 4
  * during load keeps the page usable rather than blanking it.
  */
 export const DashboardSkeleton = (): JSX.Element => (
-  <div style={{ minHeight: '100vh', background: COLORS.background }}>
+  <div className="app-shell" style={{ minHeight: '100vh', background: COLORS.background }}>
     <DashboardSidebar />
 
     <div

@@ -26,7 +26,7 @@ export const ListPageSkeleton = ({
   filterCount = 0,
   rows = 5,
 }: ListPageSkeletonProps): JSX.Element => (
-  <div style={{ minHeight: '100vh', background: COLORS.background }}>
+  <div className="app-shell" style={{ minHeight: '100vh', background: COLORS.background }}>
     <DashboardSidebar />
 
     <div

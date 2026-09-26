@@ -964,13 +964,39 @@ a {
     z-index: 50;
   }
 
-  .mobile-nav {
+  /* The page itself does not scroll — the content column does. A fixed bar
+     sits against the layout viewport, which on mobile extends under the
+     browser's collapsing toolbar, so it stayed hidden until you scrolled.
+     As a flex item in a viewport-height shell it is always on screen. */
+  .app-shell {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0 !important;
+    overflow: hidden;
     display: flex;
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 120;
+    flex-direction: column;
+  }
+
+  /* DOM order puts the nav before the content, so order restores it visually. */
+  .dashboard-mobile-topbar {
+    order: 1;
+    flex-shrink: 0;
+  }
+
+  .dashboard-content {
+    order: 2;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-left: 0;
+    padding: 18px 16px 24px !important;
+  }
+
+  .mobile-nav {
+    order: 3;
+    display: flex;
+    flex-shrink: 0;
     background: var(--color-surface);
     border-top: 1px solid var(--color-border);
     /* Keeps the tabs above the iPhone home indicator. */
@@ -978,10 +1004,18 @@ a {
     box-shadow: 0 -2px 12px rgba(71, 53, 33, 0.06);
   }
 
-  /* The bar is fixed, so it would otherwise sit on top of the last row. */
-  .dashboard-content {
-    margin-left: 0;
-    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
+  /* A decorative banner is the first thing to go on a small screen — it pushed
+     the actual appointments below the fold. */
+  .dash-hero {
+    display: none;
+  }
+
+  .dash-topbar-actions {
+    width: 100%;
+  }
+
+  .dash-table-toolbar {
+    padding: 14px 14px 0 !important;
   }
 
   /* The drawer and its trigger are retired on phones — the tab bar reaches
