@@ -52,6 +52,15 @@ export const CONFIG = {
     maxOutputTokens: 2048,
   },
 
+  reports: {
+    // The physio is looking at the page now, so a short window is enough and
+    // a copied link stops working quickly.
+    signedUrlMinutes: 60,
+    // The patient may open their email days later, so their link has to
+    // outlive the request that sent it.
+    emailSignedUrlDays: 90,
+  },
+
   bcrypt: {
     saltRounds: 10,
   },

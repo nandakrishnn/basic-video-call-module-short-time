@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express'
+import { CONFIG } from '../constants/config'
 import { MESSAGES } from '../constants/messages'
 import { AppError } from '../middleware/error.middleware'
 import { findAppointmentsByPatient } from '../models/appointment.model'
@@ -6,6 +7,7 @@ import { findNotesBySessionIds } from '../models/notes.model'
 import { findSessionsByPatient } from '../models/session.model'
 import { createPatient, findUserById, findUsersByRole } from '../models/user.model'
 import { syncPatientToPhysioPlatform } from '../services/physioPlatformSync.service'
+import { getSignedPdfUrl } from '../services/storage.service'
 import type { CreatePatientInput } from '../types/user.types'
 import { successResponse } from '../utils/response'
 
@@ -37,16 +39,27 @@ export const getPatientHistory = async (req: Request, res: Response): Promise<vo
   // Numbered oldest-first so a patient's first session is always 1, then
   // returned newest-first because that is the order a physio reads them in.
   const oldestFirst = [...sessions].sort((a, b) => a.createdAt.localeCompare(b.createdAt))
-  const numbered = oldestFirst.map((session, index) => {
-    const appointment = session.appointmentId ? appointmentById.get(session.appointmentId) : undefined
-    return {
-      ...session,
-      sessionNumber: index + 1,
-      sessionType: appointment?.sessionType ?? null,
-      scheduledAt: appointment?.scheduledAt ?? null,
-      notes: notesBySession.get(session.id) ?? null,
-    }
-  })
+  const numbered = await Promise.all(
+    oldestFirst.map(async (session, index) => {
+      const appointment = session.appointmentId ? appointmentById.get(session.appointmentId) : undefined
+      const notes = notesBySession.get(session.id) ?? null
+
+      // The stored value is a path in a private bucket, so it is swapped for a
+      // short-lived signed URL here. Nothing that leaves this endpoint can be
+      // used to reach a report after it expires.
+      const signedPdfUrl = notes?.pdfUrl
+        ? await getSignedPdfUrl(notes.pdfUrl, CONFIG.reports.signedUrlMinutes * 60)
+        : null
+
+      return {
+        ...session,
+        sessionNumber: index + 1,
+        sessionType: appointment?.sessionType ?? null,
+        scheduledAt: appointment?.scheduledAt ?? null,
+        notes: notes ? { ...notes, pdfUrl: signedPdfUrl } : null,
+      }
+    }),
+  )
 
   res.status(200).json(
     successResponse({ patient, sessions: numbered.reverse() }, MESSAGES.patient.listSuccess),

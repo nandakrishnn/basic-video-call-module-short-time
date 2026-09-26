@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express'
 import { AuditAction } from '../constants/enums'
+import { CONFIG } from '../constants/config'
 import { MESSAGES } from '../constants/messages'
 import { AppError } from '../middleware/error.middleware'
 import { createNotesRecord, findNotesById, updateNotesRecord } from '../models/notes.model'
@@ -9,7 +10,7 @@ import { logAudit } from '../services/audit.service'
 import { sendReportEmail } from '../services/email.service'
 import { enhanceNotesWithAI, TransientAiError } from '../services/gemini.service'
 import { generateReportPdf } from '../services/pdf.service'
-import { uploadPdf } from '../services/storage.service'
+import { getSignedPdfUrl, uploadPdf } from '../services/storage.service'
 import type { ApproveNotesInput, CreateNotesInput, SendNotesInput } from '../types/notes.types'
 import { successResponse } from '../utils/response'
 
@@ -130,9 +131,14 @@ export const sendNotes = async (req: Request, res: Response): Promise<void> => {
   const patient = await findUserById(session.patientId)
   if (!patient?.email) throw new AppError(MESSAGES.auth.userNotFound, 404, 'USER_NOT_FOUND')
 
+  // Signed for months, not minutes: the patient may open this email long after
+  // it arrives, and a dead link is worse than no link.
+  const reportUrl = await getSignedPdfUrl(notes.pdfUrl, CONFIG.reports.emailSignedUrlDays * 24 * 60 * 60)
+  if (!reportUrl) throw new AppError(MESSAGES.notes.notFound, 404, 'REPORT_URL_FAILED')
+
   let emailSent = true
   try {
-    await sendReportEmail(patient.email, notes.pdfUrl)
+    await sendReportEmail(patient.email, reportUrl)
   } catch (err) {
     emailSent = false
     console.error('Failed to send report email:', err)
