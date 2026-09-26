@@ -34,6 +34,7 @@ export const VideoHeader = ({
 }: VideoHeaderProps): JSX.Element => {
   return (
     <div
+      className="video-header"
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -84,7 +85,10 @@ export const VideoHeader = ({
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
           <SignalHigh size={17} color={STATE_COLOR[callState]} />
-          <span style={{ color: COLORS.text.secondary, fontSize: FONT_SIZES.base, fontWeight: 600 }}>
+          <span
+            className="vh-conn-label"
+            style={{ color: COLORS.text.secondary, fontSize: FONT_SIZES.base, fontWeight: 600 }}
+          >
             {STATE_LABEL[callState]}
           </span>
         </div>
@@ -111,7 +115,10 @@ export const VideoHeader = ({
                 whiteSpace: 'nowrap',
               }}
             >
-              End Session
+              {/* Shortened rather than dropped on narrow screens — it is the
+                  only way out of the call while connecting. */}
+              <span className="vh-end-long">End Session</span>
+              <span className="vh-end-short">End</span>
               <ArrowRight size={16} />
             </button>
           </>

@@ -736,6 +736,11 @@ a {
   flex-shrink: 0;
 }
 
+/* Long label by default; the short one only appears below 640px. */
+.vh-end-short {
+  display: none;
+}
+
 .call-control-bar {
   position: absolute;
   bottom: 20px;
@@ -796,24 +801,66 @@ a {
 }
 
 @media (max-width: 640px) {
+  /* The header carries brand, patient, timer, connection and the end button.
+     Below this width they cannot all fit, so the redundant ones go: the
+     wordmark (the mark still shows) and the connection's text label (its
+     signal icon already says it). */
   .video-header-meta {
     gap: var(--space-3);
   }
 
+  .logo-wordmark,
+  .vh-conn-label,
+  .vh-end-long {
+    display: none;
+  }
+
+  .vh-end-short {
+    display: inline;
+  }
+
+  .video-header {
+    padding: 11px 13px !important;
+    gap: 10px !important;
+  }
+
+  /* One row, never a block. Wrapping turned the bar into a 2x2 card that
+     covered the person on the call — the opposite of what controls are for. */
   .call-control-bar {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: center;
-    bottom: 12px;
-    padding: 8px 10px;
+    gap: 2px;
+    bottom: 14px;
+    padding: 7px 9px;
+  }
+
+  /* Labels are what force the wrap; the icons carry the meaning, and each
+     button keeps its aria-label for screen readers. */
+  .call-control span:last-child {
+    display: none;
+  }
+
+  .call-control {
+    padding: 2px;
   }
 
   .call-control-icon {
-    width: 38px;
-    height: 38px;
+    width: 42px;
+    height: 42px;
   }
 
+  /* Round, icon-only — the convention on every mobile call app, and it saves
+     the width that was pushing the bar onto a second row. */
   .call-end-button {
-    padding: 11px 16px;
+    width: 52px;
+    height: 52px;
+    padding: 0;
+    margin-left: 4px;
+    justify-content: center;
+  }
+
+  .call-end-label {
+    display: none;
   }
 }
 

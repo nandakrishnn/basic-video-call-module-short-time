@@ -59,6 +59,7 @@ export const Logo = ({ surface, size = 'md', showWordmark = false }: LogoProps):
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
       {mark}
       <span
+        className="logo-wordmark"
         style={{
           color: surface === 'dark' ? COLORS.text.inverse : COLORS.accent,
           fontSize: WORDMARK_SIZE[size],

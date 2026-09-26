@@ -84,7 +84,7 @@ export const ControlBar = ({
 
       <button type="button" onClick={onEndCall} aria-label="End call" className="call-end-button">
         <PhoneOff size={18} />
-        End Call
+        <span className="call-end-label">End Call</span>
       </button>
     </div>
   )
