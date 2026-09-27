@@ -507,22 +507,25 @@ a {
   flex-wrap: wrap;
 }
 
+.patient-session-item {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.patient-session-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.patient-session-item:first-child {
+  padding-top: 0;
+}
+
 .patient-session-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.patient-session-row:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.patient-session-row:first-child {
-  padding-top: 0;
 }
 
 @media (max-width: 560px) {

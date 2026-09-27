@@ -21,9 +21,13 @@ export interface PhysioDashboardData {
 
 export interface PastCall {
   sessionId: string
+  /** Counted from the patient's first session — the same number their physio sees. */
+  sessionNumber: number
   physioName: string
   startedAt: string | null
   endedAt: string | null
+  /** Present only once the physio has sent this session's report. */
+  notes: string | null
   report: { id: string; pdfUrl: string; sentAt: string } | null
 }
 

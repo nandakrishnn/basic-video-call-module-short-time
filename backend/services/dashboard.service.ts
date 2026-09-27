@@ -6,9 +6,10 @@ import {
   findAppointmentsByPatient,
   findAppointmentsByPhysio,
 } from '../models/appointment.model'
-import { findSentNotesByPatient } from '../models/notes.model'
+import { findNotesBySessionIds } from '../models/notes.model'
 import { findSessionsByPatient, findSessionsByPhysio } from '../models/session.model'
 import { findUserById, findUsersByRole } from '../models/user.model'
+import { sortSessionsOldestFirst } from '../services/session.service'
 import { getSignedPdfUrl } from '../services/storage.service'
 import type { User } from '../types/user.types'
 
@@ -100,11 +101,29 @@ export const getPatientDashboard = async (patientId: string) => {
   const appointments = await findAppointmentsByPatient(patientId)
   const now = new Date().toISOString()
 
-  const nextAppointment =
-    appointments.find((a) => a.scheduledAt > now && a.status === AppointmentStatus.SCHEDULED) ?? null
-
-  const [sessions, reports] = await Promise.all([findSessionsByPatient(patientId), findSentNotesByPatient(patientId)])
+  const sessions = await findSessionsByPatient(patientId)
   const completedSessions = sessions.filter((s) => s.status === SessionStatus.COMPLETED)
+
+  // A booking whose call has already happened is not something to join again.
+  // The appointment stays SCHEDULED until the physio confirms it afterwards, so
+  // on its own that status kept offering Join over a finished session.
+  const finishedSessionIds = new Set(
+    sessions
+      .filter((s) => s.status === SessionStatus.COMPLETED || s.status === SessionStatus.CANCELLED)
+      .map((s) => s.id),
+  )
+
+  const nextAppointment =
+    appointments.find(
+      (a) =>
+        a.scheduledAt > now &&
+        a.status === AppointmentStatus.SCHEDULED &&
+        !(a.sessionId && finishedSessionIds.has(a.sessionId)),
+    ) ?? null
+
+  const notes = await findNotesBySessionIds(completedSessions.map((s) => s.id))
+  const notesBySession = new Map(notes.map((note) => [note.sessionId, note]))
+  const orderedSessions = sortSessionsOldestFirst(sessions)
 
   const physioIds = Array.from(new Set(completedSessions.map((s) => s.physioId)))
   const physios = await Promise.all(physioIds.map((id) => findUserById(id)))
@@ -115,17 +134,29 @@ export const getPatientDashboard = async (patientId: string) => {
   // an unsigned path opens nothing at all.
   const pastCalls = await Promise.all(
     completedSessions.map(async (session) => {
-      const report = reports.find((r) => r.sessionId === session.id) ?? null
-      const signedUrl = report
-        ? await getSignedPdfUrl(report.pdfUrl, CONFIG.reports.signedUrlMinutes * 60)
+      // Only what the physio chose to send. Notes they wrote but have not sent
+      // are a draft of a clinical record, and publishing them here would take
+      // that decision away from them.
+      const note = notesBySession.get(session.id) ?? null
+      const shared = note?.isSentToPatient ? note : null
+
+      const signedUrl = shared?.pdfUrl
+        ? await getSignedPdfUrl(shared.pdfUrl, CONFIG.reports.signedUrlMinutes * 60)
         : null
 
       return {
         sessionId: session.id,
+        // Numbered the same way as the physio's history, so a patient asking
+        // about "session 3" means the session their physio has open.
+        sessionNumber: orderedSessions.findIndex((s) => s.id === session.id) + 1,
         physioName: physioNameById.get(session.physioId) ?? 'Your physio',
         startedAt: session.startedAt,
         endedAt: session.endedAt,
-        report: report && signedUrl ? { ...report, pdfUrl: signedUrl } : null,
+        notes: shared ? (shared.enhancedNotes ?? shared.rawNotes) : null,
+        report:
+          shared && signedUrl
+            ? { id: shared.id, sessionId: shared.sessionId, pdfUrl: signedUrl, sentAt: shared.sentAt ?? '' }
+            : null,
       }
     }),
   )

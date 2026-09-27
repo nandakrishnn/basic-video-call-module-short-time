@@ -137,6 +137,7 @@ export const MESSAGES = {
     patientPastSessions: 'Past sessions',
     patientWith: 'with',
     patientViewReport: 'View report',
+    patientViewNotes: 'View session notes',
     patientReportPending: 'Report pending',
     patientDateUnavailable: 'Date unavailable',
     emptyPastCalls: 'No past calls yet.',

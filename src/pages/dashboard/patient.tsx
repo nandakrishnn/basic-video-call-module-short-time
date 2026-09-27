@@ -135,47 +135,84 @@ const PatientDashboardPage = (): JSX.Element => {
               ) : (
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                   {data.pastCalls.map((call) => (
-                    <li key={call.sessionId} className="patient-session-row">
-                      <div style={{ minWidth: 0 }}>
-                        <p
-                          style={{
-                            color: COLORS.text.primary,
-                            fontWeight: 700,
-                            fontSize: FONT_SIZES.base,
-                            margin: 0,
-                          }}
-                        >
-                          {call.startedAt
-                            ? parseUtc(call.startedAt).toLocaleString()
-                            : MESSAGES.dashboard.patientDateUnavailable}
-                        </p>
-                        <p style={{ color: COLORS.text.secondary, fontSize: FONT_SIZES.sm, margin: '3px 0 0' }}>
-                          {MESSAGES.dashboard.patientWith} {call.physioName}
-                        </p>
+                    <li key={call.sessionId} className="patient-session-item">
+                      <div className="patient-session-row">
+                        <div style={{ minWidth: 0 }}>
+                          <span className="dash-eyebrow">
+                            {MESSAGES.patients.sessionLabel} {call.sessionNumber}
+                          </span>
+                          <p
+                            style={{
+                              color: COLORS.text.primary,
+                              fontWeight: 700,
+                              fontSize: FONT_SIZES.base,
+                              margin: '4px 0 0',
+                            }}
+                          >
+                            {call.startedAt
+                              ? parseUtc(call.startedAt).toLocaleString()
+                              : MESSAGES.dashboard.patientDateUnavailable}
+                          </p>
+                          <p style={{ color: COLORS.text.secondary, fontSize: FONT_SIZES.sm, margin: '3px 0 0' }}>
+                            {MESSAGES.dashboard.patientWith} {call.physioName}
+                          </p>
+                        </div>
+                        {call.report ? (
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => window.open(call.report!.pdfUrl, '_blank', 'noopener,noreferrer')}
+                          >
+                            <FileText size={15} />
+                            {MESSAGES.dashboard.patientViewReport}
+                          </Button>
+                        ) : (
+                          <span
+                            style={{
+                              color: COLORS.text.muted,
+                              fontSize: FONT_SIZES.sm,
+                              fontWeight: 600,
+                              padding: '6px 12px',
+                              borderRadius: RADII.pill,
+                              background: COLORS.surfaceAlt,
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {MESSAGES.dashboard.patientReportPending}
+                          </span>
+                        )}
                       </div>
-                      {call.report ? (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => window.open(call.report!.pdfUrl, '_blank', 'noopener,noreferrer')}
-                        >
-                          <FileText size={15} />
-                          {MESSAGES.dashboard.patientViewReport}
-                        </Button>
-                      ) : (
-                        <span
-                          style={{
-                            color: COLORS.text.muted,
-                            fontSize: FONT_SIZES.sm,
-                            fontWeight: 600,
-                            padding: '6px 12px',
-                            borderRadius: RADII.pill,
-                            background: COLORS.surfaceAlt,
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {MESSAGES.dashboard.patientReportPending}
-                        </span>
+
+                      {/* Collapsed: a patient scanning for a date should not have
+                          to scroll past five headings of someone else's session. */}
+                      {call.notes && (
+                        <details className="past-note" style={{ marginTop: 10 }}>
+                          <summary className="past-note-summary">
+                            <span
+                              style={{
+                                color: COLORS.text.primary,
+                                fontWeight: 700,
+                                fontSize: FONT_SIZES.sm,
+                              }}
+                            >
+                              {MESSAGES.dashboard.patientViewNotes}
+                            </span>
+                          </summary>
+                          <div
+                            style={{
+                              marginTop: 10,
+                              padding: 14,
+                              borderRadius: RADII.sm,
+                              background: COLORS.primarySofter,
+                              color: COLORS.text.secondary,
+                              fontSize: FONT_SIZES.base,
+                              lineHeight: 1.65,
+                              whiteSpace: 'pre-wrap',
+                            }}
+                          >
+                            {call.notes}
+                          </div>
+                        </details>
                       )}
                     </li>
                   ))}
