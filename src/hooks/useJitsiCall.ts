@@ -8,7 +8,10 @@ interface UseJitsiCallParams {
   jwt?: string | null
   isModerator?: boolean
   containerRef: RefObject<HTMLDivElement>
+  /** The call was ended on purpose — via our End button or Jitsi's hangup. */
   onCallEnded?: () => void
+  /** The call dropped without anyone asking it to. Recoverable: rejoin. */
+  onCallDropped?: () => void
 }
 
 export type CallState = 'connecting' | 'connected' | 'ended'
@@ -42,6 +45,7 @@ export const useJitsiCall = ({
   isModerator = false,
   containerRef,
   onCallEnded,
+  onCallDropped,
 }: UseJitsiCallParams): UseJitsiCallResult => {
   const apiRef = useRef<JitsiMeetExternalApiInstance | null>(null)
 
@@ -53,6 +57,18 @@ export const useJitsiCall = ({
   useEffect(() => {
     onCallEndedRef.current = onCallEnded
   }, [onCallEnded])
+
+  const onCallDroppedRef = useRef(onCallDropped)
+  useEffect(() => {
+    onCallDroppedRef.current = onCallDropped
+  }, [onCallDropped])
+
+  // videoConferenceLeft fires for a deliberate hangup and for a call that was
+  // merely interrupted — a tel: link opening the dialer, the browser being
+  // backgrounded, the connection dying. Treating both as "ended" completed the
+  // session for good, so a mis-tap left nobody able to rejoin. Only a hangup we
+  // asked for counts as ending it.
+  const hasRequestedEndRef = useRef(false)
 
   const [isReady, setIsReady] = useState(false)
   const [callState, setCallState] = useState<CallState>('connecting')
@@ -91,7 +107,11 @@ export const useJitsiCall = ({
       })
       api.addListener('videoConferenceLeft', () => {
         setCallState('ended')
-        onCallEndedRef.current?.()
+        if (hasRequestedEndRef.current) {
+          onCallEndedRef.current?.()
+        } else {
+          onCallDroppedRef.current?.()
+        }
       })
       api.addListener('audioMuteStatusChanged', (...args: unknown[]) => {
         const payload = args[0] as { muted?: boolean } | undefined
@@ -161,6 +181,7 @@ export const useJitsiCall = ({
   }, [])
 
   const endCall = useCallback(() => {
+    hasRequestedEndRef.current = true
     apiRef.current?.executeCommand('hangup')
   }, [])
 

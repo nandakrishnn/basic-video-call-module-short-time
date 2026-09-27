@@ -20,6 +20,8 @@ interface VideoStageProps {
   counterpartName: string
   sessionType: string
   onCallEnded: () => void
+  /** The call dropped on its own  the caller offers a rejoin. */
+  onCallDropped: () => void
 }
 
 export const VideoStage = ({
@@ -31,6 +33,7 @@ export const VideoStage = ({
   counterpartName,
   sessionType,
   onCallEnded,
+  onCallDropped,
 }: VideoStageProps): JSX.Element => {
   const stageRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -56,8 +59,9 @@ export const VideoStage = ({
     isModerator,
     containerRef,
     onCallEnded,
+    onCallDropped,
   })
-  const { isFullscreen, toggleFullscreen } = useFullscreen(stageRef)
+  const { isFullscreen, toggleFullscreen, fallbackStyle } = useFullscreen(stageRef)
   const formattedTime = useCallTimer(isReady)
 
   return (
@@ -76,6 +80,8 @@ export const VideoStage = ({
         borderRadius: RADII.lg,
         boxShadow: SHADOWS.md,
         overflow: 'hidden',
+        // Covers the viewport where the Fullscreen API is unavailable.
+        ...fallbackStyle,
       }}
     >
       {/* Jitsi's own chat panel takes over the iframe's layout (full-screen on

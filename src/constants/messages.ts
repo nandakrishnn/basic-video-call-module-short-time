@@ -3,6 +3,7 @@
 export const MESSAGES = {
   support: {
     trigger: 'Chat with us',
+    callWarning: 'Calling leaves the video call  you can rejoin afterwards.',
     closeChat: 'Close chat',
     title: 'Need help?',
     chatWith: (name: string) => `Chat with ${name}`,
@@ -43,6 +44,10 @@ export const MESSAGES = {
     notYetActive: 'This session is not active yet.',
     waitingForPhysio: "Waiting for your physio to start the session — you'll be connected automatically.",
     checkAgain: 'Check again',
+    droppedOut: 'You left the video call. The session is still open  you can go back in.',
+    rejoinCall: 'Rejoin call',
+    endSessionInstead: 'End session instead',
+    leaveSession: 'Back to dashboard',
     poweredBy: 'Powered by Clinzor',
     readyTitle: 'Ready to join',
     deviceChecking: 'Checking your camera and microphone…',

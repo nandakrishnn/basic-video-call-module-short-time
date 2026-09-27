@@ -6,6 +6,7 @@ interface ControlBarProps {
   isMuted: boolean
   isCameraOff: boolean
   isFullscreen: boolean
+  /** Hidden where the browser cannot do it — notably iPhone Safari. */
   isSplitView: boolean
   onToggleAudio: () => void
   onToggleCamera: () => void

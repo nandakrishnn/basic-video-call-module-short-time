@@ -49,6 +49,8 @@ const SessionPage = (): JSX.Element => {
   const [patient, setPatient] = useState<User | null>(null)
   const [sessionType, setSessionType] = useState(DEFAULT_SESSION_TYPE)
   const [isCheckingAgain, setIsCheckingAgain] = useState(false)
+  /** The call dropped without anyone ending it — offer a way back in. */
+  const [hasDroppedOut, setHasDroppedOut] = useState(false)
 
   useEffect(() => {
     if (!sessionId) return
@@ -238,6 +240,30 @@ const SessionPage = (): JSX.Element => {
           <PostCallPatientPrompt onGoToDashboard={() => void router.push(ROUTES.dashboardPatient)} />
         ) : isEndingCall ? (
           <PageState tone="loading" message={MESSAGES.session.endingCall} />
+        ) : hasDroppedOut ? (
+          // The session is deliberately left untouched here: it is still
+          // active, so rejoining simply re-mounts the stage and walks back in.
+          <PageState
+            tone="neutral"
+            message={MESSAGES.session.droppedOut}
+            action={
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+                <Button variant="primary" onClick={() => setHasDroppedOut(false)}>
+                  {MESSAGES.session.rejoinCall}
+                </Button>
+                {/* A patient leaving must not end the session — the physio may
+                    still be in it — so they simply go back to their dashboard. */}
+                <Button
+                  variant="secondary"
+                  onClick={() =>
+                    isPhysio ? handleEndAndWriteNotes() : void router.push(ROUTES.dashboardPatient)
+                  }
+                >
+                  {isPhysio ? MESSAGES.session.endSessionInstead : MESSAGES.session.leaveSession}
+                </Button>
+              </div>
+            }
+          />
         ) : hasJoined ? (
           <VideoStage
             roomName={session.jitsiRoomName ?? session.roomName}
@@ -248,6 +274,7 @@ const SessionPage = (): JSX.Element => {
             counterpartName={counterpartLabel}
             sessionType={sessionSubtitle}
             onCallEnded={handleCallEnded}
+            onCallDropped={() => setHasDroppedOut(true)}
           />
         ) : (
           <PreCallScreen

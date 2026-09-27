@@ -158,6 +158,13 @@ export const TroubleshootButton = ({
               </span>
             </span>
           </a>
+
+          {/* On a phone this hands over to the dialer, which backgrounds the
+              browser and drops the video call. That is recoverable now, but it
+              should not come as a surprise. */}
+          <p style={{ color: COLORS.text.muted, fontSize: FONT_SIZES.xs, margin: 0, lineHeight: 1.5 }}>
+            {MESSAGES.support.callWarning}
+          </p>
         </div>
       )}
     </div>
