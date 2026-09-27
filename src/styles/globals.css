@@ -445,6 +445,41 @@ a {
   border-color: var(--color-border-strong);
 }
 
+/* Past notes, shown mid-call ----------------------------------------------- */
+
+.past-note {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+}
+
+.past-note-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  cursor: pointer;
+  list-style: none;
+}
+
+/* Safari draws its own disclosure triangle through the flex layout. */
+.past-note-summary::-webkit-details-marker {
+  display: none;
+}
+
+.past-note-summary::after {
+  content: '+';
+  color: var(--color-text-muted);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.past-note[open] > .past-note-summary::after {
+  content: '\2212';
+}
+
 /* Patient dashboard -------------------------------------------------------- */
 
 .dash-stat-row {

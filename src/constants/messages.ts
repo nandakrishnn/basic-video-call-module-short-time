@@ -44,6 +44,10 @@ export const MESSAGES = {
     notYetActive: 'This session is not active yet.',
     waitingForPhysio: "Waiting for your physio to start the session — you'll be connected automatically.",
     checkAgain: 'Check again',
+    pastNotesButton: 'Previous notes',
+    pastNotesTitle: 'Previous session notes',
+    pastNotesLoading: 'Loading previous notes&',
+    pastNotesEmpty: 'No earlier sessions have been written up yet.',
     droppedOut: 'You left the video call. The session is still open  you can go back in.',
     rejoinCall: 'Rejoin call',
     endSessionInstead: 'End session instead',
@@ -174,6 +178,7 @@ export const MESSAGES = {
   },
 
   common: {
+    close: 'Close',
     cancel: 'Cancel',
   },
 

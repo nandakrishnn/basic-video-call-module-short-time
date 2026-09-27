@@ -2,6 +2,7 @@ import { Mail, NotebookPen, PhoneOff, Phone as PhoneIcon } from 'lucide-react'
 import { Avatar } from '@/components/shared/Avatar'
 import { Button } from '@/components/shared/Button'
 import { Card } from '@/components/shared/Card'
+import { PastNotesButton } from '@/components/video/PastNotesButton'
 import { COLORS, FONT_SIZES, RADII } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
 import type { PatientSummary } from '@/types/user.types'
@@ -10,10 +11,14 @@ import { parseUtc } from '@/utils/date'
 interface PhysioSessionPanelProps {
   /** Joined from the patient list; absent until that request lands. */
   patient?: PatientSummary
+  /** The patient record id, for loading their earlier notes. */
+  patientId?: string
   patientAge: number | null
   sessionType: string
   scheduledAt: string
   actualStartAt: string | null
+  /** Excluded from the past-notes list — this call has none yet. */
+  currentSessionId?: string
   onQuickNote: () => void
   onEndCallAndWriteNotes: () => void
 }
@@ -54,10 +59,12 @@ const truncate = {
 
 export const PhysioSessionPanel = ({
   patient,
+  patientId,
   patientAge,
   sessionType,
   scheduledAt,
   actualStartAt,
+  currentSessionId,
   onQuickNote,
   onEndCallAndWriteNotes,
 }: PhysioSessionPanelProps): JSX.Element => {
@@ -172,6 +179,13 @@ export const PhysioSessionPanel = ({
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 'auto' }}>
+        {patientId && (
+          <PastNotesButton
+            patientId={patientId}
+            patientName={patient?.fullName ?? MESSAGES.session.rolePatient}
+            currentSessionId={currentSessionId}
+          />
+        )}
         <Button variant="secondary" onClick={onQuickNote} fullWidth>
           <NotebookPen size={16} />
           Quick Note

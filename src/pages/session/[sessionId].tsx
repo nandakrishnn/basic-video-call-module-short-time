@@ -291,6 +291,8 @@ const SessionPage = (): JSX.Element => {
           sessionType={sessionType}
           scheduledAt={session.startedAt ?? ''}
           actualStartAt={session.startedAt}
+          patientId={session.patientId}
+          currentSessionId={session.id}
           onQuickNote={() => setShowQuickNote(true)}
           onEndCallAndWriteNotes={handleEndAndWriteNotes}
         />
