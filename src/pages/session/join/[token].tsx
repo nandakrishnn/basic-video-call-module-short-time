@@ -15,6 +15,8 @@ import type { Session } from '@/types/session.types'
 import { setToken } from '@/utils/storage'
 
 type Step = 'choice' | 'identifier' | 'otp'
+/** Where the code takes them once verified. */
+type Destination = 'session' | 'dashboard'
 
 const JoinSessionPage = (): JSX.Element => {
   const router = useRouter()
@@ -22,6 +24,7 @@ const JoinSessionPage = (): JSX.Element => {
 
   const [session, setSession] = useState<Session | null>(null)
   const [step, setStep] = useState<Step>('choice')
+  const [destination, setDestination] = useState<Destination>('session')
   const [identifier, setIdentifier] = useState('')
   const [otp, setOtp] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -66,7 +69,7 @@ const JoinSessionPage = (): JSX.Element => {
     setIsSubmitting(false)
     if (res.success) {
       setToken(res.data.token)
-      void router.push(ROUTES.session(token))
+      void router.push(destination === 'dashboard' ? ROUTES.dashboardPatient : ROUTES.session(token))
     } else {
       setError(res.message)
     }
@@ -95,10 +98,14 @@ const JoinSessionPage = (): JSX.Element => {
         <Logo surface="light" size="md" />
         {step === 'choice' && (
           <JoinChoiceStep
-            onLogin={() =>
-              void router.push(`${ROUTES.login}?redirect=${encodeURIComponent(ROUTES.session(token ?? ''))}`)
-            }
-            onGuest={() => setStep('identifier')}
+            onJoinCall={() => {
+              setDestination('session')
+              setStep('identifier')
+            }}
+            onViewDashboard={() => {
+              setDestination('dashboard')
+              setStep('identifier')
+            }}
           />
         )}
         {step === 'identifier' && (

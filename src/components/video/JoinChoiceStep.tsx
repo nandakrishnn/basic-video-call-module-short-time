@@ -1,13 +1,20 @@
+import { LayoutDashboard, Video } from 'lucide-react'
 import { Button } from '@/components/shared/Button'
 import { COLORS } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
 
 interface JoinChoiceStepProps {
-  onLogin: () => void
-  onGuest: () => void
+  onJoinCall: () => void
+  onViewDashboard: () => void
 }
 
-export const JoinChoiceStep = ({ onLogin, onGuest }: JoinChoiceStepProps): JSX.Element => {
+/**
+ * Both routes verify the same way — a one-time code — so the choice is only
+ * where the patient lands. It used to offer "log in to your account", which
+ * sent them to the physio's email-and-password form; patients have no password,
+ * so that path could never work for them.
+ */
+export const JoinChoiceStep = ({ onJoinCall, onViewDashboard }: JoinChoiceStepProps): JSX.Element => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div>
@@ -18,11 +25,13 @@ export const JoinChoiceStep = ({ onLogin, onGuest }: JoinChoiceStepProps): JSX.E
           {MESSAGES.session.joinChoiceBody}
         </p>
       </div>
-      <Button variant="primary" fullWidth onClick={onLogin}>
-        {MESSAGES.session.loginOption}
+      <Button variant="primary" fullWidth onClick={onJoinCall}>
+        <Video size={16} />
+        {MESSAGES.session.joinCallOption}
       </Button>
-      <Button variant="secondary" fullWidth onClick={onGuest}>
-        {MESSAGES.session.guestOption}
+      <Button variant="secondary" fullWidth onClick={onViewDashboard}>
+        <LayoutDashboard size={16} />
+        {MESSAGES.session.dashboardOption}
       </Button>
     </div>
   )
