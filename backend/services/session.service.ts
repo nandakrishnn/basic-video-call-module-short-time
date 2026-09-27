@@ -1,7 +1,7 @@
 import { CONFIG } from '../constants/config'
-import { AuditAction } from '../constants/enums'
-import { linkAppointmentSession } from '../models/appointment.model'
-import { createSessionRecord } from '../models/session.model'
+import { AuditAction, SessionStatus } from '../constants/enums'
+import { findAppointmentById, linkAppointmentSession } from '../models/appointment.model'
+import { createSessionRecord, findSessionById } from '../models/session.model'
 import { findUserById } from '../models/user.model'
 import type { Session } from '../types/session.types'
 import { logAudit } from './audit.service'
@@ -31,6 +31,24 @@ export const createSessionForCall = async (params: {
   appointmentId?: string
 }): Promise<Session> => {
   const { patientId, physioId, appointmentId } = params
+
+  // Starting the same booking twice must not mint a second session. Pressing
+  // Start, going back without joining, then pressing Start again left an orphan
+  // record behind: it never began, so it surfaced in the patient's history as
+  // an extra numbered session with no notes, and pushed every later session's
+  // number up by one. A session that already finished is left alone — calling
+  // the same patient again is a genuinely new session.
+  if (appointmentId) {
+    const appointment = await findAppointmentById(appointmentId)
+    if (appointment?.sessionId) {
+      const existing = await findSessionById(appointment.sessionId)
+      const isReusable =
+        existing &&
+        existing.status !== SessionStatus.COMPLETED &&
+        existing.status !== SessionStatus.CANCELLED
+      if (isReusable) return existing
+    }
+  }
 
   const roomName = generateRoomName(physioId, patientId)
   const roomLink = generateRoomLink(roomName)
