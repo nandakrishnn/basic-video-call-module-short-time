@@ -77,7 +77,6 @@ const wrapEmailHtml = (bodyHtml: string): string => `
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:11.5px;color:${BRAND.faint};">
               <tr>
                 <td>YorPhysio &middot; Your Recovery Partner</td>
-                <td align="right">Powered by Clinzor</td>
               </tr>
             </table>
           </td>

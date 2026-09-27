@@ -238,7 +238,6 @@ export const buildHtml = (data: PdfReportData): string => {
 
     <div class="footer">
       <span>YorPhysio &middot; Your Recovery Partner</span>
-      <span>Powered by Clinzor</span>
     </div>
   </body>
 </html>`
