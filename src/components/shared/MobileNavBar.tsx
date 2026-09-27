@@ -1,4 +1,4 @@
-import { CalendarDays, LayoutDashboard, LogOut, Users } from 'lucide-react'
+import { LogOut } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
@@ -6,6 +6,7 @@ import type { ReactNode } from 'react'
 import { Avatar } from '@/components/shared/Avatar'
 import { Button } from '@/components/shared/Button'
 import { Modal } from '@/components/shared/Modal'
+import { loginRouteFor, navDestinationsFor } from '@/components/shared/navDestinations'
 import { COLORS, FONT_SIZES } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
 import { ROUTES } from '@/constants/routes'
@@ -45,30 +46,15 @@ export const MobileNavBar = (): JSX.Element => {
   const handleLogout = (): void => {
     setIsAccountOpen(false)
     logout()
-    void router.push(ROUTES.login)
+    void router.push(loginRouteFor(user?.role))
   }
 
   return (
     <>
       <nav className="mobile-nav" aria-label={MESSAGES.nav.dashboard}>
-        <Tab
-          icon={<LayoutDashboard size={20} />}
-          label={MESSAGES.nav.dashboard}
-          href={ROUTES.dashboardPhysio}
-          active={router.pathname === ROUTES.dashboardPhysio}
-        />
-        <Tab
-          icon={<CalendarDays size={20} />}
-          label={MESSAGES.appointments.bookingsNavLabel}
-          href={ROUTES.bookings}
-          active={router.pathname === ROUTES.bookings}
-        />
-        <Tab
-          icon={<Users size={20} />}
-          label={MESSAGES.patients.navLabel}
-          href={ROUTES.patients}
-          active={router.pathname === ROUTES.patients}
-        />
+        {navDestinationsFor(user?.role).map(({ icon, label, href }) => (
+          <Tab key={href} icon={icon} label={label} href={href} active={router.pathname === href} />
+        ))}
 
         {user && (
           <button

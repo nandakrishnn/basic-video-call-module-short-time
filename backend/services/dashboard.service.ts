@@ -1,3 +1,4 @@
+import { CONFIG } from '../constants/config'
 import { AppointmentStatus, SessionStatus } from '../constants/enums'
 import {
   countAppointmentsByPhysioInRange,
@@ -8,6 +9,7 @@ import {
 import { findSentNotesByPatient } from '../models/notes.model'
 import { findSessionsByPatient, findSessionsByPhysio } from '../models/session.model'
 import { findUserById, findUsersByRole } from '../models/user.model'
+import { getSignedPdfUrl } from '../services/storage.service'
 import type { User } from '../types/user.types'
 
 const SESSIONS_TREND_DAYS = 14
@@ -108,16 +110,25 @@ export const getPatientDashboard = async (patientId: string) => {
   const physios = await Promise.all(physioIds.map((id) => findUserById(id)))
   const physioNameById = new Map(physios.filter((p): p is User => p !== null).map((p) => [p.id, p.fullName]))
 
-  const pastCalls = completedSessions.map((session) => {
-    const report = reports.find((r) => r.sessionId === session.id) ?? null
-    return {
-      sessionId: session.id,
-      physioName: physioNameById.get(session.physioId) ?? 'Your physio',
-      startedAt: session.startedAt,
-      endedAt: session.endedAt,
-      report,
-    }
-  })
+  // pdf_url holds a path in a private bucket, so it is signed here rather than
+  // handed over raw — the patient's browser cannot read the bucket directly and
+  // an unsigned path opens nothing at all.
+  const pastCalls = await Promise.all(
+    completedSessions.map(async (session) => {
+      const report = reports.find((r) => r.sessionId === session.id) ?? null
+      const signedUrl = report
+        ? await getSignedPdfUrl(report.pdfUrl, CONFIG.reports.signedUrlMinutes * 60)
+        : null
+
+      return {
+        sessionId: session.id,
+        physioName: physioNameById.get(session.physioId) ?? 'Your physio',
+        startedAt: session.startedAt,
+        endedAt: session.endedAt,
+        report: report && signedUrl ? { ...report, pdfUrl: signedUrl } : null,
+      }
+    }),
+  )
 
   const totalMinutes = completedSessions.reduce((sum, session) => {
     if (!session.startedAt || !session.endedAt) return sum

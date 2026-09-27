@@ -5,8 +5,9 @@ import { MESSAGES } from '@/constants/messages'
 
 interface DashboardTopbarProps {
   fullName: string
-  query: string
-  onQueryChange: (value: string) => void
+  /** Omitted where there is nothing to search — the patient's own dashboard. */
+  query?: string
+  onQueryChange?: (value: string) => void
 }
 
 const greetingFor = (hour: number): string => {
@@ -35,13 +36,15 @@ export const DashboardTopbar = ({ fullName, query, onQueryChange }: DashboardTop
     </div>
 
     <div className="dash-topbar-actions">
-      <SearchInput
-        value={query}
-        onChange={onQueryChange}
-        placeholder={MESSAGES.dashboard.searchPlaceholder}
-        style={{ flex: '1 1 300px', maxWidth: 420 }}
-        pill
-      />
+      {onQueryChange && (
+        <SearchInput
+          value={query ?? ''}
+          onChange={onQueryChange}
+          placeholder={MESSAGES.dashboard.searchPlaceholder}
+          style={{ flex: '1 1 300px', maxWidth: 420 }}
+          pill
+        />
+      )}
       <Avatar name={fullName} size={44} />
     </div>
   </header>

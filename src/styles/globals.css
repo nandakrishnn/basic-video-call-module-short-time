@@ -445,6 +445,60 @@ a {
   border-color: var(--color-border-strong);
 }
 
+/* Patient dashboard -------------------------------------------------------- */
+
+.dash-stat-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.dash-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.patient-next-session {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.patient-session-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.patient-session-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.patient-session-row:first-child {
+  padding-top: 0;
+}
+
+@media (max-width: 560px) {
+  .patient-next-session,
+  .patient-session-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
 /* Time picker columns ------------------------------------------------------ */
 
 .time-column {

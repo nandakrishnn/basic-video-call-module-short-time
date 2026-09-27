@@ -1,4 +1,4 @@
-import { CalendarDays, LayoutDashboard, LogOut, Menu, Users, X } from 'lucide-react'
+import { LogOut, Menu, X } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
@@ -8,6 +8,7 @@ import { MobileNavBar } from '@/components/shared/MobileNavBar'
 import { Button } from '@/components/shared/Button'
 import { Logo } from '@/components/shared/Logo'
 import { Modal } from '@/components/shared/Modal'
+import { loginRouteFor, navDestinationsFor } from '@/components/shared/navDestinations'
 import { COLORS, FONT_SIZES, RADII } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
 import { ROUTES } from '@/constants/routes'
@@ -54,7 +55,7 @@ export const DashboardSidebar = (): JSX.Element => {
   const handleLogout = (): void => {
     setIsConfirmingLogout(false)
     logout()
-    void router.push(ROUTES.login)
+    void router.push(loginRouteFor(user?.role))
   }
 
   const closeDrawer = (): void => setIsOpen(false)
@@ -129,27 +130,16 @@ export const DashboardSidebar = (): JSX.Element => {
         </div>
 
         <nav style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
-          <NavItem
-            icon={<LayoutDashboard size={20} />}
-            label={MESSAGES.nav.dashboard}
-            href={ROUTES.dashboardPhysio}
-            active={router.pathname === ROUTES.dashboardPhysio}
-            onClick={closeDrawer}
-          />
-          <NavItem
-            icon={<CalendarDays size={20} />}
-            label={MESSAGES.appointments.bookingsNavLabel}
-            href={ROUTES.bookings}
-            active={router.pathname === ROUTES.bookings}
-            onClick={closeDrawer}
-          />
-          <NavItem
-            icon={<Users size={20} />}
-            label={MESSAGES.patients.navLabel}
-            href={ROUTES.patients}
-            active={router.pathname === ROUTES.patients}
-            onClick={closeDrawer}
-          />
+          {navDestinationsFor(user?.role).map(({ icon, label, href }) => (
+            <NavItem
+              key={href}
+              icon={icon}
+              label={label}
+              href={href}
+              active={router.pathname === href}
+              onClick={closeDrawer}
+            />
+          ))}
         </nav>
 
         {user && (
