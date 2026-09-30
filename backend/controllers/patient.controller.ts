@@ -7,7 +7,7 @@ import { findNotesBySessionIds } from '../models/notes.model'
 import { findSessionsByPatient } from '../models/session.model'
 import { createPatient, findUserById, findUsersByRole } from '../models/user.model'
 import { syncPatientToPhysioPlatform } from '../services/physioPlatformSync.service'
-import { sortSessionsOldestFirst } from '../services/session.service'
+import { getSessionNumber, sortSessionsOldestFirst } from '../services/session.service'
 import { getSignedPdfUrl } from '../services/storage.service'
 import type { CreatePatientInput } from '../types/user.types'
 import { successResponse } from '../utils/response'
@@ -42,7 +42,7 @@ export const getPatientHistory = async (req: Request, res: Response): Promise<vo
   // The ordering is shared with the report's numbering so the two agree.
   const oldestFirst = sortSessionsOldestFirst(sessions)
   const numbered = await Promise.all(
-    oldestFirst.map(async (session, index) => {
+    oldestFirst.map(async (session) => {
       const appointment = session.appointmentId ? appointmentById.get(session.appointmentId) : undefined
       const notes = notesBySession.get(session.id) ?? null
 
@@ -55,7 +55,7 @@ export const getPatientHistory = async (req: Request, res: Response): Promise<vo
 
       return {
         ...session,
-        sessionNumber: index + 1,
+        sessionNumber: getSessionNumber(sessions, session.id),
         sessionType: appointment?.sessionType ?? null,
         scheduledAt: appointment?.scheduledAt ?? null,
         notes: notes ? { ...notes, pdfUrl: signedPdfUrl } : null,

@@ -19,10 +19,19 @@ import { generateRoomLink, generateRoomName } from './jitsi.service'
 export const sortSessionsOldestFirst = (sessions: Session[]): Session[] =>
   [...sessions].sort((a, b) => a.createdAt.localeCompare(b.createdAt))
 
-/** Where a session falls in that history, counting the patient's first as 1. */
+/**
+ * Where a session falls in that history, counting the patient's first as 1.
+ *
+ * Only sessions that actually began are counted. A booking that was created
+ * but never started — a no-show, a cancellation, a session record left behind
+ * — is not something that happened to the patient, and counting it pushed
+ * their genuine first session up to "session 2". One that has not started yet
+ * takes the number it will have when it does.
+ */
 export const getSessionNumber = (sessions: Session[], sessionId: string): number => {
-  const index = sortSessionsOldestFirst(sessions).findIndex((session) => session.id === sessionId)
-  return index >= 0 ? index + 1 : 1
+  const held = sortSessionsOldestFirst(sessions).filter((session) => session.startedAt !== null)
+  const index = held.findIndex((session) => session.id === sessionId)
+  return index >= 0 ? index + 1 : held.length + 1
 }
 
 export const createSessionForCall = async (params: {
