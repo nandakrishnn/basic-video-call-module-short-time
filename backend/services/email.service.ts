@@ -181,7 +181,6 @@ interface AppointmentScheduledDetails {
   physioName: string
   scheduledAt: string
   sessionType: string
-  durationMinutes: number
 }
 
 export const sendAppointmentScheduledEmail = async (
@@ -200,7 +199,7 @@ export const sendAppointmentScheduledEmail = async (
     ${detailTable([
       { label: 'Date', value: escapeHtml(dateLabel) },
       { label: 'Time', value: escapeHtml(timeLabel) },
-      { label: 'Duration', value: `${details.durationMinutes} minutes` },
+      { label: 'Duration', value: CONFIG.session.durationLabel },
     ])}
     <p style="margin:0;">We'll email your join link shortly before it starts. Nothing to install.</p>
   `)
@@ -217,7 +216,7 @@ export const sendAppointmentScheduledEmail = async (
       '',
       `Date: ${dateLabel}`,
       `Time: ${timeLabel}`,
-      `Duration: ${details.durationMinutes} minutes`,
+      `Duration: ${CONFIG.session.durationLabel}`,
       '',
       "We'll email your join link shortly before it starts. Nothing to install.",
     ].join('\n'),
@@ -231,7 +230,6 @@ interface AppointmentRescheduledDetails {
   previousScheduledAt: string
   scheduledAt: string
   sessionType: string
-  durationMinutes: number
 }
 
 export const sendAppointmentRescheduledEmail = async (
@@ -264,7 +262,7 @@ export const sendAppointmentRescheduledEmail = async (
         value: `${escapeHtml(previous.dateLabel)}, ${escapeHtml(previous.timeLabel)}`,
         strike: true,
       },
-      { label: 'Duration', value: `${details.durationMinutes} minutes` },
+      { label: 'Duration', value: CONFIG.session.durationLabel },
     ])}
     <p style="margin:0;">No action needed — just join at the new time.</p>
   `)
@@ -281,7 +279,7 @@ export const sendAppointmentRescheduledEmail = async (
       '',
       `New time: ${next.dateLabel}, ${next.timeLabel}`,
       `Previously: ${previous.dateLabel}, ${previous.timeLabel}`,
-      `Duration: ${details.durationMinutes} minutes`,
+      `Duration: ${CONFIG.session.durationLabel}`,
       '',
       'No action needed — just join at the new time.',
     ].join('\n'),

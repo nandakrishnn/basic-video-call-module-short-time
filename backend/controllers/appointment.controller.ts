@@ -44,9 +44,7 @@ export const createAppointment = async (req: Request, res: Response): Promise<vo
         patientName: patient.fullName,
         physioName: physio?.fullName ?? 'your physio',
         scheduledAt: appointment.scheduledAt,
-        sessionType: appointment.sessionType,
-        durationMinutes: appointment.durationMinutes,
-      })
+        sessionType: appointment.sessionType,      })
     } catch (err) {
       // Appointment is already created — a failed notification email shouldn't fail the request.
       console.error('Failed to send appointment-scheduled email:', err)
@@ -101,9 +99,7 @@ export const updateAppointment = async (req: Request, res: Response): Promise<vo
           physioName: physio?.fullName ?? 'your physio',
           previousScheduledAt: existing.scheduledAt,
           scheduledAt: appointment.scheduledAt,
-          sessionType: appointment.sessionType,
-          durationMinutes: appointment.durationMinutes,
-        })
+          sessionType: appointment.sessionType,        })
       } catch (err) {
         // The booking is already moved — a failed notification must not fail the request.
         console.error('Failed to send reschedule email:', err)

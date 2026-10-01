@@ -23,6 +23,10 @@ export const CONFIG = {
   session: {
     defaultDurationMinutes: 30,
     joinWindowMinutesBeforeStart: 5,
+    // What the patient is told to expect. A range rather than the stored
+    // durationMinutes: nothing ends a call at a set time, so quoting an exact
+    // figure promised a precision the session does not have.
+    durationLabel: '45–60 minutes',
   },
 
   jitsi: {
