@@ -1,9 +1,8 @@
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Card } from '@/components/shared/Card'
 import { Logo } from '@/components/shared/Logo'
 import { PageState } from '@/components/shared/PageState'
-import { JoinChoiceStep } from '@/components/video/JoinChoiceStep'
 import { JoinIdentifierStep } from '@/components/video/JoinIdentifierStep'
 import { JoinOtpStep } from '@/components/video/JoinOtpStep'
 import { COLORS } from '@/constants/colors'
@@ -15,17 +14,14 @@ import type { Session } from '@/types/session.types'
 import { maskIdentifier } from '@/utils/mask'
 import { setToken } from '@/utils/storage'
 
-type Step = 'choice' | 'identifier' | 'otp'
-/** Where the code takes them once verified. */
-type Destination = 'session' | 'dashboard'
+type Step = 'identifier' | 'otp'
 
 const JoinSessionPage = (): JSX.Element => {
   const router = useRouter()
   const { token } = router.query as { token?: string }
 
   const [session, setSession] = useState<Session | null>(null)
-  const [step, setStep] = useState<Step>('choice')
-  const [destination, setDestination] = useState<Destination>('session')
+  const [step, setStep] = useState<Step>('identifier')
   const [identifier, setIdentifier] = useState('')
   const [otp, setOtp] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -43,19 +39,21 @@ const JoinSessionPage = (): JSX.Element => {
   }, [token])
 
   /**
-   * The join link already identifies the patient, so asking them to type the
-   * address we sent it to is a step that teaches us nothing. Where the session
-   * carries an identifier the code goes out immediately and they land on the
-   * input; only a session without one still asks.
+   * The link already identifies the patient, so the code goes out as soon as
+   * the session is known and they land on the input. Nothing was being asked
+   * on the way that we did not already have.
+   *
+   * Guarded by a ref rather than state: an effect can run twice for the same
+   * session and each run sends a real code, invalidating the one before it.
    */
-  const start = async (next: Destination): Promise<void> => {
-    setDestination(next)
-    if (!session?.patientIdentifierHint) {
-      setStep('identifier')
-      return
-    }
-    await handleRequestOtp(undefined)
-  }
+  const hasRequestedRef = useRef(false)
+  useEffect(() => {
+    if (!session?.patientIdentifierHint || hasRequestedRef.current) return
+    hasRequestedRef.current = true
+    void handleRequestOtp(undefined)
+    // handleRequestOtp is redefined every render and would re-send if watched
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.patientIdentifierHint])
 
   /** `value` is undefined on the join path — the server resolves who it is for. */
   const handleRequestOtp = async (value?: string): Promise<void> => {
@@ -88,7 +86,7 @@ const JoinSessionPage = (): JSX.Element => {
     setIsSubmitting(false)
     if (res.success) {
       setToken(res.data.token)
-      void router.push(destination === 'dashboard' ? ROUTES.dashboardPatient : ROUTES.session(token))
+      void router.push(ROUTES.session(token))
     } else {
       setError(res.message)
     }
@@ -115,13 +113,6 @@ const JoinSessionPage = (): JSX.Element => {
     >
       <Card elevation="md" style={{ width: '100%', maxWidth: 420, display: 'flex', flexDirection: 'column', gap: 24 }}>
         <Logo surface="light" size="md" />
-        {step === 'choice' && (
-          <JoinChoiceStep
-            onJoinCall={() => void start('session')}
-            onViewDashboard={() => void start('dashboard')}
-            isSubmitting={isSubmitting}
-          />
-        )}
         {step === 'identifier' && (
           <JoinIdentifierStep
             onSubmit={(v) => void handleRequestOtp(v)}
