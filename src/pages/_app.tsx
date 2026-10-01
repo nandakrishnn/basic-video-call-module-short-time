@@ -1,5 +1,6 @@
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
+import { ToastProvider } from '@/components/shared/Toast'
 import { inter } from '@/lib/font'
 import { MESSAGES } from '@/constants/messages'
 import '@/styles/globals.css'
@@ -14,9 +15,13 @@ const App = ({ Component, pageProps }: AppProps): JSX.Element => {
         <meta name="description" content={MESSAGES.app.description} />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      <div className={inter.className}>
-        <Component {...pageProps} />
-      </div>
+      {/* Above the router's page, so a toast raised just before navigating is
+          still on screen once the next page renders. */}
+      <ToastProvider>
+        <div className={inter.className}>
+          <Component {...pageProps} />
+        </div>
+      </ToastProvider>
     </>
   )
 }

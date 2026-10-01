@@ -2,6 +2,7 @@ import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { StructuredNotesEditor } from '@/components/notes/StructuredNotesEditor'
 import { SendToggle } from '@/components/notes/SendToggle'
+import { useToast } from '@/components/shared/Toast'
 import { Button } from '@/components/shared/Button'
 import { COLORS } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
@@ -16,11 +17,12 @@ import {
 import { EMPTY_NOTE_FIELDS, composeNotes, parseNotes, type NoteSectionKey } from '@/utils/notes'
 import { clearQuickNote, getQuickNote, getToken } from '@/utils/storage'
 
-type Step = 'raw' | 'send' | 'done'
+type Step = 'raw' | 'send'
 
 const NotesPage = (): JSX.Element => {
   const router = useRouter()
   const { sessionId } = router.query as { sessionId?: string }
+  const { showToast } = useToast()
 
   const [step, setStep] = useState<Step>('raw')
   const [fields, setFields] = useState(EMPTY_NOTE_FIELDS)
@@ -138,29 +140,16 @@ const NotesPage = (): JSX.Element => {
     const res = await sendNotesRequest(token, notesId, sendEnabled)
     setIsSubmitting(false)
 
-    if (res.success) setStep('done')
-    else setError(res.message)
-  }
+    if (!res.success) {
+      setError(res.message)
+      return
+    }
 
-  if (step === 'done') {
-    return (
-      <div
-        style={{
-          minHeight: '100vh',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 20,
-          background: COLORS.background,
-        }}
-      >
-        <p style={{ color: COLORS.status.success, fontWeight: 700, fontSize: '1.05rem', margin: 0 }}>Notes saved.</p>
-        <Button variant="primary" onClick={() => void router.push(ROUTES.dashboardPhysio)}>
-          Back to dashboard
-        </Button>
-      </div>
-    )
+    // The confirmation rides the toast provider, which sits above the router,
+    // so it survives this navigation — no page whose only job is to say it
+    // worked and offer a link onward.
+    showToast(sendEnabled ? MESSAGES.notes.sentToPatient : MESSAGES.notes.saved)
+    void router.push(ROUTES.dashboardPhysio)
   }
 
   return (

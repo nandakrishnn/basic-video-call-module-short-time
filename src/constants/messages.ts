@@ -81,6 +81,8 @@ export const MESSAGES = {
     enhanceFailed: 'Could not enhance notes. Please try again.',
     draftSaved: 'Draft saved',
     approved: 'Notes approved and saved.',
+    saved: 'Session notes saved.',
+    sentToPatient: 'Notes saved and report sent to the patient.',
     sendSuccess: 'Report sent to patient.',
     sendFailed: 'Could not send report. Please try again.',
   },
