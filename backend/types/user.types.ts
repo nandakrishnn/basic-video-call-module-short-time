@@ -26,12 +26,14 @@ export interface LoginInput {
 }
 
 export interface RequestOtpInput {
-  identifier: string
+  /** Omitted when sessionId is given — the server resolves it. */
+  identifier?: string
   sessionId?: string
 }
 
 export interface VerifyOtpInput {
-  identifier: string
+  /** Omitted when sessionId is given — the server resolves it. */
+  identifier?: string
   sessionId?: string
   otp: string
 }

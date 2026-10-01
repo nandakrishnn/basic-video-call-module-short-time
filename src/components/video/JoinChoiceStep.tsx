@@ -6,6 +6,8 @@ import { MESSAGES } from '@/constants/messages'
 interface JoinChoiceStepProps {
   onJoinCall: () => void
   onViewDashboard: () => void
+  /** Both buttons send the code, so both wait on it. */
+  isSubmitting: boolean
 }
 
 /**
@@ -14,7 +16,7 @@ interface JoinChoiceStepProps {
  * sent them to the physio's email-and-password form; patients have no password,
  * so that path could never work for them.
  */
-export const JoinChoiceStep = ({ onJoinCall, onViewDashboard }: JoinChoiceStepProps): JSX.Element => {
+export const JoinChoiceStep = ({ onJoinCall, onViewDashboard, isSubmitting }: JoinChoiceStepProps): JSX.Element => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div>
@@ -25,11 +27,11 @@ export const JoinChoiceStep = ({ onJoinCall, onViewDashboard }: JoinChoiceStepPr
           {MESSAGES.session.joinChoiceBody}
         </p>
       </div>
-      <Button variant="primary" fullWidth onClick={onJoinCall}>
+      <Button variant="primary" fullWidth isLoading={isSubmitting} onClick={onJoinCall}>
         <Video size={16} />
         {MESSAGES.session.joinCallOption}
       </Button>
-      <Button variant="secondary" fullWidth onClick={onViewDashboard}>
+      <Button variant="secondary" fullWidth disabled={isSubmitting} onClick={onViewDashboard}>
         <LayoutDashboard size={16} />
         {MESSAGES.session.dashboardOption}
       </Button>

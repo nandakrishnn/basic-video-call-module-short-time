@@ -12,6 +12,7 @@ import { ROUTES } from '@/constants/routes'
 import { requestPatientOtpRequest, verifyPatientOtpRequest } from '@/services/auth.service'
 import { getJoinTokenRequest } from '@/services/session.service'
 import type { Session } from '@/types/session.types'
+import { maskIdentifier } from '@/utils/mask'
 import { setToken } from '@/utils/storage'
 
 type Step = 'choice' | 'identifier' | 'otp'
@@ -41,9 +42,25 @@ const JoinSessionPage = (): JSX.Element => {
       .finally(() => setIsLoading(false))
   }, [token])
 
-  const handleRequestOtp = async (value: string): Promise<void> => {
+  /**
+   * The join link already identifies the patient, so asking them to type the
+   * address we sent it to is a step that teaches us nothing. Where the session
+   * carries an identifier the code goes out immediately and they land on the
+   * input; only a session without one still asks.
+   */
+  const start = async (next: Destination): Promise<void> => {
+    setDestination(next)
+    if (!session?.patientIdentifierHint) {
+      setStep('identifier')
+      return
+    }
+    await handleRequestOtp(undefined)
+  }
+
+  /** `value` is undefined on the join path — the server resolves who it is for. */
+  const handleRequestOtp = async (value?: string): Promise<void> => {
     if (!token) return
-    setIdentifier(value)
+    setIdentifier(value ?? '')
     setIsSubmitting(true)
     setError(null)
     const res = await requestPatientOtpRequest(value, token)
@@ -55,9 +72,11 @@ const JoinSessionPage = (): JSX.Element => {
   // Reuses the identifier already captured, so the patient never re-enters it.
   // Kept off isSubmitting so the resend spinner doesn't appear on Verify & Join.
   const handleResendOtp = async (): Promise<void> => {
-    if (!token || !identifier) return
+    if (!token) return
     setError(null)
-    const res = await requestPatientOtpRequest(identifier, token)
+    // Empty on the join path, where the session identifies the patient — and an
+    // empty string fails the schema's min(1), so it has to be dropped entirely.
+    const res = await requestPatientOtpRequest(identifier || undefined, token)
     if (!res.success) setError(res.message)
   }
 
@@ -65,7 +84,7 @@ const JoinSessionPage = (): JSX.Element => {
     if (!token) return
     setIsSubmitting(true)
     setError(null)
-    const res = await verifyPatientOtpRequest(identifier, otp, token)
+    const res = await verifyPatientOtpRequest(identifier || undefined, otp, token)
     setIsSubmitting(false)
     if (res.success) {
       setToken(res.data.token)
@@ -98,21 +117,15 @@ const JoinSessionPage = (): JSX.Element => {
         <Logo surface="light" size="md" />
         {step === 'choice' && (
           <JoinChoiceStep
-            onJoinCall={() => {
-              setDestination('session')
-              setStep('identifier')
-            }}
-            onViewDashboard={() => {
-              setDestination('dashboard')
-              setStep('identifier')
-            }}
+            onJoinCall={() => void start('session')}
+            onViewDashboard={() => void start('dashboard')}
+            isSubmitting={isSubmitting}
           />
         )}
         {step === 'identifier' && (
           <JoinIdentifierStep
             onSubmit={(v) => void handleRequestOtp(v)}
             isSubmitting={isSubmitting}
-            initialValue={session?.patientIdentifier ?? undefined}
           />
         )}
         {step === 'otp' && (
@@ -122,6 +135,7 @@ const JoinSessionPage = (): JSX.Element => {
             onSubmit={() => void handleVerifyOtp()}
             isSubmitting={isSubmitting}
             onResend={handleResendOtp}
+            sentTo={session?.patientIdentifierHint ?? (identifier ? maskIdentifier(identifier) : undefined)}
           />
         )}
         {error && <p style={{ color: COLORS.status.error, fontSize: '0.85rem', margin: 0 }}>{error}</p>}

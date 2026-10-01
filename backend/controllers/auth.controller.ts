@@ -9,6 +9,7 @@ import {
   findUserById,
   findUserByIdentifier,
 } from '../models/user.model'
+import { findSessionById } from '../models/session.model'
 import { syncPatientToPhysioPlatform } from '../services/physioPlatformSync.service'
 import type { LoginInput, RequestOtpInput, VerifyOtpInput } from '../types/user.types'
 import { compareValue } from '../utils/hash'
@@ -32,23 +33,45 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   res.status(200).json(successResponse({ token, user }, MESSAGES.auth.loginSuccess))
 }
 
+/**
+ * Who a code is for.
+ *
+ * With a session id the answer comes from the session's own patient record,
+ * not from the request: the join page no longer receives the patient's contact
+ * details, and a caller cannot redirect someone else's code by supplying an
+ * identifier of their own alongside a session they do not own.
+ */
+const resolveIdentifier = async (identifier?: string, sessionId?: string): Promise<string> => {
+  if (sessionId) {
+    const session = await findSessionById(sessionId)
+    const patient = session ? await findUserById(session.patientId) : null
+    const fromSession = patient?.phone ?? patient?.email
+    if (fromSession) return fromSession
+  }
+
+  if (!identifier) throw new AppError(MESSAGES.auth.userNotFound, 400, 'IDENTIFIER_REQUIRED')
+  return identifier
+}
+
 export const requestPatientOtp = async (req: Request, res: Response): Promise<void> => {
   const { identifier, sessionId } = req.body as RequestOtpInput
+  const resolved = await resolveIdentifier(identifier, sessionId)
 
-  const existingUser = await findUserByIdentifier(identifier)
-  await requestOtp(identifier, sessionId ?? null, existingUser?.id ?? null)
+  const existingUser = await findUserByIdentifier(resolved)
+  await requestOtp(resolved, sessionId ?? null, existingUser?.id ?? null)
 
   res.status(200).json(successResponse(null, MESSAGES.auth.otpSent))
 }
 
 export const verifyPatientOtp = async (req: Request, res: Response): Promise<void> => {
   const { identifier, sessionId, otp } = req.body as VerifyOtpInput
+  const resolved = await resolveIdentifier(identifier, sessionId)
 
-  let user = await findUserByIdentifier(identifier)
-  await verifyOtp(identifier, sessionId ?? null, otp, user?.id ?? null)
+  let user = await findUserByIdentifier(resolved)
+  await verifyOtp(resolved, sessionId ?? null, otp, user?.id ?? null)
 
   if (!user) {
-    user = await createPatientUser(identifier, identifier)
+    user = await createPatientUser(resolved, resolved)
     try {
       await syncPatientToPhysioPlatform(user)
     } catch (err) {

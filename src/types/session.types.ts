@@ -11,7 +11,8 @@ export interface Session {
   status: SessionStatus
   startedAt: string | null
   endedAt: string | null
-  patientIdentifier?: string | null
+  /** Masked — the full value never leaves the server. */
+  patientIdentifierHint?: string | null
   // Present when JaaS is configured server-side; null on the public demo server.
   jitsiJwt?: string | null
   jitsiRoomName?: string

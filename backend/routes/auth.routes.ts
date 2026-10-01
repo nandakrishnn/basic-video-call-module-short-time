@@ -10,16 +10,22 @@ const loginSchema = z.object({
   password: z.string().min(1),
 })
 
-const requestOtpSchema = z.object({
-  identifier: z.string().min(1),
-  sessionId: z.string().uuid().optional(),
-})
+// identifier is optional when a sessionId is given: the server resolves who
+// the code is for from the session, so the browser never handles it.
+const requestOtpSchema = z
+  .object({
+    identifier: z.string().min(1).optional(),
+    sessionId: z.string().uuid().optional(),
+  })
+  .refine((v) => v.identifier || v.sessionId, { message: 'identifier or sessionId is required' })
 
-const verifyOtpSchema = z.object({
-  identifier: z.string().min(1),
-  sessionId: z.string().uuid().optional(),
-  otp: z.string().length(4),
-})
+const verifyOtpSchema = z
+  .object({
+    identifier: z.string().min(1).optional(),
+    sessionId: z.string().uuid().optional(),
+    otp: z.string().length(4),
+  })
+  .refine((v) => v.identifier || v.sessionId, { message: 'identifier or sessionId is required' })
 
 const router = Router()
 

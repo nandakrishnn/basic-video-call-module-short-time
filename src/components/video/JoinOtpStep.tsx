@@ -10,6 +10,8 @@ interface JoinOtpStepProps {
   onOtpChange: (value: string) => void
   onSubmit: () => void
   isSubmitting: boolean
+  /** Masked phone or email the code went to, shown so they know where to look. */
+  sentTo?: string
   /** Sends a fresh code to the same identifier. */
   onResend: () => Promise<void>
 }
@@ -22,6 +24,7 @@ export const JoinOtpStep = ({
   onSubmit,
   isSubmitting,
   onResend,
+  sentTo,
 }: JoinOtpStepProps): JSX.Element => {
   const [deadline, setDeadline] = useState(() => Date.now() + cooldownMs)
   const [now, setNow] = useState(() => Date.now())
@@ -59,7 +62,7 @@ export const JoinOtpStep = ({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <p style={{ color: COLORS.text.secondary, fontSize: '0.9rem', margin: 0, lineHeight: 1.5 }}>
-        {MESSAGES.auth.otpSentBody}
+        {sentTo ? `${MESSAGES.auth.otpSentTo} ${sentTo}` : MESSAGES.auth.otpSentBody}
       </p>
       <OtpInput value={otp} onChange={onOtpChange} />
       <Button variant="primary" fullWidth disabled={otp.length === 0} isLoading={isSubmitting} onClick={onSubmit}>

@@ -8,6 +8,7 @@ import { logAudit } from '../services/audit.service'
 import { generateJitsiToken, getJitsiRoomPath } from '../services/jitsi.service'
 import { createSessionForCall } from '../services/session.service'
 import type { Session } from '../types/session.types'
+import { maskIdentifier } from '../utils/mask'
 import { successResponse } from '../utils/response'
 
 const withJitsiToken = async (session: Session, userId: string, role: UserRole) => {
@@ -89,10 +90,19 @@ export const getJoinToken = async (req: Request, res: Response): Promise<void> =
     throw new AppError(MESSAGES.session.joinTokenInvalid, 404, 'INVALID_JOIN_TOKEN')
   }
 
+  // This route is unauthenticated by necessity — the patient has not signed in
+  // yet — so it returns only enough of their contact details to recognise, not
+  // to harvest. The code is requested by session id, and the server resolves
+  // the real address itself.
   const patient = await findUserById(session.patientId)
-  const patientIdentifier = patient?.phone ?? patient?.email ?? null
+  const identifier = patient?.phone ?? patient?.email ?? null
 
-  res.status(200).json(successResponse({ ...session, patientIdentifier }, MESSAGES.session.joinTokenValid))
+  res.status(200).json(
+    successResponse(
+      { ...session, patientIdentifierHint: identifier ? maskIdentifier(identifier) : null },
+      MESSAGES.session.joinTokenValid,
+    ),
+  )
 }
 
 export const shareLog = async (req: Request, res: Response): Promise<void> => {

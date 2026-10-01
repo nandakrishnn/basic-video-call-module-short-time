@@ -18,6 +18,7 @@ export const MESSAGES = {
   auth: {
     otpSentTitle: 'OTP sent',
     otpSentBody: 'Enter the 4-digit code we sent to verify your identity.',
+    otpSentTo: 'Enter the 4-digit code we sent to',
     otpInvalid: 'That code is incorrect. Please try again.',
     otpExpired: 'This code has expired. Request a new one.',
     otpLocked: 'Too many attempts. Try again in 30 minutes.',
