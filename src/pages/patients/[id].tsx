@@ -2,6 +2,7 @@ import { ArrowLeft, Download, FileText, Mail, Phone } from 'lucide-react'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useState } from 'react'
 import { Avatar } from '@/components/shared/Avatar'
+import { PatientDetailSkeleton } from '@/components/patients/PatientDetailSkeleton'
 import { SessionReportActions } from '@/components/patients/SessionReportActions'
 import { Card } from '@/components/shared/Card'
 import { DashboardSidebar } from '@/components/shared/DashboardSidebar'
@@ -78,7 +79,7 @@ const PatientDetailPage = (): JSX.Element => {
     loadHistory()
   }, [loadHistory])
 
-  if (isLoading) return <PageState tone="loading" message="Loading…" />
+  if (isLoading) return <PatientDetailSkeleton />
   if (error || !history) return <PageState tone="error" message={error ?? MESSAGES.errors.generic} />
 
   const { patient, sessions } = history
