@@ -180,6 +180,7 @@ export const MESSAGES = {
 
   common: {
     close: 'Close',
+    save: 'Save',
     done: 'Done',
     cancel: 'Cancel',
   },
@@ -233,6 +234,10 @@ export const MESSAGES = {
     noSessions: 'No sessions with this patient yet.',
     noNotes: 'No notes were written for this session.',
     reportSent: 'Report sent',
+    sendReport: 'Send report',
+    editNotes: 'Edit notes',
+    editNotesTitle: 'Edit session notes',
+    editNotesResendHint: 'This report has already been sent — saving does not resend it.',
     downloadReport: 'Download report',
   },
 

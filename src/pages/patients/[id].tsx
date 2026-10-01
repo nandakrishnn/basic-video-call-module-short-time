@@ -1,7 +1,8 @@
 import { ArrowLeft, Download, FileText, Mail, Phone } from 'lucide-react'
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Avatar } from '@/components/shared/Avatar'
+import { SessionReportActions } from '@/components/patients/SessionReportActions'
 import { Card } from '@/components/shared/Card'
 import { DashboardSidebar } from '@/components/shared/DashboardSidebar'
 import { EmptyState } from '@/components/shared/EmptyState'
@@ -52,7 +53,9 @@ const PatientDetailPage = (): JSX.Element => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
+  // Named so the report actions below can pull the session list again after
+  // sending or editing, rather than leaving the page showing stale state.
+  const loadHistory = useCallback((): void => {
     if (!id) return
     const token = getToken()
     if (!token) {
@@ -67,7 +70,13 @@ const PatientDetailPage = (): JSX.Element => {
         else setError(res.message || MESSAGES.patients.loadFailed)
       })
       .finally(() => setIsLoading(false))
+    // router is stable for this purpose and would otherwise re-run the fetch
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
+
+  useEffect(() => {
+    loadHistory()
+  }, [loadHistory])
 
   if (isLoading) return <PageState tone="loading" message="Loading…" />
   if (error || !history) return <PageState tone="error" message={error ?? MESSAGES.errors.generic} />
@@ -268,6 +277,17 @@ const PatientDetailPage = (): JSX.Element => {
                             <Download size={15} />
                             {MESSAGES.patients.downloadReport}
                           </a>
+                        )}
+
+                        {/* Declining to send at the end of the call left the
+                            notes written but unsendable — this is the way back. */}
+                        {session.notes && (
+                          <SessionReportActions
+                            notesId={session.notes.id}
+                            notesText={session.notes.enhancedNotes ?? session.notes.rawNotes}
+                            isSentToPatient={session.notes.isSentToPatient}
+                            onChanged={loadHistory}
+                          />
                         )}
 
                         <StatusBadge status={session.status} />
