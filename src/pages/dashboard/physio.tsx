@@ -12,6 +12,7 @@ import { Card } from '@/components/shared/Card'
 import { DashboardSidebar } from '@/components/shared/DashboardSidebar'
 import { DatePicker } from '@/components/shared/DatePicker'
 import { SelectMenu } from '@/components/shared/SelectMenu'
+import { useToast } from '@/components/shared/Toast'
 import { COLORS, FONT_SIZES } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
 import { ROUTES } from '@/constants/routes'
@@ -26,6 +27,7 @@ import type { PatientSummary, User } from '@/types/user.types'
 import { isUpcoming, matchesFilter, sortByScheduledAt } from '@/utils/appointment'
 import type { BookingFilter } from '@/utils/appointment'
 import { parseUtc } from '@/utils/date'
+import { shouldAnnouncePendingReports } from '@/utils/pendingReportsNotice'
 import { getToken } from '@/utils/storage'
 
 type RangeTab = 'today' | 'week' | 'month'
@@ -91,6 +93,7 @@ const PhysioDashboardPage = (): JSX.Element => {
   /** Only for the pending-reports bell; the lists below come from their own fetches. */
   const [pendingReports, setPendingReports] = useState<PendingReport[]>([])
   const token = getToken()
+  const { showToast } = useToast()
 
   const loadAppointments = useCallback((): void => {
     const token = getToken()
@@ -111,7 +114,15 @@ const PhysioDashboardPage = (): JSX.Element => {
     const token = getToken()
     if (!token || !user) return
     getPhysioDashboardRequest(token).then((res) => {
-      if (res.success) setPendingReports(res.data.pendingReports)
+      if (!res.success) return
+      setPendingReports(res.data.pendingReports)
+
+      // Once per browser session, and again only when the number has grown.
+      // The bell carries the count the rest of the time.
+      const count = res.data.pendingReports.length
+      if (shouldAnnouncePendingReports(count)) {
+        showToast(MESSAGES.dashboard.pendingReportsNotice(count))
+      }
     })
   }, [user])
 

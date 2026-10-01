@@ -175,6 +175,10 @@ export const MESSAGES = {
     typeNewPatient: 'New patient',
     typeFollowUp: 'Follow up',
     noIssueRecorded: 'Not recorded',
+    pendingReportsNotice: (count: number): string =>
+      count === 1
+        ? 'One session is still waiting for its report.'
+        : `${count} sessions are still waiting for their reports.`,
     pendingReportsTitle: 'Reports pending',
     pendingReportsBody: 'Sessions that happened but whose report has not reached the patient.',
     pendingReportsEmpty: 'Every session has been written up and sent.',
