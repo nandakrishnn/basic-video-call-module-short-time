@@ -120,11 +120,20 @@ export const getPatientDashboard = async (patientId: string) => {
   const isOpen = (a: (typeof appointments)[number]): boolean =>
     a.status === AppointmentStatus.SCHEDULED && !(a.sessionId && finishedSessionIds.has(a.sessionId))
 
+  // An overdue booking stops being shown once it is clearly not happening —
+  // without a bound, a no-show the physio never marked complete would keep
+  // offering a join button for ever.
+  const overdueCutoff = new Date(
+    Date.now() - CONFIG.session.overdueVisibleHours * 60 * 60 * 1000,
+  ).toISOString()
+
   // Ordered by scheduled_at ascending, so the soonest still to come wins; with
-  // none ahead, the latest overdue one is what the patient is waiting on.
+  // none ahead, the latest recently-overdue one is what the patient is waiting on.
   const open = appointments.filter(isOpen)
   const nextAppointment =
-    open.find((a) => a.scheduledAt > now) ?? open.filter((a) => a.scheduledAt <= now).pop() ?? null
+    open.find((a) => a.scheduledAt > now) ??
+    open.filter((a) => a.scheduledAt <= now && a.scheduledAt >= overdueCutoff).pop() ??
+    null
 
   const notes = await findNotesBySessionIds(completedSessions.map((s) => s.id))
   const notesBySession = new Map(notes.map((note) => [note.sessionId, note]))

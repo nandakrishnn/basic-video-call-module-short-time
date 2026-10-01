@@ -27,6 +27,11 @@ export const CONFIG = {
     // durationMinutes: nothing ends a call at a set time, so quoting an exact
     // figure promised a precision the session does not have.
     durationLabel: '45–60 minutes',
+    // How long a booking the physio never started keeps offering itself to the
+    // patient. Long enough to cover a session that ran late or was forgotten
+    // to be marked complete; short enough that a no-show from this morning is
+    // not still showing a join button tonight.
+    overdueVisibleHours: 5,
   },
 
   jitsi: {
