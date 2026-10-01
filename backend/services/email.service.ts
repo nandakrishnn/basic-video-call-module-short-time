@@ -108,12 +108,12 @@ const formatSlot = (isoLike: string): { dateLabel: string; timeLabel: string } =
 
 /** Label-left / value-right rows. `strike` renders a superseded value. */
 const detailTable = (rows: { label: string; value: string; strike?: boolean }[]): string => `
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0 18px;font-size:13.5px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;table-layout:fixed;margin:16px 0 18px;font-size:13.5px;">
       ${rows
         .map(
           ({ label, value, strike }) => `<tr>
-        <td style="color:${BRAND.muted};padding:7px 0;border-bottom:1px solid ${BRAND.hairline};">${label}</td>
-        <td align="right" style="padding:7px 0;border-bottom:1px solid ${BRAND.hairline};${
+        <td width="40%" align="left" style="width:40%;color:${BRAND.muted};padding:7px 0;border-bottom:1px solid ${BRAND.hairline};text-align:left;">${label}</td>
+        <td width="60%" align="right" style="width:60%;padding:7px 0;border-bottom:1px solid ${BRAND.hairline};text-align:right;${
           strike ? `color:${BRAND.faint};text-decoration:line-through;` : 'font-weight:bold;'
         }">${value}</td>
       </tr>`,
