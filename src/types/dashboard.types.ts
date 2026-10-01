@@ -17,6 +17,7 @@ export interface PhysioDashboardData {
     sessionsThisMonth: number
   }
   sessionsTrend: { date: string; count: number }[]
+  pendingReports: PendingReport[]
 }
 
 export interface PastCall {
@@ -29,6 +30,15 @@ export interface PastCall {
   /** Present only once the physio has sent this session's report. */
   notes: string | null
   report: { id: string; pdfUrl: string; sentAt: string } | null
+}
+
+export interface PendingReport {
+  sessionId: string
+  patientId: string
+  patientName: string
+  heldAt: string
+  /** False when the write-up was skipped entirely. */
+  hasNotes: boolean
 }
 
 export interface PatientDashboardData {

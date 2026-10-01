@@ -1,13 +1,17 @@
+import { PendingReportsButton } from '@/components/dashboard/PendingReportsButton'
 import { Avatar } from '@/components/shared/Avatar'
 import { SearchInput } from '@/components/shared/SearchInput'
 import { COLORS, FONT_SIZES } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
+import type { PendingReport } from '@/types/dashboard.types'
 
 interface DashboardTopbarProps {
   fullName: string
   /** Omitted where there is nothing to search — the patient's own dashboard. */
   query?: string
   onQueryChange?: (value: string) => void
+  /** Omitted on the patient dashboard, which has no reports to chase. */
+  pendingReports?: PendingReport[]
 }
 
 const greetingFor = (hour: number): string => {
@@ -16,7 +20,7 @@ const greetingFor = (hour: number): string => {
   return MESSAGES.dashboard.greetingEvening
 }
 
-export const DashboardTopbar = ({ fullName, query, onQueryChange }: DashboardTopbarProps): JSX.Element => (
+export const DashboardTopbar = ({ fullName, query, onQueryChange, pendingReports }: DashboardTopbarProps): JSX.Element => (
   <header className="dash-topbar">
     <div style={{ minWidth: 0 }}>
       <p style={{ color: COLORS.text.secondary, fontSize: FONT_SIZES.md, margin: 0 }}>
@@ -45,6 +49,7 @@ export const DashboardTopbar = ({ fullName, query, onQueryChange }: DashboardTop
           pill
         />
       )}
+      {pendingReports && <PendingReportsButton reports={pendingReports} />}
       <Avatar name={fullName} size={44} />
     </div>
   </header>

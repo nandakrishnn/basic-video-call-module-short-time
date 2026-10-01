@@ -1,4 +1,5 @@
-import { ArrowLeft, ChevronDown, Download, FileText, Mail, Phone } from 'lucide-react'
+import { ArrowLeft, ChevronDown, Download, FileText, Mail, PencilLine, Phone } from 'lucide-react'
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useState } from 'react'
 import { Avatar } from '@/components/shared/Avatar'
@@ -282,13 +283,23 @@ const PatientDetailPage = (): JSX.Element => {
 
                         {/* Declining to send at the end of the call left the
                             notes written but unsendable — this is the way back. */}
-                        {session.notes && (
+                        {session.notes ? (
                           <SessionReportActions
                             notesId={session.notes.id}
                             notesText={session.notes.enhancedNotes ?? session.notes.rawNotes}
                             isSentToPatient={session.notes.isSentToPatient}
                             onChanged={loadHistory}
                           />
+                        ) : (
+                          // Skipping the write-up at the end of a call used to be
+                          // final: with no notes record there was nothing to send
+                          // or edit, and no way back into writing them.
+                          session.status === 'completed' && (
+                            <Link href={ROUTES.sessionNotes(session.id)} className="table-action-link">
+                              <PencilLine size={15} />
+                              {MESSAGES.patients.writeNotes}
+                            </Link>
+                          )
                         )}
 
                         <StatusBadge status={session.status} />

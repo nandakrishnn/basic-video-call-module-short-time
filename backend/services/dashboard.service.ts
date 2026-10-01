@@ -84,6 +84,31 @@ export const getPhysioDashboard = async (physioId: string) => {
   const completedSessions = allSessions.filter((s) => s.status === SessionStatus.COMPLETED)
   const sessionsTrend = buildSessionsTrend(completedSessions)
 
+  // Sessions that happened but whose report never reached the patient — either
+  // the write-up was skipped, or it was written and the send declined. Nothing
+  // surfaced these, so they were only found by remembering they existed.
+  const completedNotes = await findNotesBySessionIds(completedSessions.map((s) => s.id))
+  const notesByCompletedSession = new Map(completedNotes.map((note) => [note.sessionId, note]))
+
+  const outstanding = completedSessions
+    .filter((session) => !notesByCompletedSession.get(session.id)?.isSentToPatient)
+    .sort((a, b) => (b.startedAt ?? b.createdAt).localeCompare(a.startedAt ?? a.createdAt))
+
+  const outstandingPatients = await Promise.all(
+    Array.from(new Set(outstanding.map((s) => s.patientId))).map((id) => findUserById(id)),
+  )
+  const outstandingNameById = new Map(
+    outstandingPatients.filter((p): p is User => p !== null).map((p) => [p.id, p.fullName]),
+  )
+
+  const pendingReports = outstanding.map((session) => ({
+    sessionId: session.id,
+    patientId: session.patientId,
+    patientName: outstandingNameById.get(session.patientId) ?? 'Patient',
+    heldAt: session.startedAt ?? session.createdAt,
+    hasNotes: Boolean(notesByCompletedSession.get(session.id)),
+  }))
+
   const recentPatients = recentPatientUsers
     .filter((p): p is User => p !== null)
     .map((p) => ({ id: p.id, fullName: p.fullName, email: p.email, phone: p.phone }))
@@ -94,6 +119,7 @@ export const getPhysioDashboard = async (physioId: string) => {
     recentPatients,
     stats: { sessionsToday, sessionsThisWeek, sessionsThisMonth },
     sessionsTrend,
+    pendingReports,
   }
 }
 

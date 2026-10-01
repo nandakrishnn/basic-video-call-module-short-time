@@ -17,9 +17,11 @@ import { MESSAGES } from '@/constants/messages'
 import { ROUTES } from '@/constants/routes'
 import { useAuth } from '@/hooks/useAuth'
 import { getAppointmentsByPhysioRequest } from '@/services/appointment.service'
+import { getPhysioDashboardRequest } from '@/services/dashboard.service'
 import { listPatientsRequest } from '@/services/patient.service'
 import { createSessionRequest } from '@/services/session.service'
 import type { Appointment } from '@/types/appointment.types'
+import type { PendingReport } from '@/types/dashboard.types'
 import type { PatientSummary, User } from '@/types/user.types'
 import { isUpcoming, matchesFilter, sortByScheduledAt } from '@/utils/appointment'
 import type { BookingFilter } from '@/utils/appointment'
@@ -86,6 +88,8 @@ const PhysioDashboardPage = (): JSX.Element => {
   const [reschedulingAppointment, setReschedulingAppointment] = useState<Appointment | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  /** Only for the pending-reports bell; the lists below come from their own fetches. */
+  const [pendingReports, setPendingReports] = useState<PendingReport[]>([])
   const token = getToken()
 
   const loadAppointments = useCallback((): void => {
@@ -102,6 +106,14 @@ const PhysioDashboardPage = (): JSX.Element => {
   useEffect(() => {
     loadAppointments()
   }, [loadAppointments])
+
+  useEffect(() => {
+    const token = getToken()
+    if (!token || !user) return
+    getPhysioDashboardRequest(token).then((res) => {
+      if (res.success) setPendingReports(res.data.pendingReports)
+    })
+  }, [user])
 
   // loadAppointments bails without clearing isLoading when there is no signed-in
   // user, so without this the page would sit on its skeleton forever. Once auth
@@ -209,7 +221,12 @@ const PhysioDashboardPage = (): JSX.Element => {
           gap: 22,
         }}
       >
-        <DashboardTopbar fullName={user?.fullName ?? 'Doctor'} query={query} onQueryChange={setQuery} />
+        <DashboardTopbar
+          fullName={user?.fullName ?? 'Doctor'}
+          query={query}
+          onQueryChange={setQuery}
+          pendingReports={pendingReports}
+        />
 
         <HeroBanner />
 
