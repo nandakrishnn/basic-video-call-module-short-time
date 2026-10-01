@@ -1,4 +1,4 @@
-import { ArrowLeft, Download, FileText, Mail, Phone } from 'lucide-react'
+import { ArrowLeft, ChevronDown, Download, FileText, Mail, Phone } from 'lucide-react'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useState } from 'react'
 import { Avatar } from '@/components/shared/Avatar'
@@ -203,7 +203,7 @@ const PatientDetailPage = (): JSX.Element => {
             <EmptyState message={MESSAGES.patients.noSessions} />
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {sessions.map((session) => {
+              {sessions.map((session, index) => {
                 // Prefer the approved text; fall back to the raw draft so a
                 // session written up but never approved still shows its notes.
                 const body = session.notes?.enhancedNotes?.trim() || session.notes?.rawNotes?.trim()
@@ -296,20 +296,30 @@ const PatientDetailPage = (): JSX.Element => {
                     </div>
 
                     {body ? (
-                      <div
-                        style={{
-                          padding: 16,
-                          borderRadius: RADII.md,
-                          background: COLORS.primarySofter,
-                          border: `1px solid ${COLORS.border}`,
-                          color: COLORS.text.primary,
-                          fontSize: FONT_SIZES.base,
-                          lineHeight: 1.7,
-                          whiteSpace: 'pre-wrap',
-                        }}
-                      >
-                        {body}
-                      </div>
+                      // Collapsible, because five headings per session turns a
+                      // few sessions into a page of scrolling. The newest opens,
+                      // since that is the one being looked for.
+                      <details className="session-notes" open={index === 0}>
+                        <summary className="session-notes-summary">
+                          <ChevronDown size={16} className="session-notes-chevron" />
+                          {MESSAGES.patients.sessionNotesLabel}
+                        </summary>
+                        <div
+                          style={{
+                            marginTop: 12,
+                            padding: 16,
+                            borderRadius: RADII.md,
+                            background: COLORS.primarySofter,
+                            border: `1px solid ${COLORS.border}`,
+                            color: COLORS.text.primary,
+                            fontSize: FONT_SIZES.base,
+                            lineHeight: 1.7,
+                            whiteSpace: 'pre-wrap',
+                          }}
+                        >
+                          {body}
+                        </div>
+                      </details>
                     ) : (
                       <p
                         style={{

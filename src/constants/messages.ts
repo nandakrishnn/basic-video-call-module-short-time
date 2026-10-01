@@ -230,6 +230,7 @@ export const MESSAGES = {
     loadFailed: 'Could not load patients. Please try again.',
     backToList: 'All patients',
     sessionHistory: 'Session history',
+    sessionNotesLabel: 'Session notes',
     sessionLabel: 'Session',
     sessionCountOne: '1 session recorded.',
     sessionCountMany: (n: number) => `${n} sessions recorded.`,

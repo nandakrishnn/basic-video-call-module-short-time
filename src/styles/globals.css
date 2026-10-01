@@ -445,6 +445,45 @@ a {
   border-color: var(--color-border-strong);
 }
 
+/* Collapsible session notes on the patient page ---------------------------- */
+
+.session-notes-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 0;
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+/* Safari draws its own disclosure triangle through the flex layout. */
+.session-notes-summary::-webkit-details-marker {
+  display: none;
+}
+
+.session-notes-summary:hover {
+  color: var(--color-primary-strong);
+}
+
+.session-notes-chevron {
+  flex-shrink: 0;
+  transition: transform 160ms ease;
+}
+
+.session-notes[open] > .session-notes-summary .session-notes-chevron {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .session-notes-chevron {
+    transition: none;
+  }
+}
+
 /* A link that sits beside buttons in a table's action column, so it has to
    match the secondary button rather than look like body text. */
 .table-action-link {
