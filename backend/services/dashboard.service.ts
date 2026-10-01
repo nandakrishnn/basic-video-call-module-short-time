@@ -113,13 +113,18 @@ export const getPatientDashboard = async (patientId: string) => {
       .map((s) => s.id),
   )
 
+  // A booking the patient can still act on: not yet completed by the physio,
+  // and not already held. The slot time is deliberately not a cut-off — it was,
+  // and a session the physio started late vanished from the patient's dashboard
+  // the moment its scheduled minute passed, taking the join button with it.
+  const isOpen = (a: (typeof appointments)[number]): boolean =>
+    a.status === AppointmentStatus.SCHEDULED && !(a.sessionId && finishedSessionIds.has(a.sessionId))
+
+  // Ordered by scheduled_at ascending, so the soonest still to come wins; with
+  // none ahead, the latest overdue one is what the patient is waiting on.
+  const open = appointments.filter(isOpen)
   const nextAppointment =
-    appointments.find(
-      (a) =>
-        a.scheduledAt > now &&
-        a.status === AppointmentStatus.SCHEDULED &&
-        !(a.sessionId && finishedSessionIds.has(a.sessionId)),
-    ) ?? null
+    open.find((a) => a.scheduledAt > now) ?? open.filter((a) => a.scheduledAt <= now).pop() ?? null
 
   const notes = await findNotesBySessionIds(completedSessions.map((s) => s.id))
   const notesBySession = new Map(notes.map((note) => [note.sessionId, note]))
