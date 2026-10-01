@@ -7,4 +7,4 @@ export const resend = new Resend(process.env.RESEND_API_KEY)
 // that domain verified in Resend — an unverified sender is rejected outright
 // rather than delivered from somewhere else.
 export const EMAIL_FROM = process.env.EMAIL_FROM ?? 'YorPhysio <noreply@yorphysio.com>'
-export const EMAIL_REPLY_TO = process.env.EMAIL_REPLY_TO ?? 'yorphysio@gmail.com'
+export const EMAIL_REPLY_TO = process.env.EMAIL_REPLY_TO ?? 'contact@yorphysio.com'
