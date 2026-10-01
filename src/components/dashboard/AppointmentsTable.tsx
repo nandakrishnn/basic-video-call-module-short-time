@@ -1,10 +1,12 @@
-import { CalendarClock, Video } from 'lucide-react'
+import { CalendarClock, FileText, Video } from 'lucide-react'
+import Link from 'next/link'
 import { Avatar } from '@/components/shared/Avatar'
 import { Button } from '@/components/shared/Button'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { COLORS, FONT_SIZES } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
+import { ROUTES } from '@/constants/routes'
 import type { Appointment } from '@/types/appointment.types'
 import type { PatientSummary } from '@/types/user.types'
 import { canReschedule, canStartCall, deriveStatus } from '@/utils/appointment'
@@ -141,6 +143,16 @@ export const AppointmentsTable = ({
                         <Video size={15} />
                         {MESSAGES.dashboard.joinCall}
                       </Button>
+                    )}
+
+                    {/* A finished booking had nothing in this column. Its notes
+                        and report live on the patient's page, so that is where
+                        the row leads. */}
+                    {appointment.status === 'completed' && (
+                      <Link href={ROUTES.patientDetail(appointment.patientId)} className="table-action-link">
+                        <FileText size={15} />
+                        {MESSAGES.appointments.viewRecordAction}
+                      </Link>
                     )}
 
                   </div>

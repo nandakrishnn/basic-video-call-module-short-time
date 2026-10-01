@@ -100,6 +100,7 @@ export const MESSAGES = {
     completeAction: 'Yes, completed',
     completeNotYet: 'Not yet',
     completeFailed: 'Could not update the booking. Please try again.',
+    viewRecordAction: 'View record',
     rescheduleAction: 'Reschedule',
     rescheduleTitle: 'Reschedule booking',
     rescheduleSubtitle: 'Pick a new date and time. The patient is notified of the change.',

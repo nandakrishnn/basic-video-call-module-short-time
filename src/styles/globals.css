@@ -445,6 +445,28 @@ a {
   border-color: var(--color-border-strong);
 }
 
+/* A link that sits beside buttons in a table's action column, so it has to
+   match the secondary button rather than look like body text. */
+.table-action-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.table-action-link:hover {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-alt);
+}
+
 /* Past notes, shown mid-call ----------------------------------------------- */
 
 .past-note {
