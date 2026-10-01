@@ -2,6 +2,7 @@ import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { COLORS, FONT_SIZES, RADII, SHADOWS } from '@/constants/colors'
 import { useDismissOnOutside } from '@/hooks/useDismissOnOutside'
+import { swallowNextClick } from '@/utils/click'
 
 interface DatePickerProps {
   /** ISO calendar date, "YYYY-MM-DD" — the same shape a native date input emits. */
@@ -171,6 +172,7 @@ export const DatePicker = ({ value, onChange, placeholder = 'Pick a date', min, 
                     onClick={() => {
                       onChange(key)
                       setIsOpen(false)
+                      swallowNextClick()
                     }}
                     className={`date-cell${isSelected ? ' selected' : ''}${isToday ? ' today' : ''}`}
                     style={{ opacity: isOtherMonth && !isSelected ? 0.35 : 1 }}
@@ -186,6 +188,7 @@ export const DatePicker = ({ value, onChange, placeholder = 'Pick a date', min, 
               onClick={() => {
                 onChange(todayKey)
                 setIsOpen(false)
+                swallowNextClick()
               }}
               className="date-today-button"
             >

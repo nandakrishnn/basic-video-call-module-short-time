@@ -2,6 +2,7 @@ import { Clock } from 'lucide-react'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { COLORS, RADII, SHADOWS } from '@/constants/colors'
 import { useDismissOnOutside } from '@/hooks/useDismissOnOutside'
+import { swallowNextClick } from '@/utils/click'
 import { MESSAGES } from '@/constants/messages'
 
 interface TimePickerProps {
@@ -80,7 +81,10 @@ export const TimePicker = ({ value, onChange, placeholder = 'Pick a time', ariaL
 
     const picked = { ...pickedRef.current, ...Object.fromEntries(Object.keys(next).map((k) => [k, true])) }
     pickedRef.current = picked
-    if (picked.hour && picked.minute && picked.period) setIsOpen(false)
+    if (picked.hour && picked.minute && picked.period) {
+      setIsOpen(false)
+      swallowNextClick()
+    }
   }
 
   const cell = (label: string, selected: boolean, onClick: () => void) => (
@@ -150,7 +154,14 @@ export const TimePicker = ({ value, onChange, placeholder = 'Pick a time', ariaL
               </div>
             </div>
 
-            <button type="button" onClick={() => setIsOpen(false)} className="time-done-button">
+            <button
+              type="button"
+              onClick={() => {
+                setIsOpen(false)
+                swallowNextClick()
+              }}
+              className="time-done-button"
+            >
               {MESSAGES.common.done}
             </button>
           </div>

@@ -2,6 +2,7 @@ import { Check, ChevronDown } from 'lucide-react'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { COLORS, FONT_SIZES, RADII, SHADOWS } from '@/constants/colors'
 import { useDismissOnOutside } from '@/hooks/useDismissOnOutside'
+import { swallowNextClick } from '@/utils/click'
 
 export interface SelectMenuOption<T extends string> {
   value: T
@@ -132,6 +133,9 @@ export const SelectMenu = <T extends string>({
                   onClick={() => {
                     onChange(option.value)
                     setIsOpen(false)
+                    // Stops a double-click's second click reaching whatever
+                    // the closing list uncovers.
+                    swallowNextClick()
                   }}
                   className={`select-option${isSelected ? ' selected' : ''}`}
                 >
