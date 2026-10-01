@@ -174,12 +174,12 @@ const SessionPage = (): JSX.Element => {
     })
   }
 
-  // The physio sees the patient; the patient sees their physio. Falls back to a
-  // role word until the join lands, rather than the literal "Patient" this
-  // screen used to show both sides.
+  // The physio sees who they are treating; the patient sees the brand. Naming
+  // the physio here would mean joining that name server-side for a patient,
+  // and it is not something they need on this screen.
   const counterpartLabel = isPhysio
     ? (patient?.fullName ?? MESSAGES.session.rolePatient)
-    : MESSAGES.session.rolePhysio
+    : MESSAGES.session.brandLabel
   const sessionSubtitle = isPhysio && patient?.issue?.trim() ? patient.issue.trim() : sessionType
 
   // Writing up the session is the end of this flow, not an alternative to it.

@@ -31,7 +31,7 @@ export const MESSAGES = {
 
   session: {
     rolePatient: 'Patient',
-    rolePhysio: 'Your physio',
+    brandLabel: 'YorPhysio',
     contactLabel: 'Contact',
     typeLabel: 'Session',
     joinChoiceTitle: 'Join your session',
