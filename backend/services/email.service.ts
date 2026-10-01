@@ -124,6 +124,32 @@ const detailTable = (rows: { label: string; value: string; strike?: boolean }[])
 const buttonHtml = (href: string, label: string): string =>
   `<p style="text-align:center;margin:24px 0;"><a href="${href}" style="display:inline-block;background:${BRAND.primary};color:#FFFFFF;text-decoration:none;padding:12px 28px;border-radius:999px;font-weight:bold;font-size:15px;">${escapeHtml(label)}</a></p>`
 
+// Matches the frontend route; the backend has no shared route table.
+const PATIENT_DASHBOARD_PATH = '/dashboard/patient'
+const DASHBOARD_LABEL = 'View your previous sessions and details'
+
+const dashboardUrl = (): string => (CONFIG.app.url ? `${CONFIG.app.url}${PATIENT_DASHBOARD_PATH}` : '')
+
+/**
+ * A quiet text link to the patient's own dashboard, under the main action.
+ *
+ * Deliberately a short phrase rather than the URL itself: the address is long
+ * and unreadable in an inbox, and this is the secondary action — the button
+ * above it is what the email is for. Omitted entirely when APP_URL is unset,
+ * since a link to nowhere is worse than no link.
+ */
+const dashboardLinkHtml = (): string => {
+  const url = dashboardUrl()
+  if (!url) return ''
+  return `<p style="margin:18px 0 0;text-align:center;"><a href="${url}" style="color:${BRAND.primary};text-decoration:underline;font-size:13px;">${escapeHtml(DASHBOARD_LABEL)}</a></p>`
+}
+
+/** The same link for the plain-text part, where it has to be spelled out. */
+const dashboardLinkText = (): string[] => {
+  const url = dashboardUrl()
+  return url ? ['', `${DASHBOARD_LABEL}: ${url}`] : []
+}
+
 export const sendOtpEmail = async (to: string, otp: string): Promise<void> => {
   const html = wrapEmailHtml(`
     <p style="margin:0 0 4px;">Here's your sign-in code.</p>
@@ -160,6 +186,7 @@ export const sendReportEmail = async (to: string, pdfUrl: string): Promise<void>
     <p style="margin:0;color:${BRAND.muted};font-size:13px;">
       Button not working? Paste this into your browser:<br />${escapeHtml(pdfUrl)}
     </p>
+    ${dashboardLinkHtml()}
   `)
 
   await send({
@@ -171,6 +198,7 @@ export const sendReportEmail = async (to: string, pdfUrl: string): Promise<void>
       'Your physio has shared the notes from your session.',
       '',
       `Open your report: ${pdfUrl}`,
+      ...dashboardLinkText(),
     ].join('\n'),
     html,
   })
@@ -202,6 +230,7 @@ export const sendAppointmentScheduledEmail = async (
       { label: 'Duration', value: CONFIG.session.durationLabel },
     ])}
     <p style="margin:0;">We'll email your join link shortly before it starts. Nothing to install.</p>
+    ${dashboardLinkHtml()}
   `)
 
   await send({
@@ -219,6 +248,7 @@ export const sendAppointmentScheduledEmail = async (
       `Duration: ${CONFIG.session.durationLabel}`,
       '',
       "We'll email your join link shortly before it starts. Nothing to install.",
+      ...dashboardLinkText(),
     ].join('\n'),
     html,
   })
@@ -265,6 +295,7 @@ export const sendAppointmentRescheduledEmail = async (
       { label: 'Duration', value: CONFIG.session.durationLabel },
     ])}
     <p style="margin:0;">No action needed — just join at the new time.</p>
+    ${dashboardLinkHtml()}
   `)
 
   await send({
@@ -282,6 +313,7 @@ export const sendAppointmentRescheduledEmail = async (
       `Duration: ${CONFIG.session.durationLabel}`,
       '',
       'No action needed — just join at the new time.',
+      ...dashboardLinkText(),
     ].join('\n'),
     html,
   })
@@ -308,6 +340,7 @@ export const sendCallStartingEmail = async (to: string, details: CallStartingDet
     <p style="margin:0 0 13px;font-weight:bold;">Hi ${patientName},</p>
     <p style="margin:0;">${physioName} is ready for you. Your session started at <strong>${escapeHtml(timeLabel)}</strong>.</p>
     ${buttonHtml(details.joinLink, 'Join your session')}
+    ${dashboardLinkHtml()}
     <p style="margin:0;color:${BRAND.muted};font-size:13px;word-break:break-all;">
       Button not working? Paste this into your browser:<br />${escapeHtml(details.joinLink)}
     </p>
@@ -324,6 +357,7 @@ export const sendCallStartingEmail = async (to: string, details: CallStartingDet
       `${details.physioName} is ready for you. Your session started at ${timeLabel}.`,
       '',
       `Join here: ${details.joinLink}`,
+      ...dashboardLinkText(),
     ].join('\n'),
     html,
   })
