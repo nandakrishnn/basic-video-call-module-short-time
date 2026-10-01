@@ -570,6 +570,19 @@ a {
   background: var(--color-surface-alt);
 }
 
+.time-done-button {
+  flex-shrink: 0;
+  padding: 9px 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary-strong);
+  color: var(--color-text-inverse);
+  font-family: inherit;
+  font-size: var(--text-base);
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .time-cell.selected {
   background: var(--color-primary-strong);
   color: var(--color-text-inverse);

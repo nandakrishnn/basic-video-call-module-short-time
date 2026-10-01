@@ -180,6 +180,7 @@ export const MESSAGES = {
 
   common: {
     close: 'Close',
+    done: 'Done',
     cancel: 'Cancel',
   },
 

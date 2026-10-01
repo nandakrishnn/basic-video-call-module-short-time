@@ -2,6 +2,7 @@ import { Clock } from 'lucide-react'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { COLORS, RADII, SHADOWS } from '@/constants/colors'
 import { useDismissOnOutside } from '@/hooks/useDismissOnOutside'
+import { MESSAGES } from '@/constants/messages'
 
 interface TimePickerProps {
   /** 24-hour "HH:MM", the same shape a native time input emits. */
@@ -11,7 +12,7 @@ interface TimePickerProps {
   ariaLabel?: string
 }
 
-const POPOVER_HEIGHT = 268
+const POPOVER_HEIGHT = 316
 const POPOVER_WIDTH = 236
 
 const HOURS = Array.from({ length: 12 }, (_, i) => i + 1)
@@ -40,6 +41,14 @@ export const TimePicker = ({ value, onChange, placeholder = 'Pick a time', ariaL
   const triggerRef = useRef<HTMLButtonElement>(null)
   const columnsRef = useRef<HTMLDivElement>(null)
   const popoverRef = useRef<HTMLDivElement>(null)
+  /** Which columns have been chosen since this opening. */
+  const pickedRef = useRef({ hour: false, minute: false, period: false })
+
+  // Reset per opening, so reopening to tweak one column does not inherit the
+  // previous visit's picks and close immediately.
+  useEffect(() => {
+    if (isOpen) pickedRef.current = { hour: false, minute: false, period: false }
+  }, [isOpen])
 
   useLayoutEffect(() => {
     if (!isOpen || !triggerRef.current) return
@@ -62,9 +71,16 @@ export const TimePicker = ({ value, onChange, placeholder = 'Pick a time', ariaL
 
   useDismissOnOutside(isOpen, () => setIsOpen(false), popoverRef, triggerRef)
 
+  // Closing on the first pick would be wrong — a time needs an hour, a minute
+  // and AM/PM — so it closes once all three have been chosen. Until then the
+  // Done button is the way out, for someone changing only the minutes.
   const commit = (next: Partial<{ hour: number; minute: number; period: 'AM' | 'PM' }>): void => {
     const base = parts ?? { hour: 9, minute: 0, period: 'AM' as const }
     onChange(toValue(next.hour ?? base.hour, next.minute ?? base.minute, next.period ?? base.period))
+
+    const picked = { ...pickedRef.current, ...Object.fromEntries(Object.keys(next).map((k) => [k, true])) }
+    pickedRef.current = picked
+    if (picked.hour && picked.minute && picked.period) setIsOpen(false)
   }
 
   const cell = (label: string, selected: boolean, onClick: () => void) => (
@@ -113,12 +129,15 @@ export const TimePicker = ({ value, onChange, placeholder = 'Pick a time', ariaL
               border: `1px solid ${COLORS.border}`,
               background: COLORS.surface,
               boxShadow: SHADOWS.lg,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
               zIndex: 401,
             }}
           >
             <div
               ref={columnsRef}
-              style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, height: '100%' }}
+              style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, flex: 1, minHeight: 0 }}
             >
               <div className="time-column">
                 {HOURS.map((h) => cell(String(h), parts?.hour === h, () => commit({ hour: h })))}
@@ -130,6 +149,10 @@ export const TimePicker = ({ value, onChange, placeholder = 'Pick a time', ariaL
                 {PERIODS.map((p) => cell(p, parts?.period === p, () => commit({ period: p })))}
               </div>
             </div>
+
+            <button type="button" onClick={() => setIsOpen(false)} className="time-done-button">
+              {MESSAGES.common.done}
+            </button>
           </div>
         </>
       )}
