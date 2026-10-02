@@ -86,7 +86,10 @@ const JoinSessionPage = (): JSX.Element => {
     setIsSubmitting(false)
     if (res.success) {
       setToken(res.data.token)
-      void router.push(ROUTES.session(token))
+      // replace, not push: left in the history stack the join page is one
+      // Back press away at any point during the call, and loading it sends
+      // the patient a fresh code that invalidates the one they used.
+      void router.replace(ROUTES.session(token))
     } else {
       setError(res.message)
     }

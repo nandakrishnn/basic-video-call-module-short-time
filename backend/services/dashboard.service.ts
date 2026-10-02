@@ -153,13 +153,27 @@ export const getPatientDashboard = async (patientId: string) => {
     Date.now() - CONFIG.session.overdueVisibleHours * 60 * 60 * 1000,
   ).toISOString()
 
+  // A call the physio has already started outranks the clock. Picking purely by
+  // scheduled time sent the patient to whichever booking was soonest, so with
+  // more than one open booking they could be waiting in an empty room while
+  // their physio sat in a different one.
+  const liveSessionIds = new Set(
+    sessions.filter((s) => s.status === SessionStatus.ACTIVE).map((s) => s.id),
+  )
+
   // Ordered by scheduled_at ascending, so the soonest still to come wins; with
   // none ahead, the latest recently-overdue one is what the patient is waiting on.
   const open = appointments.filter(isOpen)
   const nextAppointment =
+    open.find((a) => a.sessionId && liveSessionIds.has(a.sessionId)) ??
     open.find((a) => a.scheduledAt > now) ??
     open.filter((a) => a.scheduledAt <= now && a.scheduledAt >= overdueCutoff).pop() ??
     null
+
+  // Lets the patient in on a session that has started, however far ahead of its
+  // slot that is — the join window is about not arriving at an empty room, and
+  // a room with the physio already in it is not one.
+  const isNextSessionLive = Boolean(nextAppointment?.sessionId && liveSessionIds.has(nextAppointment.sessionId))
 
   const notes = await findNotesBySessionIds(completedSessions.map((s) => s.id))
   const notesBySession = new Map(notes.map((note) => [note.sessionId, note]))
@@ -208,6 +222,7 @@ export const getPatientDashboard = async (patientId: string) => {
 
   return {
     nextAppointment,
+    isNextSessionLive,
     pastCalls,
     stats: { totalCalls: completedSessions.length, totalMinutes },
   }

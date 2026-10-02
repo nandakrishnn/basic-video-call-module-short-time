@@ -164,13 +164,25 @@ const SessionPage = (): JSX.Element => {
     const token = getToken()
     if (!token) return
     setIsEndingCall(true)
-    endSessionRequest(token, sessionId).then((res) => {
-      if (user?.role !== 'physio') {
+
+    // A patient hanging up means they left, not that the consultation is over —
+    // it used to end the session outright, so a mis-tap closed the call on a
+    // physio still sitting in it and left no way back in. Which of the two it
+    // actually is depends on whether the physio has finished, so ask.
+    if (!isPhysio) {
+      void getSessionRequest(token, sessionId).then((res) => {
+        if (res.success && res.data.status !== 'completed') {
+          void router.replace(ROUTES.dashboardPatient)
+          return
+        }
         setCallEndedForPatient(true)
-        return
-      }
+      })
+      return
+    }
+
+    endSessionRequest(token, sessionId).then((res) => {
       if (res.success) setShowPostCallModal(true)
-      else void router.push(ROUTES.dashboardPhysio)
+      else void router.replace(ROUTES.dashboardPhysio)
     })
   }
 
@@ -187,8 +199,9 @@ const SessionPage = (): JSX.Element => {
   // steps meant the notes page was never offered at all.
   const handleClosePostCallModal = (): void => {
     setShowPostCallModal(false)
-    if (sessionId) void router.push(ROUTES.sessionNotes(sessionId))
-    else void router.push(ROUTES.dashboardPhysio)
+    // The call is over either way — going back into it is never useful.
+    if (sessionId) void router.replace(ROUTES.sessionNotes(sessionId))
+    else void router.replace(ROUTES.dashboardPhysio)
   }
 
   // Goes through the same confirmation rather than jumping straight to the
@@ -203,7 +216,7 @@ const SessionPage = (): JSX.Element => {
     setIsEndingCall(true)
     endSessionRequest(token, sessionId).then((res) => {
       if (res.success) setShowPostCallModal(true)
-      else void router.push(ROUTES.sessionNotes(sessionId))
+      else void router.replace(ROUTES.sessionNotes(sessionId))
     })
   }
 
@@ -237,7 +250,7 @@ const SessionPage = (): JSX.Element => {
     <div className="session-layout" style={{ padding: 18, background: COLORS.background }}>
       <div className="session-video-area">
         {callEndedForPatient ? (
-          <PostCallPatientPrompt onGoToDashboard={() => void router.push(ROUTES.dashboardPatient)} />
+          <PostCallPatientPrompt onGoToDashboard={() => void router.replace(ROUTES.dashboardPatient)} />
         ) : isEndingCall ? (
           <PageState tone="loading" message={MESSAGES.session.endingCall} />
         ) : hasDroppedOut ? (
@@ -256,7 +269,7 @@ const SessionPage = (): JSX.Element => {
                 <Button
                   variant="secondary"
                   onClick={() =>
-                    isPhysio ? handleEndAndWriteNotes() : void router.push(ROUTES.dashboardPatient)
+                    isPhysio ? handleEndAndWriteNotes() : void router.replace(ROUTES.dashboardPatient)
                   }
                 >
                   {isPhysio ? MESSAGES.session.endSessionInstead : MESSAGES.session.leaveSession}

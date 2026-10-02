@@ -1,7 +1,7 @@
 import { CONFIG } from '../constants/config'
 import { AuditAction, SessionStatus } from '../constants/enums'
 import { findAppointmentById, linkAppointmentSession } from '../models/appointment.model'
-import { createSessionRecord, findSessionById } from '../models/session.model'
+import { createSessionRecord, findSessionById, updateSessionStatus } from '../models/session.model'
 import { findUserById } from '../models/user.model'
 import type { Session } from '../types/session.types'
 import { logAudit } from './audit.service'
@@ -51,11 +51,20 @@ export const createSessionForCall = async (params: {
     const appointment = await findAppointmentById(appointmentId)
     if (appointment?.sessionId) {
       const existing = await findSessionById(appointment.sessionId)
-      const isReusable =
-        existing &&
-        existing.status !== SessionStatus.COMPLETED &&
-        existing.status !== SessionStatus.CANCELLED
-      if (isReusable) return existing
+
+      if (existing && existing.status !== SessionStatus.CANCELLED) {
+        // A finished session is reopened rather than replaced. Ending a call
+        // leaves the booking open — on purpose, so an accidental end does not
+        // close it — which meant Start was still offered afterwards and minted
+        // a second session in a new room. A patient still waiting in the first
+        // one had no way to follow. The timestamps are left alone: started_at
+        // is what the session is numbered and listed by.
+        if (existing.status === SessionStatus.COMPLETED) {
+          const reopened = await updateSessionStatus(existing.id, SessionStatus.ACTIVE)
+          if (reopened) return reopened
+        }
+        return existing
+      }
     }
   }
 

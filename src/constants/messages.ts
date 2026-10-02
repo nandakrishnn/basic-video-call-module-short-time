@@ -133,6 +133,8 @@ export const MESSAGES = {
     patientTotalMinutes: 'Minutes in session',
     patientNextAppointment: 'Next appointment',
     patientJoinCall: 'Join call',
+    patientRejoinCall: 'Rejoin call',
+    patientSessionLive: 'Your session is live',
     patientJoinOpensSoon: 'The join button opens shortly before your appointment.',
     patientPastSessions: 'Past sessions',
     patientWith: 'with',

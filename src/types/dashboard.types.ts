@@ -43,6 +43,8 @@ export interface PendingReport {
 
 export interface PatientDashboardData {
   nextAppointment: Appointment | null
+  /** The physio has already started it, whatever the clock says. */
+  isNextSessionLive: boolean
   pastCalls: PastCall[]
   stats: {
     totalCalls: number

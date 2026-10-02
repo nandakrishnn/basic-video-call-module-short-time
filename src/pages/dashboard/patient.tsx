@@ -54,7 +54,9 @@ const PatientDashboardPage = (): JSX.Element => {
     ? parseUtc(data.nextAppointment.scheduledAt).getTime() - Date.now() <=
       CONFIG.session.joinWindowMinutesBeforeStart * 60_000
     : false
-  const canJoin = Boolean(sessionId) && withinJoinWindow
+  // A session the physio has already started is joinable whatever the clock
+  // says — the window exists to stop a patient arriving at an empty room.
+  const canJoin = Boolean(sessionId) && (data?.isNextSessionLive || withinJoinWindow)
 
   return (
     <div className="app-shell" style={{ minHeight: '100vh', background: COLORS.background }}>
@@ -97,7 +99,9 @@ const PatientDashboardPage = (): JSX.Element => {
                   <div style={{ minWidth: 0 }}>
                     <span className="dash-eyebrow">
                       <CalendarDays size={13} />
-                      {MESSAGES.dashboard.patientNextAppointment}
+                      {data.isNextSessionLive
+                        ? MESSAGES.dashboard.patientSessionLive
+                        : MESSAGES.dashboard.patientNextAppointment}
                     </span>
                     <p
                       style={{
@@ -121,7 +125,9 @@ const PatientDashboardPage = (): JSX.Element => {
                     onClick={() => sessionId && void router.push(ROUTES.session(sessionId))}
                   >
                     <Video size={16} />
-                    {MESSAGES.dashboard.patientJoinCall}
+                    {data.isNextSessionLive
+                      ? MESSAGES.dashboard.patientRejoinCall
+                      : MESSAGES.dashboard.patientJoinCall}
                   </Button>
                 </div>
               ) : (

@@ -30,7 +30,16 @@ router.post(
 )
 router.get('/:id', authenticate, asyncHandler(getSession))
 router.patch('/:id/start', authenticate, requireRole(UserRole.PHYSIO, UserRole.ADMIN), asyncHandler(startSession))
-router.patch('/:id/end', authenticate, asyncHandler(endSession))
+// Ending a consultation is the clinician's call. This was open to any signed-in
+// user, and the patient's hangup button called it — so a mis-tap marked the
+// whole session complete while the physio was still in the room, and left the
+// patient unable to come back.
+router.patch(
+  '/:id/end',
+  authenticate,
+  requireRole(UserRole.PHYSIO, UserRole.ADMIN),
+  asyncHandler(endSession),
+)
 router.get('/:id/join-token', asyncHandler(getJoinToken))
 router.post('/:id/share-log', authenticate, asyncHandler(shareLog))
 

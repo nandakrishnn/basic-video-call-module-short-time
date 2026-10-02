@@ -149,7 +149,7 @@ const NotesPage = (): JSX.Element => {
     // so it survives this navigation — no page whose only job is to say it
     // worked and offer a link onward.
     showToast(sendEnabled ? MESSAGES.notes.sentToPatient : MESSAGES.notes.saved)
-    void router.push(ROUTES.dashboardPhysio)
+    void router.replace(ROUTES.dashboardPhysio)
   }
 
   return (
@@ -168,7 +168,7 @@ const NotesPage = (): JSX.Element => {
           to record. */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <h1 style={{ color: COLORS.text.primary, fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>Session notes</h1>
-        <Button variant="ghost" size="sm" onClick={() => void router.push(ROUTES.dashboardPhysio)}>
+        <Button variant="ghost" size="sm" onClick={() => void router.replace(ROUTES.dashboardPhysio)}>
           {MESSAGES.notes.backToDashboard}
         </Button>
       </div>
