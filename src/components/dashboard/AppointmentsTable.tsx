@@ -9,7 +9,7 @@ import { MESSAGES } from '@/constants/messages'
 import { ROUTES } from '@/constants/routes'
 import type { Appointment } from '@/types/appointment.types'
 import type { PatientSummary } from '@/types/user.types'
-import { canReschedule, canStartCall, deriveStatus } from '@/utils/appointment'
+import { canReschedule, canStartCall, deriveStatus, hasCallBegun } from '@/utils/appointment'
 import { parseUtc } from '@/utils/date'
 
 interface AppointmentsTableProps {
@@ -141,7 +141,7 @@ export const AppointmentsTable = ({
                         onClick={() => onJoinCall(appointment)}
                       >
                         <Video size={15} />
-                        {MESSAGES.dashboard.joinCall}
+                        {hasCallBegun(appointment) ? MESSAGES.dashboard.rejoinCall : MESSAGES.dashboard.startCall}
                       </Button>
                     )}
 

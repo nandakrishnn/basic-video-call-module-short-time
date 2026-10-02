@@ -27,6 +27,17 @@ export const isUpcoming = (appointment: Appointment): boolean => deriveStatus(ap
  * that the booking should be rescheduled rather than joined, and a completed or
  * cancelled one is never joinable.
  */
+/**
+ * Whether the call behind a booking has already happened, in whole or in part.
+ *
+ * A booking stays open until the physio confirms it afterwards, so its own
+ * status cannot tell starting a call from going back into one — and going back
+ * into a live call, possibly with the patient already sitting in it, should not
+ * read the same as starting from scratch.
+ */
+export const hasCallBegun = (appointment: Appointment): boolean =>
+  appointment.sessionStatus === 'active' || appointment.sessionStatus === 'completed'
+
 export const canStartCall = (appointment: Appointment): boolean => {
   if (appointment.status !== 'scheduled') return false
   const graceEnd =

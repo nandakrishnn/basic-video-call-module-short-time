@@ -10,6 +10,7 @@ import {
   findAppointmentsByPhysio,
   updateAppointmentRecord,
 } from '../models/appointment.model'
+import { findSessionsByPhysio } from '../models/session.model'
 import { findUserById } from '../models/user.model'
 import { logAudit } from '../services/audit.service'
 import { sendAppointmentRescheduledEmail, sendAppointmentScheduledEmail } from '../services/email.service'
@@ -55,8 +56,23 @@ export const createAppointment = async (req: Request, res: Response): Promise<vo
 }
 
 export const getAppointmentsByPhysio = async (req: Request, res: Response): Promise<void> => {
-  const appointments = await findAppointmentsByPhysio(req.params.physioId)
-  res.status(200).json(successResponse(appointments, MESSAGES.appointment.fetchSuccess))
+  const [appointments, sessions] = await Promise.all([
+    findAppointmentsByPhysio(req.params.physioId),
+    findSessionsByPhysio(req.params.physioId),
+  ])
+
+  // A booking says nothing about whether its call has begun — the two records
+  // carry separate statuses — so the dashboard could not tell starting a call
+  // from going back into one already running. Merged here rather than joined in
+  // the query: appointments and sessions reference each other, which makes an
+  // embedded select ambiguous about which direction it is following.
+  const statusBySession = new Map(sessions.map((session) => [session.id, session.status]))
+  const withSessionStatus = appointments.map((appointment) => ({
+    ...appointment,
+    sessionStatus: appointment.sessionId ? (statusBySession.get(appointment.sessionId) ?? null) : null,
+  }))
+
+  res.status(200).json(successResponse(withSessionStatus, MESSAGES.appointment.fetchSuccess))
 }
 
 export const getAppointmentsByPatient = async (req: Request, res: Response): Promise<void> => {

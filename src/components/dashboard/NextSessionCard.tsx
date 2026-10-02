@@ -3,6 +3,7 @@ import { Avatar } from '@/components/shared/Avatar'
 import { Button } from '@/components/shared/Button'
 import { COLORS, FONT_SIZES, RADII } from '@/constants/colors'
 import { MESSAGES } from '@/constants/messages'
+import { hasCallBegun } from '@/utils/appointment'
 import type { Appointment } from '@/types/appointment.types'
 import type { PatientSummary } from '@/types/user.types'
 import { parseUtc } from '@/utils/date'
@@ -85,7 +86,7 @@ export const NextSessionCard = ({
 
       <Button variant="primary" isLoading={isStarting} onClick={onStart} style={{ padding: '14px 26px' }}>
         <Video size={17} />
-        {MESSAGES.dashboard.startSession}
+        {hasCallBegun(appointment) ? MESSAGES.dashboard.rejoinCall : MESSAGES.dashboard.startSession}
       </Button>
     </section>
   )

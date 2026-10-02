@@ -168,6 +168,8 @@ export const MESSAGES = {
     colAction: 'Action',
 
     joinCall: 'Join Call',
+    startCall: 'Start call',
+    rejoinCall: 'Rejoin call',
     newSession: 'New Session',
     newAppointment: 'New Appointment',
     rowMenuLabel: 'More actions',

@@ -10,5 +10,7 @@ export interface Appointment {
   sessionType: AppointmentType
   status: AppointmentStatus
   sessionId: string | null
+  /** The linked session's own status — null when no session exists yet. */
+  sessionStatus?: 'scheduled' | 'active' | 'completed' | 'cancelled' | null
   internalNote: string | null
 }
