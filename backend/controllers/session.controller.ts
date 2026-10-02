@@ -65,7 +65,22 @@ export const startSession = async (req: Request, res: Response): Promise<void> =
 }
 
 export const endSession = async (req: Request, res: Response): Promise<void> => {
-  const session = await updateSessionStatus(req.params.id, SessionStatus.COMPLETED, 'ended_at')
+  // Read first so a session that was never marked live can still be given a
+  // start time. Nobody reaches this route without having been in the room, so
+  // the session did begin — only the record of when is missing, and a completed
+  // session without one is dropped from history and from every duration figure.
+  // createdAt is the physio pressing Start, which is the closest the record
+  // holds to the truth; the current time would make the call look zero minutes
+  // long and drag the average down with it.
+  const existing = await findSessionById(req.params.id)
+  if (!existing) throw new AppError(MESSAGES.session.notFound, 404, 'SESSION_NOT_FOUND')
+
+  const session = await updateSessionStatus(
+    req.params.id,
+    SessionStatus.COMPLETED,
+    'ended_at',
+    existing.startedAt ? undefined : existing.createdAt,
+  )
   if (!session) throw new AppError(MESSAGES.session.notFound, 404, 'SESSION_NOT_FOUND')
 
   // The appointment is deliberately NOT completed here. This runs on Jitsi's

@@ -85,9 +85,20 @@ export const updateSessionStatus = async (
   id: string,
   status: SessionStatus,
   timestampField?: 'started_at' | 'ended_at',
+  /**
+   * A start time for a session that never recorded one of its own.
+   *
+   * Marking a session live is a separate request from ending it, so a session
+   * could reach "completed" with started_at still null — and every figure keyed
+   * on that column then skips the row: it is left out of session numbering, of
+   * the activity trend, and of average duration. The session reads as one that
+   * never happened, which is the opposite of the truth.
+   */
+  backfillStartedAt?: string,
 ): Promise<Session | null> => {
   const updatePayload: Record<string, unknown> = { status, updated_at: new Date().toISOString() }
   if (timestampField) updatePayload[timestampField] = new Date().toISOString()
+  if (backfillStartedAt) updatePayload.started_at = backfillStartedAt
 
   const { data, error } = await db.from('sessions').update(updatePayload).eq('id', id).select('*').single()
   if (error || !data) return null
