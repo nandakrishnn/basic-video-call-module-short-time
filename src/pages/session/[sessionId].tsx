@@ -1,8 +1,9 @@
 import { useRouter } from 'next/router'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { PostCallModal } from '@/components/appointments/PostCallModal'
 import { Button } from '@/components/shared/Button'
 import { PageState } from '@/components/shared/PageState'
+import { useToast } from '@/components/shared/Toast'
 import { PhysioSessionPanel } from '@/components/video/PhysioSessionPanel'
 import { PostCallPatientPrompt } from '@/components/video/PostCallPatientPrompt'
 import { PreCallScreen } from '@/components/video/PreCallScreen'
@@ -37,6 +38,10 @@ const SessionPage = (): JSX.Element => {
   const router = useRouter()
   const { sessionId } = router.query as { sessionId?: string }
   const { user, isLoading: isAuthLoading } = useAuth()
+  const { showToast } = useToast()
+
+  /** Guards against starting twice — the join press and Jitsi's event both ask. */
+  const hasStartedRef = useRef(false)
 
   const [session, setSession] = useState<Session | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -96,22 +101,47 @@ const SessionPage = (): JSX.Element => {
   }, [isPhysio, session?.appointmentId, user])
 
   /**
-   * Marks the session live once the physio is actually in the room.
+   * Marks the session live, which is what opens the patient's gate.
    *
-   * This used to fire when their page loaded, so a session counted as started
-   * while the physio was still on their own join screen. The patient's wait
-   * ended too early: they walked into an empty room, and the lobby — which the
-   * physio's client enables on joining — was not up yet either, so they did not
-   * even have to knock. Only the physio can do this; a patient opening the link
-   * first must not be able to start the session themselves.
+   * It first ran on page load, so a session counted as started while the physio
+   * was still on their own join screen — the patient's wait ended too early and
+   * they walked into an empty room. It then ran only on Jitsi's
+   * videoConferenceJoined. That is the most truthful signal, the physio being
+   * provably in the room, but it is also the easiest one to lose: an unanswered
+   * camera prompt, a slow or blocked iframe, and it simply never arrives. When
+   * it didn't, the session stayed "scheduled" for good and the patient sat on a
+   * spinner with nothing telling either of them why.
+   *
+   * Pressing "Join call" is the physio's decision to be in the room, so that is
+   * what starts it now. The Jitsi event stays on as a backstop for the paths
+   * that mount the stage without passing the join screen, such as a rejoin.
+   * Only the physio may do this; a patient opening the link first must not be
+   * able to start the session themselves.
    */
-  const handleJoined = (): void => {
-    if (!isPhysio || !sessionId || session?.status !== 'scheduled') return
+  const startSessionNow = async (): Promise<void> => {
+    if (!isPhysio || !sessionId || hasStartedRef.current) return
+    if (session && session.status !== 'scheduled') return
     const token = getToken()
     if (!token) return
-    startSessionRequest(token, sessionId).then((res) => {
-      if (res.success) setSession(res.data)
-    })
+
+    hasStartedRef.current = true
+    const res = await startSessionRequest(token, sessionId)
+
+    if (res.success) {
+      // The Jitsi credentials are deliberately carried over from the session
+      // already in hand. Every response mints a fresh token, and the stage
+      // rebuilds its iframe whenever that prop changes — taking the new one
+      // would tear down the call the physio has just walked into.
+      setSession((prev) =>
+        prev ? { ...res.data, jitsiJwt: prev.jitsiJwt, jitsiRoomName: prev.jitsiRoomName } : res.data,
+      )
+      return
+    }
+
+    // Left retryable on purpose, and never silent: the consultation itself
+    // still works, but nobody can reach it until this lands.
+    hasStartedRef.current = false
+    showToast(MESSAGES.session.startFailed, 'error')
   }
 
   // Patient side: keep checking until the physio has actually started the
@@ -296,13 +326,19 @@ const SessionPage = (): JSX.Element => {
             sessionType={sessionSubtitle}
             onCallEnded={handleCallEnded}
             onCallDropped={() => setHasDroppedOut(true)}
-            onJoined={handleJoined}
+            onJoined={() => void startSessionNow()}
           />
         ) : (
           <PreCallScreen
             patientName={counterpartLabel}
             sessionType={sessionSubtitle}
-            onJoin={() => setHasJoined(true)}
+            // The call opens straight away rather than waiting on the request:
+            // the physio should never watch a spinner because of bookkeeping,
+            // and a start that fails says so on its own.
+            onJoin={() => {
+              setHasJoined(true)
+              void startSessionNow()
+            }}
           />
         )}
       </div>

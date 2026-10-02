@@ -41,6 +41,7 @@ export const MESSAGES = {
     notYetActive: 'This session is not active yet.',
     waitingForPhysio: "Waiting for your physio to join the call — you'll be connected automatically.",
     checkAgain: 'Check again',
+    startFailed: "Couldn't mark this session as live — your patient may still be waiting. Check your connection.",
     pastNotesButton: 'Previous notes',
     pastNotesTitle: 'Previous session notes',
     pastNotesLoading: 'Loading previous notes&',
