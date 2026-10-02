@@ -18,6 +18,12 @@ export const apiRequest = async <T>(url: string, options: RequestOptions = {}): 
       method,
       headers,
       body: body ? JSON.stringify(body) : undefined,
+      // Nothing here is cacheable: these are one user's live records. Without
+      // this the browser is free to reuse a response it decides is fresh
+      // enough — the API sends an ETag but no Cache-Control, which leaves that
+      // judgement to heuristics. A patient polling for their session to start
+      // would be handed the same "not started yet" answer indefinitely.
+      cache: 'no-store',
     })
     return (await res.json()) as ApiResponse<T>
   } catch {

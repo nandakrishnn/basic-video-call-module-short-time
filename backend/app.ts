@@ -13,6 +13,17 @@ app.use(cors())
 app.use(express.json())
 app.use('/assets', express.static(path.join(__dirname, 'assets')))
 
+// Every response here is one user's live record — a session's status, a list of
+// appointments, a signed report link. Express sends an ETag but no
+// Cache-Control, which leaves caching to the browser's heuristics, and a
+// patient polling for their session to start can be handed a stale answer
+// indefinitely. Saying so explicitly also keeps clinical data out of any
+// intermediate cache.
+app.use('/api', (_req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store')
+  next()
+})
+
 app.use('/api', routes)
 
 app.use(notFoundHandler)
