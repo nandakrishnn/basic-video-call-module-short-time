@@ -58,6 +58,15 @@ export const JITSI_CONFIG_OVERWRITE = {
     autoKnock: true,
     enableChat: false,
   },
+  // We draw the admission prompt ourselves from the knockingParticipant event,
+  // so Jitsi's own was a second popup for the same person — two Admit buttons,
+  // and whichever the physio ignored sat there looking unanswered. Its own
+  // lobby toggle notice goes too: the physio never toggled it, the code did.
+  disabledNotifications: [
+    'notify.participantWantsToJoin',
+    'notify.participantsWantToJoin',
+    'lobby.notificationTitle',
+  ],
   securityUi: {
     // "Enter meeting password" sits beside the knock as a way for a host to
     // let themselves in. There are no passwords here — the physio is the
