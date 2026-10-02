@@ -8,6 +8,8 @@ interface UseJitsiCallParams {
   jwt?: string | null
   isModerator?: boolean
   containerRef: RefObject<HTMLDivElement>
+  /** This client is now in the conference, not merely on the page. */
+  onJoined?: () => void
   /** The call was ended on purpose — via our End button or Jitsi's hangup. */
   onCallEnded?: () => void
   /** The call dropped without anyone asking it to. Recoverable: rejoin. */
@@ -46,6 +48,7 @@ export const useJitsiCall = ({
   containerRef,
   onCallEnded,
   onCallDropped,
+  onJoined,
 }: UseJitsiCallParams): UseJitsiCallResult => {
   const apiRef = useRef<JitsiMeetExternalApiInstance | null>(null)
 
@@ -57,6 +60,11 @@ export const useJitsiCall = ({
   useEffect(() => {
     onCallEndedRef.current = onCallEnded
   }, [onCallEnded])
+
+  const onJoinedRef = useRef(onJoined)
+  useEffect(() => {
+    onJoinedRef.current = onJoined
+  }, [onJoined])
 
   const onCallDroppedRef = useRef(onCallDropped)
   useEffect(() => {
@@ -97,6 +105,7 @@ export const useJitsiCall = ({
 
       api.addListener('videoConferenceJoined', () => {
         setCallState('connected')
+        onJoinedRef.current?.()
         // Locks the room via Jitsi's native Lobby — only the moderator (the
         // physio, who is always first to actually join since patients wait
         // on our own gate until the session is active) can enable it, so

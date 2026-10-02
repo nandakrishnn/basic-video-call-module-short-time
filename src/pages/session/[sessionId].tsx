@@ -95,16 +95,24 @@ const SessionPage = (): JSX.Element => {
     })
   }, [isPhysio, session?.appointmentId, user])
 
-  // Only the physio starting the session flips it to 'active' — a patient
-  // opening the join link first must not be able to trigger this themselves.
-  useEffect(() => {
-    if (!isPhysio || !session || !sessionId || session.status !== 'scheduled') return
+  /**
+   * Marks the session live once the physio is actually in the room.
+   *
+   * This used to fire when their page loaded, so a session counted as started
+   * while the physio was still on their own join screen. The patient's wait
+   * ended too early: they walked into an empty room, and the lobby — which the
+   * physio's client enables on joining — was not up yet either, so they did not
+   * even have to knock. Only the physio can do this; a patient opening the link
+   * first must not be able to start the session themselves.
+   */
+  const handleJoined = (): void => {
+    if (!isPhysio || !sessionId || session?.status !== 'scheduled') return
     const token = getToken()
     if (!token) return
     startSessionRequest(token, sessionId).then((res) => {
       if (res.success) setSession(res.data)
     })
-  }, [isPhysio, session, sessionId])
+  }
 
   // Patient side: keep checking until the physio has actually started the
   // session, rather than letting them straight into an empty/unattended call.
@@ -288,6 +296,7 @@ const SessionPage = (): JSX.Element => {
             sessionType={sessionSubtitle}
             onCallEnded={handleCallEnded}
             onCallDropped={() => setHasDroppedOut(true)}
+            onJoined={handleJoined}
           />
         ) : (
           <PreCallScreen

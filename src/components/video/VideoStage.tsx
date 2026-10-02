@@ -22,6 +22,8 @@ interface VideoStageProps {
   onCallEnded: () => void
   /** The call dropped on its own  the caller offers a rejoin. */
   onCallDropped: () => void
+  /** This client is now in the conference, not merely on the page. */
+  onJoined?: () => void
 }
 
 export const VideoStage = ({
@@ -34,6 +36,7 @@ export const VideoStage = ({
   sessionType,
   onCallEnded,
   onCallDropped,
+  onJoined,
 }: VideoStageProps): JSX.Element => {
   const stageRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -60,6 +63,7 @@ export const VideoStage = ({
     containerRef,
     onCallEnded,
     onCallDropped,
+    onJoined,
   })
   const { isFullscreen, toggleFullscreen, fallbackStyle } = useFullscreen(stageRef)
   const formattedTime = useCallTimer(isReady)

@@ -39,7 +39,7 @@ export const MESSAGES = {
     endingCall: 'Ending session…',
     ended: 'This session has ended.',
     notYetActive: 'This session is not active yet.',
-    waitingForPhysio: "Waiting for your physio to start the session — you'll be connected automatically.",
+    waitingForPhysio: "Waiting for your physio to join the call — you'll be connected automatically.",
     checkAgain: 'Check again',
     pastNotesButton: 'Previous notes',
     pastNotesTitle: 'Previous session notes',
