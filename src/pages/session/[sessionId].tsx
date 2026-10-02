@@ -140,8 +140,14 @@ const SessionPage = (): JSX.Element => {
 
     // Left retryable on purpose, and never silent: the consultation itself
     // still works, but nobody can reach it until this lands.
+    //
+    // The server's own reason is carried through rather than replaced by a
+    // guess. A generic "check your connection" sent us looking at the network
+    // while the request was in fact arriving and being refused — the one thing
+    // the physio can act on is why.
     hasStartedRef.current = false
-    showToast(MESSAGES.session.startFailed, 'error')
+    console.error('Failed to start session:', res.code, res.message)
+    showToast(`${MESSAGES.session.startFailed} ${res.message}`, 'error')
   }
 
   // Patient side: keep checking until the physio has actually started the
