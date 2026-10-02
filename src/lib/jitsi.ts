@@ -49,4 +49,20 @@ export const JITSI_CONFIG_OVERWRITE = {
   // interfaceConfigOverwrite is ignored by current builds, so Jitsi kept
   // drawing its own bar underneath ours. We supply every control ourselves.
   toolbarButtons: [],
+  // The physio locks the room, so every patient is held in the lobby. Jitsi
+  // asks them to press "Ask to join" there — a second button for a decision
+  // they already made on our own join screen a moment earlier. Knocking
+  // automatically leaves one press, and the waiting itself is unchanged: the
+  // physio still admits them.
+  lobby: {
+    autoKnock: true,
+    enableChat: false,
+  },
+  securityUi: {
+    // "Enter meeting password" sits beside the knock as a way for a host to
+    // let themselves in. There are no passwords here — the physio is the
+    // moderator by JWT — so it can only confuse a patient.
+    disableLobbyPassword: true,
+    hideLobbyButton: true,
+  },
 } as const
